@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — DSOP Security Gate Pipeline</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1e293b;
+    --surface3: #334155;
+    --border: #374151;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.12);
+    --yellow: #fbbf24;
+    --yellow-bg: rgba(251,191,36,0.12);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.12);
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+    --gate1: #a78bfa;
+    --gate2: #38bdf8;
+    --gate3: #fbbf24;
+    --gate4: #f87171;
+    --gate5: #fb923c;
+    --gate6: #22d3ee;
+    --gate7: #34d399;
+    --gate8: #60a5fa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* --- Top Bar --- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .back-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; background:var(--surface-hover,#334155); color:var(--text); font-size:18px; text-decoration:none; transition:all .15s; border:1px solid var(--border); flex-shrink:0; }
+  .back-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); text-decoration:none; }
+  .topbar-left { display:flex; align-items:center; gap:16px; }
+  .topbar-logo {
+    width:36px; height:36px; border-radius:8px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:12px; color:#fff;
+  }
+  .topbar h1 { font-size:16px; font-weight:600; letter-spacing:0.5px; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right { display:flex; gap:16px; align-items:center; }
+  .status-pill {
+    display:flex; align-items:center; gap:6px;
+    padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500;
+  }
+  .status-pill.running { background: var(--green-bg); color: var(--green); }
+  .status-pill.idle { background: rgba(100,116,139,0.15); color: var(--text-dim); }
+  .status-pill .pulse {
+    width:8px; height:8px; border-radius:50%; background: currentColor;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.3; }
+  }
+
+  /* --- Main Layout --- */
+  .main { padding: 28px; display:flex; flex-direction:column; gap:28px; }
+
+  /* --- Pipeline Select --- */
+  .pipeline-header {
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  }
+  .pipeline-header h2 { font-size:20px; font-weight:600; }
+  .run-selector {
+    display:flex; gap:8px; align-items:center;
+  }
+  .run-selector select {
+    background: var(--surface2); color: var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer;
+  }
+  .run-selector select:focus { outline:none; border-color:var(--accent); }
+  .btn {
+    padding:6px 16px; border-radius:6px; font-size:13px; font-family:inherit;
+    cursor:pointer; border:1px solid var(--border); transition: all 0.2s;
+  }
+  .btn-primary { background:var(--accent); color:#000; border-color:var(--accent); font-weight:600; }
+  .btn-primary:hover { background:#7dd3fc; }
+  .btn-ghost { background:transparent; color:var(--text-dim); }
+  .btn-ghost:hover { background:var(--surface2); color:var(--text); }
+
+  /* --- Pipeline Flow Visual --- */
+  .pipeline-flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+  .flow-phases {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    min-width: max-content;
+  }
+  .flow-phase {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .flow-phase-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-left: 8px;
+  }
+  .flow-gates {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Gate cards in the flow */
+  .gate-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .gate-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gate-color, var(--text-dim));
+    border-radius: 3px 0 0 3px;
+  }
+  .gate-card:hover {
+    border-color: var(--gate-color, var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .gate-card.active {
+    border-color: var(--gate-color, var(--accent));
+    background: var(--surface3);
+  }
+  .gate-card.passed { --state-color: var(--green); }
+  .gate-card.failed { --state-color: var(--red); }
+  .gate-card.running { --state-color: var(--yellow); }
+  .gate-card.pending { --state-color: var(--text-muted); }
+  .gate-card.skipped { --state-color: var(--text-muted); opacity:0.5; }
+
+  .gate-header {
+    display:flex; align-items:center; gap:8px; margin-bottom:4px;
+  }
+  .gate-icon {
+    width:28px; height:28px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; flex-shrink:0;
+    background: rgba(255,255,255,0.06);
+  }
+  .gate-name {
+    font-size:13px; font-weight:600; flex:1;
+  }
+  .gate-status-icon {
+    width:18px; height:18px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; flex-shrink:0;
+  }
+  .gate-status-icon.passed { background: var(--green-bg); color: var(--green); }
+  .gate-status-icon.failed { background: var(--red-bg); color: var(--red); }
+  .gate-status-icon.running { background: var(--yellow-bg); color: var(--yellow); }
+  .gate-status-icon.pending { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+  .gate-tool {
+    font-size:11px; color:var(--text-dim); padding-left:36px;
+  }
+  .gate-time {
+    font-size:10px; color:var(--text-muted); padding-left:36px; margin-top:2px;
+  }
+
+  /* Connector arrows between phases */
+  .flow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    flex-shrink: 0;
+  }
+  .flow-connector svg { color: var(--text-muted); }
+
+  /* --- Stats Row --- */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat-label {
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:1px; color:var(--text-dim); margin-bottom:6px;
+  }
+  .stat-value {
+    font-size:28px; font-weight:700; line-height:1;
+  }
+  .stat-sub { font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+  /* --- Detail Panel --- */
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+  .detail-panel.visible { display: block; }
+  .detail-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .detail-header-left { display:flex; align-items:center; gap:12px; }
+  .detail-title { font-size:16px; font-weight:600; }
+  .detail-badge {
+    padding: 3px 10px; border-radius: 12px; font-size:12px; font-weight:600;
+  }
+  .detail-badge.passed { background: var(--green-bg); color: var(--green); }
+  .detail-badge.failed { background: var(--red-bg); color: var(--red); }
+  .detail-badge.running { background: var(--yellow-bg); color: var(--yellow); }
+  .detail-close {
+    background:none; border:none; color:var(--text-dim); font-size:20px;
+    cursor:pointer; padding:4px 8px; border-radius:4px;
+  }
+  .detail-close:hover { background:var(--surface2); color:var(--text); }
+  .detail-body { padding: 24px; }
+  .detail-tabs {
+    display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px;
+  }
+  .detail-tab {
+    padding:8px 16px; font-size:13px; color:var(--text-dim); cursor:pointer;
+    border-bottom:2px solid transparent; transition:all 0.2s;
+  }
+  .detail-tab:hover { color:var(--text); }
+  .detail-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .detail-content { font-size:14px; line-height:1.7; }
+
+  /* Finding rows */
+  .finding-row {
+    display:flex; align-items:center; gap:12px; padding:10px 14px;
+    border-radius:6px; margin-bottom:4px;
+    background: var(--surface2);
+  }
+  .finding-sev {
+    padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;
+    text-transform:uppercase;
+  }
+  .finding-sev.critical { background:var(--red-bg); color:var(--red); }
+  .finding-sev.high { background:rgba(251,146,60,0.15); color:var(--orange); }
+  .finding-sev.medium { background:var(--yellow-bg); color:var(--yellow); }
+  .finding-sev.low { background:rgba(100,116,139,0.15); color:var(--text-dim); }
+  .finding-text { flex:1; font-size:13px; }
+  .finding-file { font-size:12px; color:var(--text-muted); }
+
+  /* SBOM table */
+  .sbom-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .sbom-table th {
+    text-align:left; padding:8px 12px; font-weight:600; font-size:11px;
+    text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim);
+    border-bottom:1px solid var(--border);
+  }
+  .sbom-table td {
+    padding:8px 12px; border-bottom:1px solid rgba(55,65,81,0.5);
+  }
+  .sbom-table tr:hover td { background: var(--surface2); }
+
+  /* Signature display */
+  .sig-block {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+    font-size:12px;
+    line-height:1.6;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--green);
+  }
+
+  /* --- Artifacts sidebar --- */
+  .artifacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .artifact-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .artifact-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .artifact-icon { font-size:24px; margin-bottom:8px; }
+  .artifact-name { font-size:13px; font-weight:600; margin-bottom:2px; }
+  .artifact-meta { font-size:11px; color:var(--text-muted); }
+
+  /* --- Timeline --- */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content:'';
+    position:absolute; left:7px; top:0; bottom:0;
+    width:2px; background:var(--border);
+  }
+  .timeline-event {
+    position: relative;
+    padding: 8px 0 16px 20px;
+  }
+  .timeline-event::before {
+    content:'';
+    position:absolute; left:-20px; top:12px;
+    width:10px; height:10px; border-radius:50%;
+    border:2px solid var(--border);
+    background: var(--surface);
+  }
+  .timeline-event.done::before { border-color:var(--green); background:var(--green); }
+  .timeline-event.active::before { border-color:var(--yellow); background:var(--yellow); animation:pulse 2s infinite; }
+  .timeline-event.pending::before { border-color:var(--text-muted); }
+  .timeline-time { font-size:11px; color:var(--text-muted); }
+  .timeline-text { font-size:13px; }
+
+  /* --- Responsive --- */
+  @media (max-width: 900px) {
+    .main { padding:16px; }
+    .flow-phases { flex-direction:column; }
+    .flow-connector { width:auto; height:32px; transform:rotate(90deg); }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position:absolute; background:var(--surface3); border:1px solid var(--border);
+    border-radius:6px; padding:8px 12px; font-size:12px; z-index:200;
+    pointer-events:none; opacity:0; transition:opacity 0.2s;
+    max-width:280px; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .tooltip.show { opacity:1; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:4px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--border); }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <div class="topbar-logo">R2</div>
+    <h1><span>RAISE 2.0</span> DSOP Security Gate Pipeline</h1>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill running" id="pipelineStatus">
+      <div class="pulse"></div>
+      <span>Pipeline Active</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Pipeline Header -->
+  <div class="pipeline-header">
+    <h2>Security Gate Pipeline</h2>
+    <div class="run-selector">
+      <select id="runSelect">
+        <option value="demo-success">demo-app v1.4.2 — All Gates Passed</option>
+        <option value="demo-fail">demo-app v1.4.1 — GATE 4 Failed (CVE)</option>
+        <option value="demo-running">api-service v2.1.0 — Running...</option>
+        <option value="demo-review">portal v3.0.0 — Awaiting ISSM Review</option>
+      </select>
+      <button class="btn btn-primary" onclick="simulateRun()">Simulate Run</button>
+      <button class="btn btn-ghost" onclick="resetPipeline()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Pipeline Flow Visualization -->
+  <div class="pipeline-flow">
+    <div class="flow-phases" id="flowPhases">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div class="detail-header-left">
+        <span class="detail-title" id="detailTitle"></span>
+        <span class="detail-badge" id="detailBadge"></span>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">&times;</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-tabs" id="detailTabs"></div>
+      <div class="detail-content" id="detailContent"></div>
+    </div>
+  </div>
+
+  <!-- Artifacts -->
+  <div style="margin-top:8px">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">Release Artifacts</h3>
+    <div class="artifacts-grid" id="artifactsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Pipeline Timeline -->
+  <div style="margin-top:8px">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">Pipeline Timeline</h3>
+    <div class="timeline" id="timeline">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================================================
+// DATA MODEL
+// =====================================================
+
+const GATES = [
+  {
+    id: 'gate3', num: 3, name: 'Secrets Detection', tool: 'Gitleaks 8.21.2',
+    icon: '\u{1F511}', color: 'var(--gate3)', phase: 'build',
+    desc: 'Scans full git history and working directory for leaked secrets, API keys, tokens, and credentials.',
+    failCriteria: 'Any secret detected'
+  },
+  {
+    id: 'gate1', num: 1, name: 'SAST', tool: 'Semgrep 1.102.0',
+    icon: '\u{1F50D}', color: 'var(--gate1)', phase: 'build',
+    desc: 'Static Application Security Testing against source code using OWASP Top 10, security audit, and secrets rulesets.',
+    failCriteria: 'ERROR-level findings'
+  },
+  {
+    id: 'build', num: 0, name: 'Docker Build', tool: 'Buildx 0.18.x',
+    icon: '\u{1F4E6}', color: 'var(--text-dim)', phase: 'build',
+    desc: 'Multi-platform container image build from Dockerfile.',
+    failCriteria: 'Build failure'
+  },
+  {
+    id: 'gate4', num: 4, name: 'Container Scan', tool: 'Trivy 0.58.2',
+    icon: '\u{1F6E1}', color: 'var(--gate4)', phase: 'build',
+    desc: 'Scans the built container image for known vulnerabilities (CVEs) in OS packages and application dependencies.',
+    failCriteria: 'CRITICAL severity findings'
+  },
+  {
+    id: 'gate2', num: 2, name: 'SBOM Generation', tool: 'Syft 1.18.1',
+    icon: '\u{1F4CB}', color: 'var(--gate2)', phase: 'build',
+    desc: 'Generates Software Bill of Materials in both SPDX JSON and CycloneDX JSON formats.',
+    failCriteria: 'Generation failure'
+  },
+  {
+    id: 'gate6', num: 6, name: 'ISSM Review', tool: 'GitHub Environment',
+    icon: '\u{1F464}', color: 'var(--gate6)', phase: 'review',
+    desc: 'Pipeline pauses for Information Systems Security Manager to review all scan artifacts before approving release.',
+    failCriteria: 'ISSM rejects'
+  },
+  {
+    id: 'gate8', num: 8, name: 'Artifact Storage', tool: 'Harbor 1.16.3',
+    icon: '\u{1F4BE}', color: 'var(--gate8)', phase: 'sign',
+    desc: 'Push signed container image to OCI-compliant Harbor registry. Trivy re-scans on push.',
+    failCriteria: 'Push failure'
+  },
+  {
+    id: 'gate7', num: 7, name: 'Image Signing', tool: 'Cosign 2.4.1',
+    icon: '\u{270D}', color: 'var(--gate7)', phase: 'sign',
+    desc: 'Cryptographically sign the container image and attach SBOM attestation and SLSA provenance.',
+    failCriteria: 'Signing failure'
+  },
+  {
+    id: 'deploy', num: 0, name: 'GitOps Deploy', tool: 'Flux CD 2.8.1',
+    icon: '\u{1F680}', color: 'var(--accent)', phase: 'deploy',
+    desc: 'Update image tag in GitOps repo. Flux CD reconciles and deploys. Kyverno verifies signature at admission.',
+    failCriteria: 'Reconciliation failure'
+  },
+  {
+    id: 'gate5', num: 5, name: 'DAST', tool: 'OWASP ZAP 2.15.0',
+    icon: '\u{1F578}', color: 'var(--gate5)', phase: 'deploy',
+    desc: 'Dynamic Application Security Testing against the running deployed application. Baseline scan for passive checks.',
+    failCriteria: 'HIGH-risk alerts'
+  }
+];
+
+const PHASES = [
+  { id: 'build', label: 'Phase 1: Build & Scan' },
+  { id: 'review', label: 'Phase 2: ISSM Review' },
+  { id: 'sign', label: 'Phase 3: Sign & Push' },
+  { id: 'deploy', label: 'Phase 4: Deploy & Test' }
+];
+
+const ARTIFACTS = [
+  { name: 'SAST Report', format: 'SARIF JSON', icon: '\u{1F4C4}', size: '124 KB' },
+  { name: 'Secrets Scan', format: 'JSON', icon: '\u{1F511}', size: '8 KB' },
+  { name: 'Container Scan', format: 'SARIF JSON', icon: '\u{1F6E1}', size: '342 KB' },
+  { name: 'SBOM (SPDX)', format: 'SPDX 2.3', icon: '\u{1F4CB}', size: '1.2 MB' },
+  { name: 'SBOM (CycloneDX)', format: 'CDX 1.5', icon: '\u{1F4CB}', size: '890 KB' },
+  { name: 'DAST Report', format: 'HTML + JSON', icon: '\u{1F578}', size: '567 KB' },
+  { name: 'Image Signature', format: 'Cosign OCI', icon: '\u{270D}', size: '2 KB' },
+  { name: 'SBOM Attestation', format: 'In-toto', icon: '\u{1F4CE}', size: '1.3 MB' },
+  { name: 'SLSA Provenance', format: 'SLSA v0.2', icon: '\u{1F3F7}', size: '4 KB' },
+  { name: 'Pipeline Log', format: 'Text', icon: '\u{1F4DC}', size: '2.1 MB' }
+];
+
+// Pipeline run scenarios
+const RUNS = {
+  'demo-success': {
+    app: 'demo-app', version: 'v1.4.2', status: 'passed', duration: '8m 42s',
+    states: {
+      gate3:'passed', gate1:'passed', build:'passed', gate4:'passed',
+      gate2:'passed', gate6:'passed', gate8:'passed', gate7:'passed',
+      deploy:'passed', gate5:'passed'
+    },
+    findings: { critical:0, high:0, medium:3, low:12 },
+    timeline: [
+      { time:'14:22:01', text:'Pipeline triggered by tag v1.4.2', state:'done' },
+      { time:'14:22:05', text:'GATE 3: Gitleaks — No secrets found (2.1s)', state:'done' },
+      { time:'14:22:18', text:'GATE 1: Semgrep — 0 errors, 3 warnings (12.4s)', state:'done' },
+      { time:'14:23:44', text:'Docker Build — Image built successfully (86s)', state:'done' },
+      { time:'14:24:22', text:'GATE 4: Trivy — 0 CRITICAL, 0 HIGH, 3 MEDIUM (38s)', state:'done' },
+      { time:'14:24:31', text:'GATE 2: Syft — SBOM generated (SPDX + CycloneDX) (9s)', state:'done' },
+      { time:'14:24:35', text:'GATE 6: Waiting for ISSM approval...', state:'done' },
+      { time:'14:27:12', text:'GATE 6: Approved by ISSM (J. Smith)', state:'done' },
+      { time:'14:27:45', text:'GATE 8: Image pushed to Harbor (33s)', state:'done' },
+      { time:'14:28:02', text:'GATE 7: Image signed + attestations attached (17s)', state:'done' },
+      { time:'14:28:15', text:'GitOps repo updated — Flux reconciling', state:'done' },
+      { time:'14:30:22', text:'Deployment complete — pods healthy', state:'done' },
+      { time:'14:30:43', text:'GATE 5: ZAP DAST scan started', state:'done' },
+      { time:'14:30:43', text:'GATE 5: 0 HIGH, 2 MEDIUM, 10 LOW alerts', state:'done' }
+    ]
+  },
+  'demo-fail': {
+    app: 'demo-app', version: 'v1.4.1', status: 'failed', duration: '4m 18s',
+    states: {
+      gate3:'passed', gate1:'passed', build:'passed', gate4:'failed',
+      gate2:'skipped', gate6:'skipped', gate8:'skipped', gate7:'skipped',
+      deploy:'skipped', gate5:'skipped'
+    },
+    findings: { critical:2, high:5, medium:8, low:23 },
+    timeline: [
+      { time:'11:05:01', text:'Pipeline triggered by tag v1.4.1', state:'done' },
+      { time:'11:05:04', text:'GATE 3: Gitleaks — No secrets found (2.3s)', state:'done' },
+      { time:'11:05:19', text:'GATE 1: Semgrep — 0 errors, 1 warning (14.8s)', state:'done' },
+      { time:'11:06:52', text:'Docker Build — Image built successfully (93s)', state:'done' },
+      { time:'11:07:31', text:'GATE 4: Trivy — 2 CRITICAL CVEs found!', state:'done' },
+      { time:'11:07:31', text:'CVE-2024-21626 (runc) — Container escape', state:'done' },
+      { time:'11:07:31', text:'CVE-2024-3094 (xz-utils) — Backdoor', state:'done' },
+      { time:'11:07:32', text:'GATE 4 FAILED — Pipeline aborted', state:'done' },
+      { time:'11:07:32', text:'Remaining gates skipped', state:'pending' }
+    ],
+    trivyFindings: [
+      { sev:'critical', id:'CVE-2024-21626', pkg:'runc 1.1.11', desc:'Container escape via /proc/self/fd manipulation' },
+      { sev:'critical', id:'CVE-2024-3094', pkg:'xz-utils 5.4.1', desc:'Backdoor in upstream xz/liblzma' },
+      { sev:'high', id:'CVE-2024-0567', pkg:'gnutls 3.7.6', desc:'Certificate verification bypass' },
+      { sev:'high', id:'CVE-2023-44487', pkg:'golang.org/x/net 0.16.0', desc:'HTTP/2 rapid reset DoS' },
+      { sev:'high', id:'CVE-2023-39325', pkg:'golang.org/x/net 0.16.0', desc:'HTTP/2 stream handling DoS' },
+      { sev:'high', id:'CVE-2024-24789', pkg:'stdlib 1.21.5', desc:'Go archive/zip directory traversal' },
+      { sev:'high', id:'CVE-2024-24790', pkg:'stdlib 1.21.5', desc:'Go net/netip unexpected behavior' }
+    ]
+  },
+  'demo-running': {
+    app: 'api-service', version: 'v2.1.0', status: 'running', duration: '2m 14s...',
+    states: {
+      gate3:'passed', gate1:'passed', build:'running', gate4:'pending',
+      gate2:'pending', gate6:'pending', gate8:'pending', gate7:'pending',
+      deploy:'pending', gate5:'pending'
+    },
+    findings: { critical:0, high:0, medium:0, low:0 },
+    timeline: [
+      { time:'15:44:01', text:'Pipeline triggered by tag v2.1.0', state:'done' },
+      { time:'15:44:04', text:'GATE 3: Gitleaks — No secrets found (1.9s)', state:'done' },
+      { time:'15:44:15', text:'GATE 1: Semgrep — 0 errors (10.2s)', state:'done' },
+      { time:'15:44:18', text:'Docker Build — Building image...', state:'active' }
+    ]
+  },
+  'demo-review': {
+    app: 'portal', version: 'v3.0.0', status: 'review', duration: '5m 02s...',
+    states: {
+      gate3:'passed', gate1:'passed', build:'passed', gate4:'passed',
+      gate2:'passed', gate6:'running', gate8:'pending', gate7:'pending',
+      deploy:'pending', gate5:'pending'
+    },
+    findings: { critical:0, high:1, medium:4, low:8 },
+    timeline: [
+      { time:'09:12:01', text:'Pipeline triggered by tag v3.0.0', state:'done' },
+      { time:'09:12:04', text:'GATE 3: Gitleaks — No secrets found', state:'done' },
+      { time:'09:12:18', text:'GATE 1: Semgrep — 0 errors, 1 HIGH warning', state:'done' },
+      { time:'09:13:55', text:'Docker Build — Image built', state:'done' },
+      { time:'09:14:38', text:'GATE 4: Trivy — 0 CRITICAL, 1 HIGH, 4 MEDIUM', state:'done' },
+      { time:'09:14:48', text:'GATE 2: Syft — SBOM generated', state:'done' },
+      { time:'09:14:52', text:'GATE 6: Waiting for ISSM approval...', state:'active' }
+    ]
+  }
+};
+
+// =====================================================
+// RENDER
+// =====================================================
+
+let currentRun = 'demo-success';
+let selectedGate = null;
+
+function render() {
+  const run = RUNS[currentRun];
+  renderFlow(run);
+  renderStats(run);
+  renderArtifacts(run);
+  renderTimeline(run);
+  updateTopbar(run);
+  if (selectedGate) {
+    showDetail(selectedGate);
+  }
+}
+
+function renderFlow(run) {
+  const container = document.getElementById('flowPhases');
+  container.innerHTML = '';
+
+  PHASES.forEach((phase, pi) => {
+    if (pi > 0) {
+      const conn = document.createElement('div');
+      conn.className = 'flow-connector';
+      conn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+      container.appendChild(conn);
+    }
+
+    const phaseDiv = document.createElement('div');
+    phaseDiv.className = 'flow-phase';
+
+    const label = document.createElement('div');
+    label.className = 'flow-phase-label';
+    label.textContent = phase.label;
+    phaseDiv.appendChild(label);
+
+    const gatesDiv = document.createElement('div');
+    gatesDiv.className = 'flow-gates';
+
+    GATES.filter(g => g.phase === phase.id).forEach(gate => {
+      const state = run.states[gate.id] || 'pending';
+      const card = document.createElement('div');
+      card.className = `gate-card ${state}${selectedGate === gate.id ? ' active' : ''}`;
+      card.style.setProperty('--gate-color', gate.color);
+      card.onclick = () => { selectedGate = gate.id; render(); };
+
+      const statusIcon = state === 'passed' ? '\u2713' : state === 'failed' ? '\u2717' : state === 'running' ? '\u25CF' : state === 'skipped' ? '\u2014' : '\u25CB';
+
+      const dur = state === 'passed' ? (Math.random()*30+2).toFixed(1)+'s' : state === 'running' ? '...' : '';
+
+      card.innerHTML = `
+        <div class="gate-header">
+          <div class="gate-icon" style="color:${gate.color}">${gate.icon}</div>
+          <div class="gate-name">${gate.num > 0 ? 'GATE '+gate.num+': ' : ''}${gate.name}</div>
+          <div class="gate-status-icon ${state}">${statusIcon}</div>
+        </div>
+        <div class="gate-tool">${gate.tool}</div>
+        ${dur ? `<div class="gate-time">${dur}</div>` : ''}
+      `;
+      gatesDiv.appendChild(card);
+    });
+
+    phaseDiv.appendChild(gatesDiv);
+    container.appendChild(phaseDiv);
+  });
+}
+
+function renderStats(run) {
+  const el = document.getElementById('statsRow');
+  const total = Object.keys(run.states).length;
+  const passed = Object.values(run.states).filter(s => s === 'passed').length;
+  const failed = Object.values(run.states).filter(s => s === 'failed').length;
+  const f = run.findings;
+
+  el.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Gates Passed</div>
+      <div class="stat-value" style="color:var(--green)">${passed}/${total}</div>
+      <div class="stat-sub">${failed > 0 ? `${failed} failed` : 'All clear'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Duration</div>
+      <div class="stat-value" style="color:var(--accent)">${run.duration}</div>
+      <div class="stat-sub">${run.app} ${run.version}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Critical</div>
+      <div class="stat-value" style="color:${f.critical > 0 ? 'var(--red)' : 'var(--green)'}">${f.critical}</div>
+      <div class="stat-sub">vulnerabilities</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">High</div>
+      <div class="stat-value" style="color:${f.high > 0 ? 'var(--orange)' : 'var(--green)'}">${f.high}</div>
+      <div class="stat-sub">vulnerabilities</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Medium / Low</div>
+      <div class="stat-value" style="color:var(--yellow)">${f.medium + f.low}</div>
+      <div class="stat-sub">${f.medium} medium, ${f.low} low</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value" style="color:${run.status==='passed'?'var(--green)':run.status==='failed'?'var(--red)':run.status==='review'?'var(--cyan)':'var(--yellow)'}">${run.status.toUpperCase()}</div>
+      <div class="stat-sub">${run.status === 'review' ? 'Awaiting ISSM' : ''}</div>
+    </div>
+  `;
+}
+
+function renderArtifacts(run) {
+  const el = document.getElementById('artifactsGrid');
+  const isComplete = run.status === 'passed';
+  el.innerHTML = ARTIFACTS.map(a => `
+    <div class="artifact-card" style="${!isComplete ? 'opacity:0.4;pointer-events:none;' : ''}">
+      <div class="artifact-icon">${a.icon}</div>
+      <div class="artifact-name">${a.name}</div>
+      <div class="artifact-meta">${a.format} &middot; ${a.size}</div>
+    </div>
+  `).join('');
+}
+
+function renderTimeline(run) {
+  const el = document.getElementById('timeline');
+  el.innerHTML = run.timeline.map(ev => `
+    <div class="timeline-event ${ev.state}">
+      <div class="timeline-time">${ev.time}</div>
+      <div class="timeline-text">${ev.text}</div>
+    </div>
+  `).join('');
+}
+
+function updateTopbar(run) {
+  const pill = document.getElementById('pipelineStatus');
+  if (run.status === 'passed') {
+    pill.className = 'status-pill idle';
+    pill.innerHTML = `<div class="pulse" style="background:var(--green);animation:none;"></div><span>All Gates Passed</span>`;
+  } else if (run.status === 'failed') {
+    pill.className = 'status-pill idle';
+    pill.innerHTML = `<div class="pulse" style="background:var(--red);animation:none;"></div><span>Pipeline Failed</span>`;
+  } else if (run.status === 'review') {
+    pill.className = 'status-pill running';
+    pill.innerHTML = `<div class="pulse" style="background:var(--cyan);"></div><span>Awaiting ISSM Review</span>`;
+  } else {
+    pill.className = 'status-pill running';
+    pill.innerHTML = `<div class="pulse"></div><span>Pipeline Active</span>`;
+  }
+}
+
+// =====================================================
+// DETAIL PANEL
+// =====================================================
+
+function showDetail(gateId) {
+  const run = RUNS[currentRun];
+  const gate = GATES.find(g => g.id === gateId);
+  if (!gate) return;
+
+  const panel = document.getElementById('detailPanel');
+  const state = run.states[gateId] || 'pending';
+
+  document.getElementById('detailTitle').textContent = (gate.num > 0 ? 'GATE '+gate.num+': ' : '') + gate.name;
+  const badge = document.getElementById('detailBadge');
+  badge.textContent = state.toUpperCase();
+  badge.className = `detail-badge ${state}`;
+
+  // Tabs
+  const tabs = document.getElementById('detailTabs');
+  const content = document.getElementById('detailContent');
+
+  let tabData = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'output', label: 'Output' }
+  ];
+
+  if (gateId === 'gate4' && run.trivyFindings) {
+    tabData.push({ id: 'findings', label: `Findings (${run.trivyFindings.length})` });
+  }
+  if (gateId === 'gate7') {
+    tabData.push({ id: 'signature', label: 'Signature' });
+  }
+  if (gateId === 'gate2') {
+    tabData.push({ id: 'sbom', label: 'SBOM Preview' });
+  }
+
+  let activeTab = 'overview';
+  if (gateId === 'gate4' && run.trivyFindings && state === 'failed') activeTab = 'findings';
+
+  function renderTabs(active) {
+    tabs.innerHTML = tabData.map(t =>
+      `<div class="detail-tab ${t.id === active ? 'active' : ''}" onclick="switchTab('${gateId}','${t.id}')">${t.label}</div>`
+    ).join('');
+    renderTabContent(gateId, active);
+  }
+
+  window.switchTab = function(gid, tid) {
+    activeTab = tid;
+    renderTabs(tid);
+  };
+
+  function renderTabContent(gid, tid) {
+    if (tid === 'overview') {
+      content.innerHTML = `
+        <p style="margin-bottom:12px;">${gate.desc}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div style="background:var(--surface2);padding:12px;border-radius:8px;">
+            <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;font-weight:600;margin-bottom:4px;">Tool</div>
+            <div style="font-size:14px;font-weight:600;">${gate.tool}</div>
+          </div>
+          <div style="background:var(--surface2);padding:12px;border-radius:8px;">
+            <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;font-weight:600;margin-bottom:4px;">Fail Criteria</div>
+            <div style="font-size:14px;font-weight:600;color:var(--red);">${gate.failCriteria}</div>
+          </div>
+        </div>
+        ${gate.num > 0 ? `
+        <div style="margin-top:16px;padding:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px;">RAISE 2.0 Requirement</div>
+          <div style="font-size:13px;">Security Gate ${gate.num} — Required for RPOC designation per Table 5 of the RAISE Implementation Guide.</div>
+        </div>` : ''}
+      `;
+    } else if (tid === 'output') {
+      const logLines = generateFakeLog(gid, state);
+      content.innerHTML = `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;line-height:1.8;overflow-x:auto;white-space:pre;max-height:400px;overflow-y:auto;">${logLines}</div>`;
+    } else if (tid === 'findings' && run.trivyFindings) {
+      content.innerHTML = run.trivyFindings.map(f => `
+        <div class="finding-row">
+          <span class="finding-sev ${f.sev}">${f.sev}</span>
+          <span class="finding-text"><strong>${f.id}</strong> — ${f.desc}</span>
+          <span class="finding-file">${f.pkg}</span>
+        </div>
+      `).join('');
+    } else if (tid === 'signature') {
+      content.innerHTML = `
+        <div class="sig-block">Verification for harbor.sre.internal/team-alpha/${run.app}:${run.version}
+
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - The signatures were verified against the specified public key
+
+[
+  {
+    "critical": {
+      "identity": {
+        "docker-reference": "harbor.sre.internal/team-alpha/${run.app}"
+      },
+      "image": {
+        "docker-manifest-digest": "sha256:a1b2c3d4e5f6..."
+      },
+      "type": "cosign container image signature"
+    },
+    "optional": {
+      "Bundle": {
+        "SignedEntryTimestamp": "MEUCIQD...",
+        "Payload": { "logIndex": 12345 }
+      }
+    }
+  }
+]</div>`;
+    } else if (tid === 'sbom') {
+      content.innerHTML = `
+        <table class="sbom-table">
+          <thead><tr><th>Package</th><th>Version</th><th>Type</th><th>License</th></tr></thead>
+          <tbody>
+            <tr><td>alpine-baselayout</td><td>3.4.3-r1</td><td>apk</td><td>GPL-2.0</td></tr>
+            <tr><td>busybox</td><td>1.36.1-r15</td><td>apk</td><td>GPL-2.0</td></tr>
+            <tr><td>ca-certificates</td><td>20240226-r0</td><td>apk</td><td>MPL-2.0</td></tr>
+            <tr><td>express</td><td>4.18.2</td><td>npm</td><td>MIT</td></tr>
+            <tr><td>helmet</td><td>7.1.0</td><td>npm</td><td>MIT</td></tr>
+            <tr><td>cors</td><td>2.8.5</td><td>npm</td><td>MIT</td></tr>
+            <tr><td>winston</td><td>3.11.0</td><td>npm</td><td>MIT</td></tr>
+            <tr><td>prom-client</td><td>15.1.0</td><td>npm</td><td>Apache-2.0</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">Showing 8 of 247 packages. Full SBOM available as SPDX JSON and CycloneDX JSON artifacts.</div>
+      `;
+    }
+  }
+
+  renderTabs(activeTab);
+  panel.classList.add('visible');
+}
+
+function closeDetail() {
+  selectedGate = null;
+  document.getElementById('detailPanel').classList.remove('visible');
+  render();
+}
+
+// =====================================================
+// FAKE LOG GENERATION
+// =====================================================
+
+function generateFakeLog(gateId, state) {
+  const run = RUNS[currentRun];
+  const logs = {
+    gate3: `<span style="color:var(--accent)">\u25B6 Running Gitleaks v8.21.2...</span>
+<span style="color:var(--text-dim)">  Scanning 847 commits and working directory</span>
+<span style="color:var(--text-dim)">  Config: default rules + .gitleaksignore</span>
+
+<span style="color:var(--text-dim)">  Checking commit a1b2c3d... (1/847)</span>
+<span style="color:var(--text-dim)">  Checking commit d4e5f6a... (100/847)</span>
+<span style="color:var(--text-dim)">  Checking commit b7c8d9e... (500/847)</span>
+<span style="color:var(--text-dim)">  Checking commit f0a1b2c... (847/847)</span>
+
+${state === 'passed' ? '<span style="color:var(--green)">\u2713 No secrets detected. Scan completed in 2.1s</span>' : '<span style="color:var(--red)">\u2717 1 secret found!</span>'}`,
+
+    gate1: `<span style="color:var(--accent)">\u25B6 Running Semgrep v1.102.0...</span>
+<span style="color:var(--text-dim)">  Rulesets: p/owasp-top-ten, p/security-audit, p/secrets</span>
+<span style="color:var(--text-dim)">  Language: javascript, typescript</span>
+<span style="color:var(--text-dim)">  Files scanned: 124</span>
+
+<span style="color:var(--text-dim)">  Scanning src/...</span>
+<span style="color:var(--text-dim)">  Scanning lib/...</span>
+<span style="color:var(--text-dim)">  Scanning test/...</span>
+
+  Results:
+    Errors:   0
+    Warnings: ${state === 'passed' ? '3' : '0'}
+    Info:     12
+
+${state === 'passed' ? '<span style="color:var(--green)">\u2713 SAST scan passed (0 errors). Output: semgrep.sarif</span>' : '<span style="color:var(--red)">\u2717 SAST scan found ERROR-level findings</span>'}`,
+
+    build: `<span style="color:var(--accent)">\u25B6 Building with Docker Buildx...</span>
+<span style="color:var(--text-dim)">  Dockerfile: ./Dockerfile</span>
+<span style="color:var(--text-dim)">  Platform: linux/amd64</span>
+<span style="color:var(--text-dim)">  Cache: GitHub Actions cache</span>
+
+  #1 [internal] load build definition from Dockerfile
+  #2 [internal] load .dockerignore
+  #3 [1/8] FROM harbor.sre.internal/library/node:20-alpine@sha256:...
+  #4 [2/8] WORKDIR /app
+  #5 [3/8] COPY package*.json ./
+  #6 [4/8] RUN npm ci --only=production
+  #7 [5/8] COPY . .
+  #8 [6/8] RUN npm run build
+  #9 exporting to image
+
+${state !== 'pending' ? '<span style="color:var(--green)">\u2713 Image built: sha256:a1b2c3d4e5f6... (86s)</span>' : ''}`,
+
+    gate4: `<span style="color:var(--accent)">\u25B6 Running Trivy v0.58.2...</span>
+<span style="color:var(--text-dim)">  Target: ${run.app}:${run.version}</span>
+<span style="color:var(--text-dim)">  DB: 2024-01-15T00:00:00Z</span>
+<span style="color:var(--text-dim)">  Severity: CRITICAL (fail), HIGH, MEDIUM, LOW</span>
+
+  Scanning OS packages...
+  Scanning language packages...
+
+  Total: ${run.findings.critical + run.findings.high + run.findings.medium + run.findings.low} vulnerabilities
+    CRITICAL: ${run.findings.critical}
+    HIGH:     ${run.findings.high}
+    MEDIUM:   ${run.findings.medium}
+    LOW:      ${run.findings.low}
+
+${state === 'passed' ? '<span style="color:var(--green)">\u2713 Container scan passed (0 CRITICAL). Output: trivy.sarif</span>' : '<span style="color:var(--red)">\u2717 CRITICAL vulnerabilities found! Pipeline aborted.</span>'}`,
+
+    gate2: `<span style="color:var(--accent)">\u25B6 Running Syft v1.18.1...</span>
+<span style="color:var(--text-dim)">  Source: ${run.app}:${run.version}</span>
+
+  Cataloging packages...
+    Found 247 packages (apk: 42, npm: 189, go: 16)
+
+  Generating SPDX JSON...
+    Output: sbom-spdx.json (1.2 MB)
+
+  Generating CycloneDX JSON...
+    Output: sbom-cyclonedx.json (890 KB)
+
+<span style="color:var(--green)">\u2713 SBOM generated successfully (9.1s)</span>`,
+
+    gate6: `<span style="color:var(--accent)">\u25B6 ISSM Review Gate</span>
+<span style="color:var(--text-dim)">  Environment: issm-review</span>
+<span style="color:var(--text-dim)">  Required reviewers: ISSM, Security Team</span>
+
+  Scan artifacts available for review:
+    - SAST report (Semgrep): 0 errors
+    - Secrets scan (Gitleaks): 0 secrets
+    - Container scan (Trivy): ${run.findings.critical} CRITICAL, ${run.findings.high} HIGH
+    - SBOM: 247 packages cataloged
+
+${state === 'passed' ? `  <span style="color:var(--cyan)">Approved by: J. Smith (ISSM)</span>
+  <span style="color:var(--cyan)">Approved at: 14:27:12 UTC</span>
+<span style="color:var(--green)">\u2713 ISSM review passed</span>` : state === 'running' ? '<span style="color:var(--yellow)">\u25CF Waiting for ISSM approval...</span>' : ''}`,
+
+    gate8: `<span style="color:var(--accent)">\u25B6 Pushing to Harbor...</span>
+<span style="color:var(--text-dim)">  Registry: harbor.sre.internal</span>
+<span style="color:var(--text-dim)">  Repository: team-alpha/${run.app}</span>
+<span style="color:var(--text-dim)">  Tag: ${run.version}</span>
+
+  Pushing layer sha256:a1b2... (12.4 MB)
+  Pushing layer sha256:c3d4... (45.2 MB)
+  Pushing layer sha256:e5f6... (2.1 MB)
+  Pushing config sha256:7890...
+  Pushing manifest
+
+  Harbor Trivy re-scan triggered...
+    0 CRITICAL, 0 HIGH
+
+<span style="color:var(--green)">\u2713 Image pushed and verified (33s)</span>`,
+
+    gate7: `<span style="color:var(--accent)">\u25B6 Signing with Cosign v2.4.1...</span>
+<span style="color:var(--text-dim)">  Image: harbor.sre.internal/team-alpha/${run.app}:${run.version}</span>
+
+  Signing image...
+    Pushing signature to harbor.sre.internal/team-alpha/${run.app}
+
+  Attaching SBOM attestation (SPDX)...
+    Pushing attestation
+
+  Attaching SLSA provenance...
+    Pushing provenance
+
+<span style="color:var(--green)">\u2713 Image signed + 2 attestations attached (17s)</span>`,
+
+    deploy: `<span style="color:var(--accent)">\u25B6 Updating GitOps repo...</span>
+<span style="color:var(--text-dim)">  Repo: sre-platform</span>
+<span style="color:var(--text-dim)">  File: apps/tenants/team-alpha/apps/${run.app}.yaml</span>
+<span style="color:var(--text-dim)">  New tag: ${run.version}</span>
+
+  Committed: Update ${run.app} to ${run.version}
+
+  Flux reconciliation:
+    Kustomization sre-tenants: Applied revision main@sha256:...
+    HelmRelease ${run.app}: Release reconciled
+    Kyverno: Image signature verified \u2713
+    Pods: 2/2 Ready
+
+<span style="color:var(--green)">\u2713 Deployment complete</span>`,
+
+    gate5: `<span style="color:var(--accent)">\u25B6 Running OWASP ZAP v2.15.0...</span>
+<span style="color:var(--text-dim)">  Target: https://${run.app}.apps.sre.example.com</span>
+<span style="color:var(--text-dim)">  Mode: Baseline (passive scan)</span>
+
+  Spidering target...
+    Found 23 URLs
+
+  Passive scanning...
+    Checking for XSS...
+    Checking for SQL Injection...
+    Checking for CSRF...
+    Checking for security headers...
+
+  Results:
+    HIGH:   0
+    MEDIUM: 2
+    LOW:    10
+    INFO:   5
+
+  MEDIUM alerts:
+    - Missing Content-Security-Policy header
+    - Cookie without SameSite attribute
+
+<span style="color:var(--green)">\u2713 DAST scan complete (0 HIGH). Report: zap-report.html</span>`
+  };
+
+  return logs[gateId] || '<span style="color:var(--text-dim)">No output available</span>';
+}
+
+// =====================================================
+// SIMULATION
+// =====================================================
+
+let simRunning = false;
+
+function simulateRun() {
+  if (simRunning) return;
+  simRunning = true;
+  currentRun = 'demo-success'; // Will animate to success
+
+  // Start with everything pending
+  const simStates = {};
+  GATES.forEach(g => simStates[g.id] = 'pending');
+
+  const simRun = {
+    ...RUNS['demo-success'],
+    states: simStates,
+    status: 'running',
+    duration: '0s...',
+    findings: { critical:0, high:0, medium:0, low:0 },
+    timeline: [
+      { time: new Date().toLocaleTimeString('en-US',{hour12:false}), text: 'Pipeline triggered — Simulation', state: 'active' }
+    ]
+  };
+
+  RUNS['_sim'] = simRun;
+  currentRun = '_sim';
+  document.getElementById('runSelect').value = 'demo-success';
+  render();
+
+  const gateOrder = ['gate3','gate1','build','gate4','gate2','gate6','gate8','gate7','deploy','gate5'];
+  let i = 0;
+
+  function nextGate() {
+    if (i >= gateOrder.length) {
+      simRun.status = 'passed';
+      simRun.duration = '8m 42s';
+      simRun.findings = { critical:0, high:0, medium:3, low:12 };
+      render();
+      simRunning = false;
+      return;
+    }
+    const gid = gateOrder[i];
+    const gate = GATES.find(g => g.id === gid);
+
+    simRun.states[gid] = 'running';
+    simRun.timeline.push({
+      time: new Date().toLocaleTimeString('en-US',{hour12:false}),
+      text: `${gate.num > 0 ? 'GATE '+gate.num+': ' : ''}${gate.name} — Running...`,
+      state: 'active'
+    });
+    render();
+
+    const delay = gid === 'gate6' ? 2500 : gid === 'build' ? 1500 : gid === 'deploy' ? 1800 : 800;
+
+    setTimeout(() => {
+      simRun.states[gid] = 'passed';
+      simRun.timeline[simRun.timeline.length - 1].state = 'done';
+      simRun.timeline[simRun.timeline.length - 1].text = `${gate.num > 0 ? 'GATE '+gate.num+': ' : ''}${gate.name} — Passed`;
+      if (gid === 'gate4') {
+        simRun.findings = { critical:0, high:0, medium:3, low:12 };
+      }
+      i++;
+      render();
+      setTimeout(nextGate, 200);
+    }, delay);
+  }
+
+  setTimeout(nextGate, 500);
+}
+
+function resetPipeline() {
+  simRunning = false;
+  delete RUNS['_sim'];
+  selectedGate = null;
+  currentRun = document.getElementById('runSelect').value;
+  closeDetail();
+  render();
+}
+
+// =====================================================
+// EVENTS
+// =====================================================
+
+document.getElementById('runSelect').addEventListener('change', function() {
+  simRunning = false;
+  delete RUNS['_sim'];
+  currentRun = this.value;
+  selectedGate = null;
+  closeDetail();
+  render();
+});
+
+// Init
+render();
+</script>
+</body>
+</html>

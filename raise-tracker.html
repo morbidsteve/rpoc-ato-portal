@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 RPOC Tracker — SRE Platform</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* --- Top Bar --- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--surface-hover); color: var(--text);
+    font-size: 18px; text-decoration: none; transition: all 0.15s;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+  .topbar h1 { font-size: 18px; font-weight: 600; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-stats {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+  }
+  .topbar-stat { display: flex; align-items: center; gap: 6px; }
+  .topbar-stat .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* --- Layout --- */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 57px);
+  }
+
+  /* --- Sidebar --- */
+  .sidebar {
+    width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .sidebar-section {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .sidebar-item {
+    padding: 10px 16px 10px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-item:hover { background: var(--surface2); }
+  .sidebar-item.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+  }
+  .sidebar-item .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .sidebar-item .label { flex: 1; }
+  .sidebar-item .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  /* --- Main Content --- */
+  .main {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+    max-width: 960px;
+  }
+
+  /* --- Overview Cards --- */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .overview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .overview-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .overview-card .number {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .overview-card .card-label {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .overview-card .progress-bar {
+    margin-top: 12px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .overview-card .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  /* --- Section Page --- */
+  .section-header {
+    margin-bottom: 24px;
+  }
+  .section-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .section-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* --- Requirement Card --- */
+  .req-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .req-card:hover { border-color: var(--accent); }
+  .req-card-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .req-card-header .chevron {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+  }
+  .req-card.open .chevron { transform: rotate(90deg); }
+  .req-id {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .req-title { flex: 1; font-size: 14px; font-weight: 500; }
+  .req-status {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .status-done { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .status-partial { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .status-missing { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+  .status-process { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+
+  .req-card-body {
+    display: none;
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .req-card.open .req-card-body { display: block; padding-top: 16px; }
+
+  .req-detail-section {
+    margin-bottom: 16px;
+  }
+  .req-detail-section:last-child { margin-bottom: 0; }
+  .req-detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .req-detail-text {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .req-detail-text code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+  }
+  .req-detail-text ul {
+    padding-left: 20px;
+    margin-top: 4px;
+  }
+  .req-detail-text li { margin-bottom: 4px; }
+
+  .what-you-have {
+    background: rgba(52, 211, 153, 0.08);
+    border-left: 3px solid var(--green);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .what-you-need {
+    background: rgba(248, 113, 113, 0.08);
+    border-left: 3px solid var(--red);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .what-you-partial {
+    background: rgba(251, 191, 36, 0.08);
+    border-left: 3px solid var(--yellow);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  /* --- Phase Timeline --- */
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .phase-card h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .phase-card .phase-desc {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .phase-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--surface2);
+  }
+  .phase-step-num {
+    width: 28px; height: 28px;
+    background: var(--surface2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+  .phase-step-content { flex: 1; }
+  .phase-step-title { font-size: 14px; font-weight: 600; }
+  .phase-step-detail { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+
+  /* --- Filter bar --- */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+
+  /* --- Scrollbar --- */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <h1><span>RAISE 2.0</span> RPOC Readiness Tracker</h1>
+  </div>
+  <div class="topbar-stats" id="topbar-stats"></div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const STATUS = { DONE: 'done', PARTIAL: 'partial', MISSING: 'missing', PROCESS: 'process' };
+const STATUS_LABELS = { done: 'Done', partial: 'Partial', missing: 'Missing', process: 'Process' };
+const STATUS_COLORS = { done: '#34d399', partial: '#fbbf24', missing: '#f87171', process: '#a78bfa' };
+
+const rpocRequirements = [
+  {
+    id: 'RPOC-1', title: 'Current Authorization to Operate (ATO)',
+    status: STATUS.PROCESS,
+    raise: 'RPOC must have a current Authorization to Operate (ATO).',
+    have: 'Full NIST 800-53 control mapping (47/47 controls), OSCAL SSP, STIG checklists, compliance scanner CronJob.',
+    need: 'File RMF package in eMASS/MCAST. Get AO to review and issue ATO. This is the biggest process hurdle — everything else feeds into this.',
+    nist: ['CA-6', 'CA-2']
+  },
+  {
+    id: 'RPOC-2', title: 'Host Containerized Applications',
+    status: STATUS.DONE,
+    raise: 'RPOC must support the hosting of Containerized Applications.',
+    have: 'RKE2 Kubernetes cluster on Rocky Linux 9 (STIG-hardened). 3 nodes (1 server + 2 agents). OCI-compliant container runtime.',
+    need: null,
+    nist: ['CM-2']
+  },
+  {
+    id: 'RPOC-3', title: 'Container Orchestration',
+    status: STATUS.DONE,
+    raise: 'RPOC must support the Orchestration of Containerized Applications.',
+    have: 'RKE2 (DISA STIG-certified K8s distribution), Flux CD for GitOps, Helm charts for app deployment, tenant onboarding automation.',
+    need: null,
+    nist: ['CM-2', 'CM-3']
+  },
+  {
+    id: 'RPOC-4', title: 'Continuous Monitoring (CONMON)',
+    status: STATUS.DONE,
+    raise: 'RPOC must support Continuous Monitoring — health, performance, reliability, and security of applications and infrastructure.',
+    have: 'Prometheus + Grafana (10 dashboards), Loki + Alloy (logging), Tempo (tracing), NeuVector (runtime security), 30+ PrometheusRules, AlertManager with Slack/PagerDuty/email.',
+    need: null,
+    nist: ['CA-7', 'SI-4', 'AU-6']
+  },
+  {
+    id: 'RPOC-5', title: 'Execute Security Gates',
+    status: STATUS.DONE,
+    raise: 'RPOC must support the execution of the Security Gates (GATE 1-8) in CI/CD pipelines.',
+    have: 'All 8 gates implemented: GATE 1 (Semgrep SAST), GATE 2 (Syft SBOM), GATE 3 (Gitleaks secrets), GATE 4 (Trivy CSS), GATE 5 (ZAP DAST), GATE 6 (ISSM manual review), GATE 7 (Cosign signing), GATE 8 (Harbor storage).',
+    need: null,
+    nist: ['SA-11', 'RA-5']
+  },
+  {
+    id: 'RPOC-6', title: 'Maintain POA&M',
+    status: STATUS.DONE,
+    raise: 'RPOC must maintain a Plan of Action & Milestones (POA&M) for the RPOC and all hosted applications.',
+    have: 'POA&M template created at compliance/raise/poam-template.md. Tracks findings by severity with remediation timelines (CRITICAL: 7d, HIGH: 21d). Automated data from Trivy, Semgrep, ZAP, NeuVector, Kyverno.',
+    need: null,
+    nist: ['CA-5', 'PM-4']
+  },
+  {
+    id: 'RPOC-7', title: 'Quarterly Review Support',
+    status: STATUS.DONE,
+    raise: 'RPOC must support the Quarterly Review with the SCA and AO offices. Reviews cover: Security Plan, SAP, PIA, POA&M, app deployment/removal report, vuln reports, deployment artifacts (STIG, SAST, DAST, CSS, SBOM).',
+    have: 'All 7 QREV templates created in compliance/raise/quarterly-review/ (QREV-1 through QREV-7). Covers Security Plan, SAP, PIA, POA&M, application report, vulnerability report, and deployment artifacts.',
+    need: null,
+    nist: ['CA-2', 'CA-7']
+  },
+  {
+    id: 'RPOC-8', title: 'CI/CD Tools Certified by TA',
+    status: STATUS.PARTIAL,
+    raise: 'RPOC must ensure all CI/CD pipeline tools have been assessed for usability and functional capability by the Technical Authority (TA).',
+    have: 'CI/CD Tools Certification Request prepared at compliance/raise/cicd-tools-certification.md. Lists all 8 gate tools + versions + supporting tools. Ready for TA submission.',
+    need: 'Submit the certification request to the Technical Authority. Once signed, upload to RMF package.',
+    nist: ['SA-11', 'CM-7']
+  },
+  {
+    id: 'RPOC-9', title: 'Current RMF Package',
+    status: STATUS.MISSING,
+    raise: 'RPOC must ensure the RPOC RMF package remains current.',
+    have: 'OSCAL SSP (compliance/oscal/ssp.json), NIST control mapping (47 controls), STIG checklists, CMMC self-assessment.',
+    need: 'Register in eMASS or MCAST. Upload all artifacts. Indicate RPOC designation in System Description. Mark inheritable security controls.',
+    nist: ['CA-6', 'PL-2']
+  },
+  {
+    id: 'RPOC-10', title: 'Service Level Agreements (SLAs)',
+    status: STATUS.PARTIAL,
+    raise: 'RPOC must maintain SLAs with Application Owners covering: lifecycle responsibility, vuln remediation timelines, deployment gates, documentation requirements.',
+    have: 'SLA template created at compliance/raise/sla-template.md. Based on RAISE Appendix C with all 21 items. Includes remediation timelines (CRITICAL: 7d, HIGH: 21d), all 8 security gates, documentation requirements.',
+    need: 'Get SLAs signed for each onboarded app team. Fill in organization-specific details (ISSM name, eMASS ID).',
+    nist: ['SA-9']
+  },
+  {
+    id: 'RPOC-11', title: 'Cybersecurity Dashboards',
+    status: STATUS.DONE,
+    raise: 'RPOC must provide Cyber Security Dashboard(s) for auditing purposes.',
+    have: '10 Grafana dashboards covering: cluster health, namespace resources, Istio traffic, Kyverno violations, NeuVector alerts, Flux status, certificate expiry. All behind Keycloak SSO.',
+    need: null,
+    nist: ['AU-6', 'CA-7']
+  },
+  {
+    id: 'RPOC-12', title: 'Container Repository',
+    status: STATUS.DONE,
+    raise: 'RPOC must provide a Container Repository.',
+    have: 'Harbor 1.16.3 with 4 projects (library, team-alpha, team-beta, platform). Robot accounts for CI/CD. Trivy scanning on push. Retention policies.',
+    need: null,
+    nist: ['CM-8', 'SI-7']
+  },
+  {
+    id: 'RPOC-13', title: 'Code Repository',
+    status: STATUS.DONE,
+    raise: 'RPOC must provide a Code Repository.',
+    have: 'GitHub (morbidsteve). Full GitOps workflow with Flux CD watching the repo.',
+    need: null,
+    nist: ['CM-3', 'SA-10']
+  },
+  {
+    id: 'RPOC-14', title: 'Container Signing and Verification',
+    status: STATUS.DONE,
+    raise: 'RPOC must perform Container Signing and verification. The RPOC ISSM must review the container before signing.',
+    have: 'Cosign keypair generated. CI pipeline signs images after build. Kyverno verify-image-signatures policy (currently in Audit mode).',
+    need: 'Consider moving Kyverno image verification from Audit to Enforce once all images are signed. Add ISSM review step before signing.',
+    nist: ['SI-7', 'SA-10']
+  },
+  {
+    id: 'RPOC-15', title: 'Retain All Deployed Images',
+    status: STATUS.DONE,
+    raise: 'RPOC must retain every image that is currently deployed.',
+    have: 'Harbor retention policies configured. Garbage collection CronJob. Images stored with full tags (no :latest allowed by Kyverno policy).',
+    need: null,
+    nist: ['AU-11', 'CM-8']
+  },
+  {
+    id: 'RPOC-16', title: 'Support Penetration Testing',
+    status: STATUS.PARTIAL,
+    raise: 'RPOC must support Penetration Testing as requested by AO.',
+    have: 'NeuVector vulnerability scanning, Trivy container scanning, DAST pipeline (once added).',
+    need: 'Formal pen test process documentation. Coordinate with AO on scheduling. May need to engage third-party assessors.',
+    nist: ['CA-8', 'RA-5']
+  },
+  {
+    id: 'RPOC-17', title: 'CI/CD Pipeline Tools',
+    status: STATUS.DONE,
+    raise: 'RPOC must provide CI/CD pipeline tools.',
+    have: 'GitHub Actions workflows (build-scan-deploy, update-gitops, preview-environment). GitLab CI equivalent. Flux CD for continuous deployment.',
+    need: null,
+    nist: ['SA-11', 'CM-3']
+  },
+  {
+    id: 'RPOC-18', title: 'Categorization Level Enforcement',
+    status: STATUS.DONE,
+    raise: 'RPOC must only host applications at their approved categorization level and below.',
+    have: 'Security categorization document at compliance/raise/security-categorization.md (M-M-M). Kyverno policy require-security-categorization enforces sre.io/security-categorization label on all tenant namespaces. Only "low" and "moderate" values allowed.',
+    need: null,
+    nist: ['AC-3', 'SC-2']
+  },
+  {
+    id: 'RPOC-19', title: 'Ongoing Vulnerability Scans',
+    status: STATUS.DONE,
+    raise: 'RPOC must perform ongoing vulnerability scans on all running containers and/or images.',
+    have: 'NeuVector runtime scanning on all namespaces. Harbor + Trivy scanning on push. Compliance scanner CronJob (daily). Grafana vulnerability dashboards.',
+    need: null,
+    nist: ['RA-5', 'SI-2']
+  },
+  {
+    id: 'RPOC-20', title: 'CI/CD Meets Security Gates',
+    status: STATUS.DONE,
+    raise: 'RPOC must ensure that the CI/CD pipeline meets the Security Gates (GATE 1-8).',
+    have: 'All 8 gates implemented in both GitHub Actions and GitLab CI pipelines. See ci/github-actions/build-scan-deploy.yaml and ci/gitlab-ci/build-scan-deploy.gitlab-ci.yml.',
+    need: null,
+    nist: ['SA-11']
+  },
+  {
+    id: 'RPOC-21', title: 'Application Deployment Process',
+    status: STATUS.DONE,
+    raise: 'RPOC must define an application deployment process(es).',
+    have: 'Full GitOps deployment via Flux. Tenant onboarding script. Helm chart templates (sre-web-app, sre-worker, sre-cronjob). Developer guide documentation.',
+    need: null,
+    nist: ['CM-3', 'SA-10']
+  },
+  {
+    id: 'RPOC-22', title: 'All Releases Pass CI/CD Pipeline',
+    status: STATUS.DONE,
+    raise: 'RPOC must ensure every release candidate container passes the CI/CD pipeline.',
+    have: 'Kyverno enforces signed images (verify-image-signatures policy). Only images from Harbor allowed (restrict-image-registries policy). No :latest tags (disallow-latest-tag policy).',
+    need: null,
+    nist: ['CM-3', 'SI-7']
+  },
+  {
+    id: 'RPOC-23', title: 'Block Non-Compliant Deploys',
+    status: STATUS.DONE,
+    raise: 'RPOC must not allow production deployment of any application(s) that do not meet the SLA requirements.',
+    have: 'Kyverno blocks unsigned images, non-Harbor images, :latest tags, privileged containers, missing labels, missing security contexts, missing security categorization. CI pipeline fails on CRITICAL vulns (Trivy), secrets (Gitleaks), SAST errors (Semgrep). ISSM review gate prevents signing without approval. SLA template defines all requirements.',
+    need: null,
+    nist: ['CM-3', 'SA-11']
+  },
+  {
+    id: 'RPOC-24', title: 'Vulnerability Dashboards for App Owners',
+    status: STATUS.DONE,
+    raise: 'RPOC must provide vulnerability reports and/or vulnerability dashboards for Application Owner review.',
+    have: 'Grafana dashboards (Kyverno violations, NeuVector alerts, cluster health). Harbor vulnerability scan reports per project. AlertManager notifications.',
+    need: null,
+    nist: ['RA-5', 'SI-5']
+  }
+];
+
+const securityGates = [
+  {
+    id: 'GATE-1', title: 'Static Application Security Testing (SAST)',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide Static Application Security Testing (SAST) for available source code. Note: SAST is for custom source code — not required for COTS.',
+    have: 'Semgrep integrated into both GitHub Actions and GitLab CI pipelines. Runs p/owasp-top-ten, p/security-audit, and p/secrets rulesets. SARIF output uploaded to GitHub Security tab.',
+    need: null,
+    tool: 'Semgrep',
+    toolUrl: 'https://github.com/semgrep/semgrep',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-2', title: 'Software Bill of Materials (SBOM)',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide Dependency List or Software Bill of Materials (SBOM).',
+    have: 'Syft generates SPDX JSON and CycloneDX JSON in both GitHub Actions and GitLab CI. SBOMs are attached as Cosign attestations to the image in Harbor.',
+    need: null,
+    tool: 'Syft',
+    toolUrl: 'https://github.com/anchore/syft',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-3', title: 'Secrets/Keys Detection',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide Secrets/Keys Detection to prevent accidental credential leakage into container images or source code.',
+    have: 'Gitleaks integrated into both GitHub Actions and GitLab CI pipelines. Scans full git history and working directory. Fails pipeline on any detected secret. JSON report stored as artifact.',
+    need: null,
+    tool: 'Gitleaks',
+    toolUrl: 'https://github.com/gitleaks/gitleaks',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-4', title: 'Container Security Scanning (CSS)',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide Container Security Scanning.',
+    have: 'Trivy scans images in CI pipeline (fail on CRITICAL). Harbor also scans on push. SARIF reports uploaded to GitHub Security tab. NeuVector scans running containers.',
+    need: null,
+    tool: 'Trivy + NeuVector',
+    toolUrl: 'https://github.com/aquasecurity/trivy',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-5', title: 'Dynamic Application Security Testing (DAST)',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide Dynamic Application Security Testing (DAST) — testing the running application for vulnerabilities like XSS, SQL injection, CSRF, etc.',
+    have: 'OWASP ZAP integrated as reusable workflow (ci/github-actions/dast-scan.yaml). Supports baseline (passive) and full (active) scan modes. Runs against preview environments on PRs and against deployed apps after release. SARIF output for GitHub Security tab. GitLab CI equivalent included.',
+    need: null,
+    tool: 'OWASP ZAP',
+    toolUrl: 'https://github.com/zaproxy/zaproxy',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-6', title: 'RPOC ISSM Review Step',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must provide a step to allow the RPOC ISSM to review the scan results and security posture before the container is signed and released.',
+    have: 'GitHub Environment "issm-review" with required reviewers. Pipeline pauses after all scans (SAST, secrets, CSS, SBOM) and before image signing. ISSM reviews all artifacts then approves. GitLab equivalent uses "when: manual" stage.',
+    need: 'Configure the GitHub Environment: Settings > Environments > issm-review > Add required reviewers (your ISSM).',
+    tool: 'GitHub Environments / GitLab Manual Gate',
+    toolUrl: null,
+    effort: 'Done (config step remains)'
+  },
+  {
+    id: 'GATE-7', title: 'Sign Release Container Image',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must sign the release container image after all gates pass and ISSM review is complete.',
+    have: 'Cosign signs images in CI pipeline. Keypair generated and stored. SLSA Level 2 provenance attestation also generated.',
+    need: null,
+    tool: 'Cosign',
+    toolUrl: 'https://github.com/sigstore/cosign',
+    effort: 'Done'
+  },
+  {
+    id: 'GATE-8', title: 'Store in Artifact Repository',
+    status: STATUS.DONE,
+    raise: 'CI/CD pipeline must store the release container image in an artifact repository.',
+    have: 'Harbor registry with 4 projects. Images pushed with full version tags. SBOMs and signatures stored as OCI artifacts alongside images. Retention policies configured.',
+    need: null,
+    tool: 'Harbor',
+    toolUrl: 'https://goharbor.io',
+    effort: 'Done'
+  }
+];
+
+const appOwnerRequirements = [
+  {
+    id: 'APPO-1', title: 'Responsible for Full SDLC',
+    status: STATUS.DONE,
+    raise: 'Application Owner is responsible for the entire Software Development Life Cycle (SDLC).',
+    have: 'CI/CD pipeline templates (GitHub Actions + GitLab CI), Helm chart templates, GitOps deployment process. App teams own their code, build, test, and deploy.',
+    need: null
+  },
+  {
+    id: 'APPO-2', title: 'Residual Risk Not Exceeding Moderate',
+    status: STATUS.PARTIAL,
+    raise: 'Application residual risk must not exceed the criteria outlined — all findings must be mitigated to Moderate or below.',
+    have: 'Trivy scanning (fail on CRITICAL), Kyverno enforcement policies, NeuVector runtime protection.',
+    need: 'Formal risk scoring process. Define what constitutes exceeding Moderate residual risk for your context. Automate blocking deploys that exceed threshold.'
+  },
+  {
+    id: 'APPO-3', title: 'Register in DADMS',
+    status: STATUS.PROCESS,
+    raise: 'Applications must be registered in DADMS or equivalent system.',
+    have: 'Nothing — this is a Navy-specific registration system.',
+    need: 'Register each application in DADMS (DoD Application & Data Management System). Get DADMS ID.'
+  },
+  {
+    id: 'APPO-4', title: 'Provide DADMS/DITPRDON IDs',
+    status: STATUS.PROCESS,
+    raise: 'Must provide the DADMS ID and DITPRDON ID or equivalent system tracking ID.',
+    have: 'Nothing — these are obtained during registration.',
+    need: 'After registering in DADMS, provide tracking IDs to RPOC ISSM.'
+  },
+  {
+    id: 'APPO-5', title: 'Security Categorization Form (SCF)',
+    status: STATUS.PROCESS,
+    raise: 'Must provide Security Categorization Form (SCF) where applicable.',
+    have: 'Compliance artifacts exist (OSCAL SSP, NIST mapping).',
+    need: 'Complete SCF for each application. This defines the C-I-A impact levels (e.g., Moderate-Moderate-Moderate).'
+  },
+  {
+    id: 'APPO-6', title: 'Privacy Impact Assessment (PIA)',
+    status: STATUS.PARTIAL,
+    raise: 'Must provide a Privacy Impact Assessment (PIA) Form.',
+    have: 'PIA template created at compliance/raise/quarterly-review/QREV-3-privacy-impact-assessment.md. Platform-level PIA documents that SRE itself does not collect PII.',
+    need: 'Each application that handles PII must complete their own PIA. Use the template as a starting point.'
+  },
+  {
+    id: 'APPO-7', title: 'Remediate Findings Per Timeline',
+    status: STATUS.PARTIAL,
+    raise: 'Must review and remediate, or mitigate, all findings per the timelines: HIGH findings within 21 calendar days.',
+    have: 'AlertManager sends vulnerability notifications. Grafana dashboards show findings.',
+    need: 'Formal vulnerability tracking workflow. SLA enforcement: auto-notify at 14 days, escalate at 21 days, isolate workload at 21+ days if not remediated.'
+  },
+  {
+    id: 'APPO-8', title: 'Provide Mitigation Statements',
+    status: STATUS.DONE,
+    raise: 'Must provide the RPOC ISSM mitigation or remediation statements for all findings.',
+    have: 'Mitigation statement template at compliance/raise/app-owner-package/mitigation-statement-template.md. Covers: finding details, applicability assessment, compensating controls, residual risk assessment, remediation plan with milestones, ISSM review section.',
+    need: null
+  },
+  {
+    id: 'APPO-9', title: 'Pass All Security Gates',
+    status: STATUS.DONE,
+    raise: 'Application deployments must successfully pass through all Security Gates.',
+    have: 'All 8 gates implemented in CI/CD pipeline. Kyverno enforces signed images at admission. Pipeline blocks on CRITICAL vulnerabilities, secrets, and SAST findings.',
+    need: null
+  },
+  {
+    id: 'APPO-10', title: 'Maintain SRG and STIG',
+    status: STATUS.PARTIAL,
+    raise: 'Must provide and continuously maintain a complete Security Requirements Guide (SRG) and Security Technical Implementation Guide (STIG).',
+    have: 'Platform-level STIGs exist (Rocky Linux 9, RKE2). STIG checklists in compliance/stig-checklists/.',
+    need: 'Application-specific STIG checklists. Template for app teams to document their STIG compliance. This is per-application, not platform-level.'
+  },
+  {
+    id: 'APPO-11', title: 'Notify ISSM of Major Changes',
+    status: STATUS.PARTIAL,
+    raise: 'Must notify the RPOC ISSM when new application features or major updates are implemented.',
+    have: 'Git PR workflow provides change visibility. Flux audit trail.',
+    need: 'Formal notification process. Could be automated: PR labels trigger ISSM notification, or a "major change" flag in the deployment pipeline.'
+  },
+  {
+    id: 'APPO-12', title: 'Respond to RPOC Notifications',
+    status: STATUS.PARTIAL,
+    raise: 'Must respond to all notifications from the RPOC per their SLA.',
+    have: 'AlertManager sends notifications via Slack/email.',
+    need: 'Formal SLA response time requirements. Escalation process if no response within SLA window.'
+  },
+  {
+    id: 'APPO-13', title: 'Coordinate CI/CD with ISSM',
+    status: STATUS.DONE,
+    raise: 'Must coordinate with RPOC ISSM to implement their CI/CD pipeline.',
+    have: 'CI/CD templates provided (GitHub Actions + GitLab CI). Pipeline follows RAISE security gates. Onboarding script automates setup.',
+    need: null
+  },
+  {
+    id: 'APPO-14', title: 'Responsible for CI/CD Implementation',
+    status: STATUS.DONE,
+    raise: 'Is responsible for the CI/CD pipeline implementation, per the SLA.',
+    have: 'Reusable workflow templates. App owners call the shared workflows with their specific values.',
+    need: null
+  },
+  {
+    id: 'APPO-15', title: 'Coordinate New Tools with ISSM',
+    status: STATUS.DONE,
+    raise: 'Must coordinate with RPOC ISSM if new tools or services are required.',
+    have: 'Platform provides standard toolset. New tools require PR review. Kyverno restricts image registries.',
+    need: null
+  },
+  {
+    id: 'APPO-16', title: 'Build Required Documentation',
+    status: STATUS.DONE,
+    raise: 'Must build and maintain: Vulnerability Management Plan, Application Architecture, README, CHANGELOG, Aggregated scan results (SAST, DAST, CSS, SBOM).',
+    have: 'Full app owner package at compliance/raise/app-owner-package/: vulnerability-management-plan-template.md, application-architecture-template.md, changelog-template.md, mitigation-statement-template.md, app-stig-checklist-template.md. Scan results auto-generated by CI pipeline.',
+    need: null
+  },
+  {
+    id: 'APPO-17', title: 'Provide Docs to ISSM Per SLA',
+    status: STATUS.DONE,
+    raise: 'Must provide the required documentation to the RPOC ISSM as agreed upon in the SLA.',
+    have: 'SLA template includes documentation delivery schedule (Section 18). Most artifacts auto-generated: scan results from CI, SBOMs attached to images, SLSA provenance. ISSM review gate (GATE 6) ensures human oversight of every release.',
+    need: null
+  },
+  {
+    id: 'APPO-18', title: 'Signed SLA with RPOC Owner',
+    status: STATUS.PARTIAL,
+    raise: 'Must have a signed Service Level Agreement (SLA) with the RPOC Owner.',
+    have: 'SLA template created at compliance/raise/sla-template.md with all 21 RAISE requirements, remediation timelines, documentation requirements, and signature blocks.',
+    need: 'Get SLAs signed for each onboarded tenant/application team.'
+  },
+  {
+    id: 'APPO-19', title: 'Every Release Passes Pipeline',
+    status: STATUS.DONE,
+    raise: 'Must ensure every release candidate container passes the CI/CD pipeline.',
+    have: 'Kyverno verify-image-signatures blocks unsigned images. restrict-image-registries blocks non-Harbor images. disallow-latest-tag blocks unversioned images.',
+    need: null
+  }
+];
+
+const phases = [
+  {
+    title: 'Phase 1: Close Security Gate Gaps',
+    desc: 'Add the 4 missing gates to your CI/CD pipeline. This is required before TA certification.',
+    color: '#f87171',
+    steps: [
+      { title: 'Add SAST (Semgrep)', detail: 'Add to GitHub Actions + GitLab CI. Scan source code for vulnerabilities. ~15 lines of config.' },
+      { title: 'Add Secrets Detection (Gitleaks)', detail: 'Scan for leaked secrets, API keys, tokens in source and container filesystem.' },
+      { title: 'Add DAST (OWASP ZAP)', detail: 'Run against preview environment. Baseline scan for XSS, SQLi, CSRF. Hardest gate to automate.' },
+      { title: 'Add ISSM Review Gate', detail: 'GitHub Environment with required reviewer. Pipeline pauses before signing. ISSM approves after reviewing all scan results.' }
+    ]
+  },
+  {
+    title: 'Phase 2: Process Documentation',
+    desc: 'Create the formal documents and templates that the AO, SCA, and ISSM need.',
+    color: '#fbbf24',
+    steps: [
+      { title: 'POA&M Template', detail: 'Track all findings, milestones, remediation status. Can start as a spreadsheet.' },
+      { title: 'SLA Template', detail: 'Based on RAISE Appendix C. Cover: vuln timelines, documentation requirements, notification SLAs.' },
+      { title: 'Quarterly Review Package Templates', detail: 'Templates for all 7 QREV items: Security Plan, SAP, PIA, POA&M, app report, vuln report, deployment artifacts.' },
+      { title: 'CI/CD Tools Certification Request', detail: 'Fill out RAISE Appendix D. List all tools + versions. Submit to Technical Authority.' },
+      { title: 'App Owner Documentation Templates', detail: 'Vulnerability Management Plan, CHANGELOG, architecture diagram, mitigation statement templates.' },
+      { title: 'Security Categorization', detail: 'Define C-I-A impact levels (e.g., M-M-M). Apply to RMF package.' }
+    ]
+  },
+  {
+    title: 'Phase 3: RMF Package & ATO',
+    desc: 'File the official RMF package and get the AO to designate you as an RPOC.',
+    color: '#a78bfa',
+    steps: [
+      { title: 'Register in eMASS/MCAST', detail: 'Create system entry. Get eMASS/MCAST ID.' },
+      { title: 'Upload Artifacts', detail: 'OSCAL SSP, STIG checklists, NIST control mapping, POA&M, CI/CD certification doc.' },
+      { title: 'Mark Inheritable Controls', detail: 'Select which security controls are inheritable by hosted applications.' },
+      { title: 'Submit RPOC Designation Request', detail: 'Indicate RPOC preference in System Description. List all authorized components.' },
+      { title: 'AO Review & Approval', detail: 'AO reviews inheritable controls (RMF Step 2), reviews TA certification, issues authorization.' },
+      { title: 'Schedule First Quarterly Review', detail: 'Coordinate with SCA and AO. Prepare QREV 1-7 artifacts.' }
+    ]
+  }
+];
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+let currentView = 'overview';
+let currentFilter = 'all';
+
+function countByStatus(items) {
+  const counts = { done: 0, partial: 0, missing: 0, process: 0 };
+  items.forEach(i => counts[i.status]++);
+  return counts;
+}
+
+function renderTopbarStats() {
+  const all = [...rpocRequirements, ...securityGates, ...appOwnerRequirements];
+  const c = countByStatus(all);
+  document.getElementById('topbar-stats').innerHTML = `
+    <div class="topbar-stat"><div class="dot" style="background:${STATUS_COLORS.done}"></div>${c.done} Done</div>
+    <div class="topbar-stat"><div class="dot" style="background:${STATUS_COLORS.partial}"></div>${c.partial} Partial</div>
+    <div class="topbar-stat"><div class="dot" style="background:${STATUS_COLORS.missing}"></div>${c.missing} Missing</div>
+    <div class="topbar-stat"><div class="dot" style="background:${STATUS_COLORS.process}"></div>${c.process} Process</div>
+  `;
+}
+
+function renderSidebar() {
+  const sections = [
+    { label: 'Overview', items: [{ id: 'overview', title: 'Dashboard', status: null }, { id: 'action-plan', title: 'Action Plan', status: null }] },
+    { label: 'RPOC Requirements (24)', items: rpocRequirements.map(r => ({ id: `rpoc-${r.id}`, title: `${r.id}: ${r.title}`, status: r.status, viewId: 'rpoc' })) },
+    { label: 'Security Gates (8)', items: securityGates.map(r => ({ id: `gate-${r.id}`, title: `${r.id}: ${r.title}`, status: r.status, viewId: 'gates' })) },
+    { label: 'App Owner Reqs (19)', items: appOwnerRequirements.map(r => ({ id: `appo-${r.id}`, title: `${r.id}: ${r.title}`, status: r.status, viewId: 'appo' })) }
+  ];
+
+  let html = '';
+  sections.forEach(s => {
+    html += `<div class="sidebar-section">${s.label}</div>`;
+    s.items.forEach(item => {
+      const isActive = currentView === item.id || currentView === item.viewId;
+      const dotColor = item.status ? STATUS_COLORS[item.status] : 'transparent';
+      html += `<div class="sidebar-item ${isActive ? 'active' : ''}" onclick="navigate('${item.viewId || item.id}', '${item.id}')">
+        <div class="status-dot" style="background:${dotColor}"></div>
+        <div class="label">${item.title}</div>
+      </div>`;
+    });
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function renderFilterBar(items) {
+  const c = countByStatus(items);
+  return `<div class="filter-bar">
+    <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">All (${items.length})</button>
+    <button class="filter-btn ${currentFilter === 'done' ? 'active' : ''}" onclick="setFilter('done')">Done (${c.done})</button>
+    <button class="filter-btn ${currentFilter === 'partial' ? 'active' : ''}" onclick="setFilter('partial')">Partial (${c.partial})</button>
+    <button class="filter-btn ${currentFilter === 'missing' ? 'active' : ''}" onclick="setFilter('missing')">Missing (${c.missing})</button>
+    <button class="filter-btn ${currentFilter === 'process' ? 'active' : ''}" onclick="setFilter('process')">Process (${c.process})</button>
+  </div>`;
+}
+
+function renderReqCard(r, scrollTo) {
+  const isOpen = scrollTo === r.id;
+  const statusClass = `status-${r.status}`;
+  let bodyHtml = `
+    <div class="req-detail-section">
+      <div class="req-detail-label">RAISE 2.0 Requirement</div>
+      <div class="req-detail-text">${r.raise}</div>
+    </div>`;
+
+  if (r.have) {
+    bodyHtml += `<div class="req-detail-section">
+      <div class="req-detail-label">What You Have</div>
+      <div class="what-you-have">${r.have}</div>
+    </div>`;
+  }
+  if (r.need) {
+    bodyHtml += `<div class="req-detail-section">
+      <div class="req-detail-label">What You Need</div>
+      <div class="what-you-need">${r.need}</div>
+    </div>`;
+  }
+  if (r.tool) {
+    bodyHtml += `<div class="req-detail-section">
+      <div class="req-detail-label">Recommended Tool</div>
+      <div class="req-detail-text"><code>${r.tool}</code> ${r.toolUrl ? `— <a href="${r.toolUrl}" target="_blank" style="color:var(--accent)">${r.toolUrl}</a>` : ''}</div>
+    </div>`;
+  }
+  if (r.effort) {
+    bodyHtml += `<div class="req-detail-section">
+      <div class="req-detail-label">Effort</div>
+      <div class="req-detail-text">${r.effort}</div>
+    </div>`;
+  }
+  if (r.nist) {
+    bodyHtml += `<div class="req-detail-section">
+      <div class="req-detail-label">NIST 800-53 Controls</div>
+      <div class="req-detail-text">${r.nist.map(n => `<code>${n}</code>`).join(' ')}</div>
+    </div>`;
+  }
+
+  return `<div class="req-card ${isOpen ? 'open' : ''}" id="card-${r.id}" data-status="${r.status}">
+    <div class="req-card-header" onclick="toggleCard('${r.id}')">
+      <span class="chevron">&#9654;</span>
+      <span class="req-id">${r.id}</span>
+      <span class="req-title">${r.title}</span>
+      <span class="req-status ${statusClass}">${STATUS_LABELS[r.status]}</span>
+    </div>
+    <div class="req-card-body">${bodyHtml}</div>
+  </div>`;
+}
+
+function renderOverview() {
+  const rpocCounts = countByStatus(rpocRequirements);
+  const gateCounts = countByStatus(securityGates);
+  const appoCounts = countByStatus(appOwnerRequirements);
+
+  const rpocPct = Math.round((rpocCounts.done / rpocRequirements.length) * 100);
+  const gatePct = Math.round((gateCounts.done / securityGates.length) * 100);
+  const appoPct = Math.round((appoCounts.done / appOwnerRequirements.length) * 100);
+  const totalDone = rpocCounts.done + gateCounts.done + appoCounts.done;
+  const totalAll = rpocRequirements.length + securityGates.length + appOwnerRequirements.length;
+  const totalPct = Math.round((totalDone / totalAll) * 100);
+
+  return `
+    <div class="section-header">
+      <h2>RPOC Readiness Dashboard</h2>
+      <p>Your SRE platform's progress toward RAISE 2.0 RPOC designation</p>
+    </div>
+    <div class="overview-grid">
+      <div class="overview-card" onclick="navigate('rpoc')">
+        <div class="number" style="color:${rpocPct >= 70 ? 'var(--green)' : rpocPct >= 40 ? 'var(--yellow)' : 'var(--red)'}">${rpocPct}%</div>
+        <div class="card-label">RPOC Requirements (${rpocCounts.done}/${rpocRequirements.length})</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${rpocPct}%;background:var(--green)"></div></div>
+      </div>
+      <div class="overview-card" onclick="navigate('gates')">
+        <div class="number" style="color:${gatePct >= 70 ? 'var(--green)' : gatePct >= 40 ? 'var(--yellow)' : 'var(--red)'}">${gatePct}%</div>
+        <div class="card-label">Security Gates (${gateCounts.done}/${securityGates.length})</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${gatePct}%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="overview-card" onclick="navigate('appo')">
+        <div class="number" style="color:${appoPct >= 70 ? 'var(--green)' : appoPct >= 40 ? 'var(--yellow)' : 'var(--red)'}">${appoPct}%</div>
+        <div class="card-label">App Owner Reqs (${appoCounts.done}/${appOwnerRequirements.length})</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${appoPct}%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="overview-card" onclick="navigate('action-plan')">
+        <div class="number" style="color:${totalPct >= 70 ? 'var(--green)' : totalPct >= 40 ? 'var(--yellow)' : 'var(--red)'}">${totalPct}%</div>
+        <div class="card-label">Overall (${totalDone}/${totalAll})</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${totalPct}%;background:var(--accent)"></div></div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:16px">
+      <h2>What is RAISE 2.0 / RPOC?</h2>
+    </div>
+    <div class="phase-card">
+      <p style="margin-bottom:12px"><strong>RAISE</strong> (Rapid Assess and Incorporate Software Engineering) is the Department of Navy's framework for rapidly deploying containerized applications to production under an existing ATO — without each app needing its own separate ATO.</p>
+      <p style="margin-bottom:12px">An <strong>RPOC</strong> (RAISE Platform of Choice) is a DevSecOps Platform (DSOP) that has been officially designated by an Authorizing Official (AO) as meeting all RAISE requirements. Once your platform is an RPOC:</p>
+      <ul style="padding-left:20px;margin-bottom:12px">
+        <li>Applications can be deployed to production <strong>without a separate ATO</strong></li>
+        <li>Apps inherit the platform's security controls</li>
+        <li>Only quarterly reviews are needed (not full ATO per app)</li>
+        <li>HIGH findings must be remediated within <strong>21 calendar days</strong></li>
+        <li>All residual risk must be <strong>Moderate or below</strong></li>
+      </ul>
+      <p style="color:var(--text-dim)">The path: <strong>DSOP</strong> (you are here) → <strong>TA certifies your CI/CD tools</strong> → <strong>AO approves inheritable controls</strong> → <strong>RPOC designation</strong></p>
+    </div>
+
+    <div class="section-header" style="margin-top:24px">
+      <h2>Quick Status by Category</h2>
+    </div>
+    ${renderQuickStatus('RPOC Requirements', rpocRequirements, rpocCounts)}
+    ${renderQuickStatus('Security Gates', securityGates, gateCounts)}
+    ${renderQuickStatus('App Owner Requirements', appOwnerRequirements, appoCounts)}
+  `;
+}
+
+function renderQuickStatus(label, items, counts) {
+  const missing = items.filter(i => i.status === STATUS.MISSING || i.status === STATUS.PROCESS);
+  const partial = items.filter(i => i.status === STATUS.PARTIAL);
+  let html = `<div class="phase-card" style="margin-bottom:12px">
+    <h3 style="font-size:16px;margin-bottom:8px">${label}</h3>
+    <div style="display:flex;gap:16px;margin-bottom:12px;font-size:13px">
+      <span style="color:var(--green)">${counts.done} Done</span>
+      <span style="color:var(--yellow)">${counts.partial} Partial</span>
+      <span style="color:var(--red)">${counts.missing} Missing</span>
+      <span style="color:var(--purple)">${counts.process} Process</span>
+    </div>`;
+  if (missing.length > 0) {
+    html += `<div style="font-size:13px;color:var(--text-dim);margin-bottom:6px">Needs attention:</div>`;
+    missing.forEach(i => {
+      html += `<div style="font-size:13px;padding:4px 0;display:flex;gap:8px;align-items:center;cursor:pointer" onclick="navigateToItem('${i.id}')">
+        <div class="status-dot" style="background:${STATUS_COLORS[i.status]};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+        <span style="color:var(--accent)">${i.id}</span> ${i.title}
+      </div>`;
+    });
+  }
+  if (partial.length > 0) {
+    partial.forEach(i => {
+      html += `<div style="font-size:13px;padding:4px 0;display:flex;gap:8px;align-items:center;cursor:pointer" onclick="navigateToItem('${i.id}')">
+        <div class="status-dot" style="background:${STATUS_COLORS[i.status]};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+        <span style="color:var(--accent)">${i.id}</span> ${i.title}
+      </div>`;
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderRequirementList(title, desc, items, scrollToId) {
+  const filtered = currentFilter === 'all' ? items : items.filter(i => i.status === currentFilter);
+  return `
+    <div class="section-header">
+      <h2>${title}</h2>
+      <p>${desc}</p>
+    </div>
+    ${renderFilterBar(items)}
+    ${filtered.map(r => renderReqCard(r, scrollToId)).join('')}
+  `;
+}
+
+function renderActionPlan() {
+  let html = `
+    <div class="section-header">
+      <h2>Action Plan — DSOP to RPOC</h2>
+      <p>Three phases to get your SRE platform designated as an RPOC</p>
+    </div>`;
+
+  phases.forEach((phase, pi) => {
+    html += `<div class="phase-card" style="border-left:4px solid ${phase.color}">
+      <h3 style="color:${phase.color}">Phase ${pi + 1}: ${phase.title.replace(/^Phase \d: /, '')}</h3>
+      <div class="phase-desc">${phase.desc}</div>
+      ${phase.steps.map((s, si) => `
+        <div class="phase-step">
+          <div class="phase-step-num">${si + 1}</div>
+          <div class="phase-step-content">
+            <div class="phase-step-title">${s.title}</div>
+            <div class="phase-step-detail">${s.detail}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  });
+  return html;
+}
+
+function render(scrollToId) {
+  let html = '';
+  switch (currentView) {
+    case 'overview':
+      html = renderOverview(); break;
+    case 'action-plan':
+      html = renderActionPlan(); break;
+    case 'rpoc':
+      html = renderRequirementList('RPOC Requirements', 'The 24 mandatory requirements for RAISE Platform of Choice designation (Table 2 of RAISE 2.0).', rpocRequirements, scrollToId); break;
+    case 'gates':
+      html = renderRequirementList('Security Gates', 'The 8 mandatory CI/CD pipeline security gates (Table 5 of RAISE 2.0). Every release must pass all gates.', securityGates, scrollToId); break;
+    case 'appo':
+      html = renderRequirementList('Application Owner Requirements', 'The 19 requirements for each application team deploying on the RPOC (Table 4 of RAISE 2.0).', appOwnerRequirements, scrollToId); break;
+  }
+  document.getElementById('main').innerHTML = html;
+  renderSidebar();
+  renderTopbarStats();
+
+  if (scrollToId) {
+    setTimeout(() => {
+      const el = document.getElementById('card-' + scrollToId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+}
+
+// ============================================================
+// INTERACTIONS
+// ============================================================
+
+function navigate(view, itemId) {
+  currentView = view;
+  currentFilter = 'all';
+  const scrollToId = itemId ? itemId.replace(/^(rpoc|gate|appo)-/, '') : null;
+  render(scrollToId);
+}
+
+function navigateToItem(id) {
+  if (id.startsWith('RPOC')) { currentView = 'rpoc'; }
+  else if (id.startsWith('GATE')) { currentView = 'gates'; }
+  else if (id.startsWith('APPO')) { currentView = 'appo'; }
+  currentFilter = 'all';
+  render(id);
+}
+
+function toggleCard(id) {
+  const el = document.getElementById('card-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  render();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>

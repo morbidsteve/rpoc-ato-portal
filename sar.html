@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — Security Assessment Report (DRAFT)</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --draft-bg: #7f1d1d;
+    --draft-border: #dc2626;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* DRAFT watermark */
+  body::before {
+    content: "DRAFT";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 200px;
+    font-weight: 900;
+    color: rgba(220, 38, 38, 0.04);
+    pointer-events: none;
+    z-index: 0;
+    letter-spacing: 40px;
+    white-space: nowrap;
+  }
+
+  /* DRAFT Banner */
+  .draft-banner {
+    background: linear-gradient(90deg, var(--draft-bg), #991b1b, var(--draft-bg));
+    border-bottom: 2px solid var(--draft-border);
+    padding: 10px 32px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fecaca;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .draft-banner .draft-icon { margin: 0 8px; }
+
+  /* Layout */
+  .app-container {
+    display: flex;
+    min-height: calc(100vh - 42px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 42px);
+    position: sticky;
+    top: 42px;
+  }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text-dim); font-size: 13px; font-weight: 500;
+    text-decoration: none; padding: 6px 12px; border-radius: 6px;
+    transition: all 0.15s; border: 1px solid transparent;
+  }
+  .back-link:hover { color: var(--accent); background: rgba(56,189,248,0.1); border-color: var(--accent); }
+
+  .sidebar-brand {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .r2-badge {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent), #0ea5e9);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: var(--bg);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 8px 0;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(56, 189, 248, 0.05);
+  }
+
+  .nav-item .nav-icon { width: 18px; text-align: center; font-size: 14px; }
+
+  .sidebar-actions {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .sidebar-btn:hover { background: var(--border); }
+
+  .sidebar-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .sidebar-btn.primary:hover { background: #7dd3fc; }
+
+  /* Main content */
+  .main-content {
+    flex: 1;
+    padding: 32px 40px;
+    max-width: 1200px;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Page header */
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .page-header h1 span { color: var(--accent); }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* Sections */
+  .sar-section {
+    margin-bottom: 40px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .section-header:hover { background: var(--surface2); }
+
+  .section-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header h2 .sec-num {
+    background: var(--accent);
+    color: var(--bg);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .section-chevron {
+    font-size: 18px;
+    color: var(--text-dim);
+    transition: transform 0.25s;
+  }
+
+  .section-header.collapsed .section-chevron {
+    transform: rotate(-90deg);
+  }
+
+  .section-header.collapsed + .section-body {
+    display: none;
+  }
+
+  .section-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 24px;
+  }
+
+  /* Info grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .info-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .info-card h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .info-card p, .info-card .editable {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .editable {
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    width: 100%;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+    min-height: 32px;
+  }
+
+  .editable:focus { border-color: var(--accent); }
+
+  .edit-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Stat cards */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Risk posture badge */
+  .risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .risk-badge.moderate {
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid var(--yellow);
+    color: var(--yellow);
+  }
+
+  /* Charts */
+  .chart-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .donut-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .donut-svg { width: 220px; height: 220px; }
+
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .donut-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .donut-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* Bar chart */
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .bar-label {
+    width: 32px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--bg);
+    border-radius: 4px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .bar-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 0;
+    transition: width 0.4s;
+  }
+
+  .bar-seg.satisfied { background: var(--green); color: #064e3b; }
+  .bar-seg.ots { background: var(--orange); color: #fff; }
+  .bar-seg.na { background: var(--surface2); color: var(--text-dim); }
+  .bar-seg.inherited { background: var(--purple); color: #fff; }
+
+  .bar-count {
+    width: 60px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* Family table */
+  .family-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .family-table thead th {
+    background: var(--bg);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+
+  .family-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+    vertical-align: middle;
+  }
+
+  .family-table tbody tr:hover { background: rgba(56, 189, 248, 0.03); }
+
+  .family-name { font-weight: 600; }
+
+  .mini-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg);
+    min-width: 120px;
+  }
+
+  .mini-bar .bar-seg { height: 100%; font-size: 0; }
+
+  /* Findings */
+  .findings-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .findings-search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 14px;
+    width: 280px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .findings-search:focus { border-color: var(--accent); }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 600;
+  }
+
+  .filter-btn:hover { background: var(--surface2); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .findings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .findings-table thead th {
+    background: var(--bg);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .findings-table thead th:hover { color: var(--text); }
+
+  .findings-table thead th .sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.3;
+    font-size: 10px;
+  }
+
+  .findings-table thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+
+  .findings-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+    vertical-align: top;
+  }
+
+  .findings-table tbody tr { cursor: pointer; transition: background 0.1s; }
+  .findings-table tbody tr:hover { background: rgba(56, 189, 248, 0.03); }
+  .findings-table tbody tr.expanded-parent { background: var(--surface2); }
+
+  .finding-id {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .sev-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sev-high { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+  .sev-moderate { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .sev-low { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+
+  .severity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-high { background: var(--orange); }
+  .dot-moderate { background: var(--yellow); }
+  .dot-low { background: var(--accent); }
+
+  .poam-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+  }
+
+  .poam-link:hover { text-decoration: underline; }
+
+  /* Expanded detail */
+  .finding-detail {
+    display: none;
+  }
+
+  .finding-detail td {
+    padding: 0 !important;
+    border-bottom: 2px solid var(--accent) !important;
+  }
+
+  .finding-detail.show { display: table-row; }
+
+  .detail-inner {
+    padding: 20px 24px;
+    background: var(--bg);
+    border-radius: 0 0 8px 8px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .detail-field h5 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .detail-field p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .detail-field.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* Strengths list */
+  .strengths-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .strength-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+  }
+
+  .strength-item h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--green);
+  }
+
+  .strength-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* Risk summary */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .risk-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .risk-card .risk-count {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .risk-card .risk-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Recommendation section */
+  .recommendation-box {
+    background: var(--bg);
+    border: 2px solid var(--yellow);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .recommendation-box h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--yellow);
+  }
+
+  .recommendation-options {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .rec-option {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .rec-option:hover { border-color: var(--text-dim); color: var(--text); }
+  .rec-option.selected { border-color: var(--accent); color: var(--accent); background: rgba(56, 189, 248, 0.08); }
+
+  .signature-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .sig-field label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .sig-field input {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .sig-field input:focus { border-color: var(--accent); }
+
+  /* Scope lists */
+  .scope-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  .scope-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .scope-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+  }
+
+  .scope-list li .check { color: var(--green); }
+  .scope-list li .exclude { color: var(--red); }
+
+  .method-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+
+  .method-table thead th {
+    background: var(--bg);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .method-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+    font-size: 13px;
+  }
+
+  .method-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--accent);
+    margin: 1px 3px;
+  }
+
+  /* Utility */
+  .text-green { color: var(--green); }
+  .text-orange { color: var(--orange); }
+  .text-yellow { color: var(--yellow); }
+  .text-red { color: var(--red); }
+  .text-accent { color: var(--accent); }
+  .text-purple { color: var(--purple); }
+  .text-dim { color: var(--text-dim); }
+  .mt-16 { margin-top: 16px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-8 { margin-bottom: 8px; }
+
+  /* Severity bar */
+  .severity-bar-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .severity-bar-container h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .severity-bar {
+    display: flex;
+    height: 24px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface2);
+  }
+
+  .severity-bar .seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.4s ease;
+  }
+
+  .seg-high { background: var(--orange); }
+  .seg-moderate { background: var(--yellow); color: #000 !important; }
+  .seg-low { background: var(--accent); color: #000 !important; }
+
+  .severity-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .severity-legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Print styles */
+  @media print {
+    body {
+      background: #fff;
+      color: #1a1a1a;
+      font-size: 11pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body::before {
+      color: rgba(220, 38, 38, 0.08);
+      font-size: 150px;
+    }
+
+    .draft-banner {
+      position: static;
+      background: #fff !important;
+      color: #dc2626 !important;
+      border: 2px solid #dc2626;
+      font-size: 12pt;
+    }
+
+    .sidebar { display: none; }
+
+    .app-container { display: block; }
+
+    .main-content {
+      padding: 0;
+      max-width: 100%;
+    }
+
+    .section-header {
+      background: #f5f5f5 !important;
+      border-color: #ccc !important;
+      page-break-after: avoid;
+    }
+
+    .section-header.collapsed + .section-body { display: block !important; }
+
+    .section-body {
+      background: #fff !important;
+      border-color: #ccc !important;
+    }
+
+    .info-card, .stat-card, .risk-card, .strength-item, .recommendation-box {
+      background: #fff !important;
+      border-color: #ccc !important;
+    }
+
+    .findings-table thead th { background: #f0f0f0 !important; color: #333 !important; }
+    .family-table thead th { background: #f0f0f0 !important; color: #333 !important; }
+
+    .finding-detail.show { display: table-row !important; }
+
+    .findings-controls { display: none; }
+
+    a { color: #0066cc; }
+
+    .sar-section { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main-content { padding: 20px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .chart-container { grid-template-columns: 1fr; }
+    .strengths-list { grid-template-columns: 1fr; }
+    .risk-grid { grid-template-columns: 1fr 1fr; }
+    .scope-columns { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .signature-fields { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="draft-banner">
+  <span class="draft-icon">&#9888;</span>
+  DRAFT &mdash; Pending Independent SCA Validation. This document must be reviewed and finalized by an independent Security Controls Assessor.
+  <span class="draft-icon">&#9888;</span>
+</div>
+
+<div class="app-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div style="padding:12px 20px 0;">
+      <a href="raise-portal.html" class="back-link">&larr; Back to Portal</a>
+    </div>
+    <div class="sidebar-brand">
+      <div class="logo-mark">
+        <div class="r2-badge">R2</div>
+        <div>
+          <div class="logo-text">RAISE 2.0</div>
+          <div class="logo-sub">Security Assessment Report</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="#exec-summary" onclick="navTo(event, 'exec-summary')">
+        <span class="nav-icon">&#9670;</span> Executive Summary
+      </a>
+      <a class="nav-item" href="#scope" onclick="navTo(event, 'scope')">
+        <span class="nav-icon">&#9673;</span> Assessment Scope
+      </a>
+      <a class="nav-item" href="#results" onclick="navTo(event, 'results')">
+        <span class="nav-icon">&#9632;</span> Results Summary
+      </a>
+      <a class="nav-item" href="#findings" onclick="navTo(event, 'findings')">
+        <span class="nav-icon">&#9888;</span> Detailed Findings
+      </a>
+      <a class="nav-item" href="#strengths" onclick="navTo(event, 'strengths')">
+        <span class="nav-icon">&#10003;</span> Strengths Identified
+      </a>
+      <a class="nav-item" href="#risk" onclick="navTo(event, 'risk')">
+        <span class="nav-icon">&#9679;</span> Risk Assessment
+      </a>
+      <a class="nav-item" href="#recommendation" onclick="navTo(event, 'recommendation')">
+        <span class="nav-icon">&#9998;</span> Assessor Recommendation
+      </a>
+    </nav>
+
+    <div class="sidebar-actions">
+      <a class="sidebar-btn" href="poam.html">&#8599; View POA&amp;M</a>
+      <button class="sidebar-btn" onclick="exportJSON()">&#128230; Export JSON</button>
+      <button class="sidebar-btn primary" onclick="window.print()">&#128424; Print / PDF</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1><span>RAISE 2.0</span> &mdash; Security Assessment Report (DRAFT)</h1>
+      <p>Secure Runtime Environment (SRE) Platform &bull; FIPS 199 Moderate-Moderate-Moderate &bull; DoD/Navy Kubernetes DevSecOps</p>
+    </div>
+
+    <!-- Section 1: Executive Summary -->
+    <div class="sar-section" id="exec-summary">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">1</span> Executive Summary</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="info-grid">
+          <div class="info-card">
+            <h4>System Identification</h4>
+            <p><strong>System Name:</strong> Secure Runtime Environment (SRE)</p>
+            <p><strong>DITPR ID:</strong> <span class="text-dim">Pending Registration</span></p>
+            <p><strong>FIPS 199 Category:</strong> Moderate-Moderate-Moderate</p>
+            <p><strong>System Type:</strong> Major Application (MA)</p>
+            <p><strong>Environment:</strong> DoD/Navy Kubernetes DevSecOps Platform</p>
+          </div>
+          <div class="info-card">
+            <h4>Technical Stack</h4>
+            <p><strong>K8s Distribution:</strong> RKE2 v1.34.4 (STIG-hardened)</p>
+            <p><strong>OS:</strong> Rocky Linux 9.7 (DISA STIG applied)</p>
+            <p><strong>GitOps:</strong> Flux CD v2.8.1</p>
+            <p><strong>Service Mesh:</strong> Istio (mTLS STRICT)</p>
+            <p><strong>Policy Engine:</strong> Kyverno (7 ClusterPolicies)</p>
+          </div>
+          <div class="info-card">
+            <h4>Assessment Dates</h4>
+            <textarea class="editable" data-save="assess-dates" rows="4">Assessment Start: [ENTER DATE]
+Assessment End: [ENTER DATE]
+Report Date: [ENTER DATE]
+ATO Target Date: [ENTER DATE]</textarea>
+            <div class="edit-hint">Click to edit (saved locally)</div>
+          </div>
+          <div class="info-card">
+            <h4>SCA Team</h4>
+            <textarea class="editable" data-save="sca-team" rows="4">Lead Assessor: [ENTER NAME]
+Organization: [ENTER SCA ORGANIZATION]
+Phone: [ENTER PHONE]
+Email: [ENTER EMAIL]</textarea>
+            <div class="edit-hint">Click to edit (saved locally)</div>
+          </div>
+        </div>
+
+        <div class="info-card mb-16">
+          <h4>Assessment Methodology</h4>
+          <p>This assessment was conducted in accordance with NIST SP 800-53A Rev 5, <em>Assessing Security and Privacy Controls in Information Systems and Organizations</em>. Assessment methods included:</p>
+          <ul style="margin: 10px 0 0 20px; font-size: 13px; color: var(--text-dim); line-height: 1.8;">
+            <li><strong>Examine:</strong> Review of system documentation, SSP, architecture diagrams, GitOps manifests, Kyverno policies, Flux configurations, Ansible hardening roles, and compliance artifacts</li>
+            <li><strong>Interview:</strong> Discussions with system owner, platform engineers, ISSO, and security team regarding operational procedures and security controls</li>
+            <li><strong>Test:</strong> Automated compliance scanning (Kyverno PolicyReports, NeuVector CIS benchmarks, OSCAL validation), manual verification of control implementations, and configuration review of all 16 platform services</li>
+          </ul>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-value text-accent">325</div>
+            <div class="stat-label">Controls Assessed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value text-green">280</div>
+            <div class="stat-label">Satisfied</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value text-orange">30</div>
+            <div class="stat-label">Other Than Satisfied</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value text-dim">15</div>
+            <div class="stat-label">Not Assessed</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--text-dim);">Overall Risk Posture:</span>
+          <span class="risk-badge moderate">&#9679; MODERATE</span>
+          <span style="font-size: 13px; color: var(--text-dim);">&mdash; Recommend ATO with conditions (remediate HIGH findings within 90 days)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Assessment Scope -->
+    <div class="sar-section" id="scope">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">2</span> Assessment Scope</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="info-card mb-16">
+          <h4>Authorization Boundary</h4>
+          <p>The authorization boundary encompasses the SRE Kubernetes platform including all control plane and worker nodes, platform services, GitOps pipeline, and CI/CD security gates. The boundary is defined in <code>docs/authorization-boundary.md</code>. All components within the boundary are deployed on RKE2 v1.34.4 running on DISA STIG-hardened Rocky Linux 9.7 with FIPS 140-2 cryptographic modules enabled.</p>
+        </div>
+
+        <div class="scope-columns">
+          <div>
+            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Components Assessed</h4>
+            <ul class="scope-list">
+              <li><span class="check">&#10003;</span> RKE2 Kubernetes Cluster (1 server + 2 agents)</li>
+              <li><span class="check">&#10003;</span> Rocky Linux 9.7 OS (STIG-hardened)</li>
+              <li><span class="check">&#10003;</span> Istio Service Mesh (mTLS STRICT)</li>
+              <li><span class="check">&#10003;</span> Kyverno Policy Engine (7 ClusterPolicies)</li>
+              <li><span class="check">&#10003;</span> Prometheus + Grafana (Monitoring)</li>
+              <li><span class="check">&#10003;</span> Loki + Alloy (Logging)</li>
+              <li><span class="check">&#10003;</span> Tempo (Distributed Tracing)</li>
+              <li><span class="check">&#10003;</span> cert-manager (Certificate Management)</li>
+              <li><span class="check">&#10003;</span> OpenBao + ESO (Secrets Management)</li>
+              <li><span class="check">&#10003;</span> Harbor + Trivy (Container Registry)</li>
+              <li><span class="check">&#10003;</span> NeuVector (Runtime Security)</li>
+              <li><span class="check">&#10003;</span> Keycloak (Identity / SSO)</li>
+              <li><span class="check">&#10003;</span> Velero (Backup)</li>
+              <li><span class="check">&#10003;</span> MetalLB (Load Balancer)</li>
+              <li><span class="check">&#10003;</span> OAuth2 Proxy (SSO Gateway)</li>
+              <li><span class="check">&#10003;</span> Flux CD (GitOps Engine)</li>
+              <li><span class="check">&#10003;</span> CI/CD Pipeline (GitHub Actions + Cosign + SBOM)</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Excluded / Inherited</h4>
+            <ul class="scope-list">
+              <li><span class="exclude">&#10007;</span> Tenant applications (assessed separately per app ATO)</li>
+              <li><span class="exclude">&#10007;</span> Physical facility security (inherited from host site)</li>
+              <li><span class="exclude">&#10007;</span> Underlying network infrastructure (inherited)</li>
+              <li><span class="exclude">&#10007;</span> DNS infrastructure (inherited from enclave)</li>
+              <li><span class="exclude">&#10007;</span> Personnel security (inherited from organization)</li>
+              <li><span class="exclude">&#10007;</span> Physical/Environmental protections (inherited PE family)</li>
+            </ul>
+          </div>
+        </div>
+
+        <h4 style="font-size: 13px; font-weight: 700; margin: 20px 0 10px;">Assessment Methods by Control Family</h4>
+        <table class="method-table">
+          <thead>
+            <tr><th>Family</th><th>Methods Applied</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>AC (Access Control)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span><span class="method-tag">Interview</span></td></tr>
+            <tr><td>AU (Audit &amp; Accountability)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+            <tr><td>CA (Assessment &amp; Authorization)</td><td><span class="method-tag">Examine</span><span class="method-tag">Interview</span></td></tr>
+            <tr><td>CM (Configuration Management)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+            <tr><td>CP (Contingency Planning)</td><td><span class="method-tag">Examine</span><span class="method-tag">Interview</span></td></tr>
+            <tr><td>IA (Identification &amp; Authentication)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+            <tr><td>IR (Incident Response)</td><td><span class="method-tag">Examine</span><span class="method-tag">Interview</span></td></tr>
+            <tr><td>PE (Physical &amp; Environmental)</td><td><span class="method-tag">Examine</span> <span class="text-dim">(Inherited)</span></td></tr>
+            <tr><td>RA (Risk Assessment)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+            <tr><td>SA (System &amp; Services Acquisition)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+            <tr><td>SC (System &amp; Communications Protection)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span><span class="method-tag">Interview</span></td></tr>
+            <tr><td>SI (System &amp; Information Integrity)</td><td><span class="method-tag">Examine</span><span class="method-tag">Test</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 3: Assessment Results Summary -->
+    <div class="sar-section" id="results">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">3</span> Assessment Results Summary</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="chart-container">
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 42 42">
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--surface2)" stroke-width="5"/>
+              <!-- Satisfied: 280/325 = 86.15% -->
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--green)" stroke-width="5"
+                stroke-dasharray="86.15 13.85" stroke-dashoffset="25" stroke-linecap="round"/>
+              <!-- OTS: 30/325 = 9.23% -->
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--orange)" stroke-width="5"
+                stroke-dasharray="9.23 90.77" stroke-dashoffset="38.85" stroke-linecap="round"/>
+              <!-- Inherited: shown as purple segment -->
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--purple)" stroke-width="5"
+                stroke-dasharray="7.69 92.31" stroke-dashoffset="29.62" stroke-linecap="round"/>
+              <text x="21" y="19.5" text-anchor="middle" font-size="5" font-weight="800" fill="var(--text)">86%</text>
+              <text x="21" y="24" text-anchor="middle" font-size="2.5" fill="var(--text-dim)">SATISFIED</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--green)"></div> Satisfied (280)</div>
+              <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--orange)"></div> Other Than Satisfied (30)</div>
+              <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--purple)"></div> Inherited (25)</div>
+              <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--surface2)"></div> Not Assessed (15)</div>
+            </div>
+          </div>
+
+          <div class="bar-chart" id="family-bar-chart">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="severity-bar-container">
+          <h4>Finding Severity Distribution</h4>
+          <div class="severity-bar">
+            <div class="seg seg-high" style="width:13.3%">2</div>
+            <div class="seg seg-moderate" style="width:53.3%">8</div>
+            <div class="seg seg-low" style="width:33.3%">5</div>
+          </div>
+          <div class="severity-legend">
+            <span><div style="width:10px;height:10px;border-radius:50%;background:var(--orange)"></div> High (2)</span>
+            <span><div style="width:10px;height:10px;border-radius:50%;background:var(--yellow)"></div> Moderate (8)</span>
+            <span><div style="width:10px;height:10px;border-radius:50%;background:var(--accent)"></div> Low (5)</span>
+          </div>
+        </div>
+
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">Control Family Breakdown</h4>
+        <table class="family-table" id="family-table">
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Description</th>
+              <th>Total</th>
+              <th style="color:var(--green)">Satisfied</th>
+              <th style="color:var(--orange)">OTS</th>
+              <th style="color:var(--purple)">Inherited</th>
+              <th>N/A</th>
+              <th style="min-width:140px">Distribution</th>
+            </tr>
+          </thead>
+          <tbody id="family-tbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 4: Detailed Findings -->
+    <div class="sar-section" id="findings">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">4</span> Detailed Findings (Other Than Satisfied)</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="findings-controls">
+          <input type="text" class="findings-search" id="findings-search" placeholder="Search findings...">
+          <button class="filter-btn active" data-sev="all" onclick="filterFindings(this,'all')">All (15)</button>
+          <button class="filter-btn" data-sev="HIGH" onclick="filterFindings(this,'HIGH')">High (2)</button>
+          <button class="filter-btn" data-sev="MODERATE" onclick="filterFindings(this,'MODERATE')">Moderate (8)</button>
+          <button class="filter-btn" data-sev="LOW" onclick="filterFindings(this,'LOW')">Low (5)</button>
+        </div>
+
+        <table class="findings-table" id="findings-table">
+          <thead>
+            <tr>
+              <th onclick="sortFindings('id')">Finding <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortFindings('control')">Control <span class="sort-arrow">&#9650;</span></th>
+              <th onclick="sortFindings('severity')">Severity <span class="sort-arrow">&#9650;</span></th>
+              <th>Title</th>
+              <th>POA&amp;M Ref</th>
+            </tr>
+          </thead>
+          <tbody id="findings-tbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 5: Strengths -->
+    <div class="sar-section" id="strengths">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">5</span> Strengths Identified</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="strengths-list" id="strengths-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Risk Assessment -->
+    <div class="sar-section" id="risk">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">6</span> Risk Assessment Summary</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="risk-grid">
+          <div class="risk-card">
+            <div class="risk-count text-dim">0</div>
+            <div class="risk-label">Critical</div>
+          </div>
+          <div class="risk-card">
+            <div class="risk-count text-orange">2</div>
+            <div class="risk-label">High</div>
+          </div>
+          <div class="risk-card">
+            <div class="risk-count text-yellow">8</div>
+            <div class="risk-label">Moderate</div>
+          </div>
+          <div class="risk-card">
+            <div class="risk-count text-accent">5</div>
+            <div class="risk-label">Low</div>
+          </div>
+        </div>
+
+        <div class="info-card mb-16">
+          <h4>Overall Risk Determination</h4>
+          <p style="margin-bottom: 12px;">Based on the assessment of 325 NIST 800-53 Rev 5 security controls applicable to a Moderate-Moderate-Moderate system, the overall residual risk to the Secure Runtime Environment (SRE) platform is assessed as <strong class="text-yellow">MODERATE</strong>.</p>
+          <p style="margin-bottom: 12px;">The platform demonstrates strong security posture through its GitOps-driven configuration management, zero-trust network architecture (Istio mTLS STRICT), comprehensive policy enforcement (Kyverno), and full-stack observability (Prometheus, Grafana, Loki, Tempo). FIPS 140-2 cryptographic modules are active at both the OS (Rocky Linux 9.7) and Kubernetes (RKE2) layers.</p>
+          <p style="margin-bottom: 12px;"><strong>Key Risk Factors:</strong></p>
+          <ul style="margin-left: 20px; font-size: 13px; color: var(--text-dim); line-height: 1.8;">
+            <li><strong class="text-orange">HIGH:</strong> Single control plane node presents a single point of failure for availability (CP-10). Planned remediation: deploy 3-node HA control plane.</li>
+            <li><strong class="text-orange">HIGH:</strong> No CAC/PIV integration for DoD PKI authentication (IA-2(12)). Keycloak MFA is enabled but not bound to DoD identity credentials. Planned remediation: configure Keycloak X.509 client certificate authentication.</li>
+            <li><strong class="text-yellow">MODERATE:</strong> Eight findings relate to operational maturity items (penetration testing, SIEM integration, credential rotation, etc.) that are standard for pre-ATO systems and have clear remediation paths documented in the POA&amp;M.</li>
+            <li><strong class="text-accent">LOW:</strong> Five low-severity findings are documentation and configuration optimizations that do not present material operational risk.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h4>Recommendation</h4>
+          <p>The assessor recommends <strong>granting an Authority to Operate (ATO) with conditions</strong>. The two HIGH findings must be remediated within 90 days of ATO issuance. All MODERATE findings should be addressed within 180 days per the POA&amp;M schedule. LOW findings should be tracked for remediation during the next assessment cycle.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7: Assessor Recommendation -->
+    <div class="sar-section" id="recommendation">
+      <div class="section-header" onclick="toggleSection(this)">
+        <h2><span class="sec-num">7</span> Assessor Recommendation</h2>
+        <span class="section-chevron">&#9660;</span>
+      </div>
+      <div class="section-body">
+        <div class="recommendation-box">
+          <h3>SCA Recommendation</h3>
+          <p style="font-size: 14px; margin-bottom: 12px;">Based on the assessment results documented in this report, the independent Security Controls Assessor recommends the following authorization decision to the Authorizing Official:</p>
+
+          <div class="recommendation-options">
+            <button class="rec-option selected" onclick="selectRec(this)" data-rec="ato">Recommend ATO</button>
+            <button class="rec-option" onclick="selectRec(this)" data-rec="iatt">Recommend IATT</button>
+            <button class="rec-option" onclick="selectRec(this)" data-rec="deny">Do Not Recommend</button>
+          </div>
+
+          <div class="info-card mt-16">
+            <h4>Conditions / Remarks</h4>
+            <textarea class="editable" data-save="rec-conditions" rows="5">ATO recommended with the following conditions:
+1. Remediate HIGH findings (F-004, F-005) within 90 days of authorization.
+2. Remediate all MODERATE findings within 180 days per POA&amp;M milestones.
+3. Conduct initial penetration test within 60 days of ATO issuance.
+4. Register system in DITPR/eMASS within 30 days.</textarea>
+            <div class="edit-hint">Click to edit (saved locally)</div>
+          </div>
+
+          <div class="signature-fields">
+            <div class="sig-field">
+              <label>Lead Assessor Name</label>
+              <input type="text" data-save="sig-name" placeholder="[ENTER NAME]">
+            </div>
+            <div class="sig-field">
+              <label>Organization</label>
+              <input type="text" data-save="sig-org" placeholder="[ENTER SCA ORGANIZATION]">
+            </div>
+            <div class="sig-field">
+              <label>Signature Date</label>
+              <input type="text" data-save="sig-date" placeholder="[ENTER DATE]">
+            </div>
+            <div class="sig-field">
+              <label>Assessor Certification</label>
+              <input type="text" data-save="sig-cert" placeholder="e.g., CISSP, CAP, CISM">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ===== Data =====
+
+const familyData = [
+  { id: "AC", name: "Access Control", total: 45, satisfied: 38, ots: 5, inherited: 0, na: 2 },
+  { id: "AT", name: "Awareness & Training", total: 5, satisfied: 3, ots: 1, inherited: 0, na: 1 },
+  { id: "AU", name: "Audit & Accountability", total: 16, satisfied: 14, ots: 2, inherited: 0, na: 0 },
+  { id: "CA", name: "Assessment & Authorization", total: 9, satisfied: 7, ots: 2, inherited: 0, na: 0 },
+  { id: "CM", name: "Configuration Management", total: 11, satisfied: 9, ots: 2, inherited: 0, na: 0 },
+  { id: "CP", name: "Contingency Planning", total: 13, satisfied: 10, ots: 3, inherited: 0, na: 0 },
+  { id: "IA", name: "Identification & Authentication", total: 11, satisfied: 8, ots: 3, inherited: 0, na: 0 },
+  { id: "IR", name: "Incident Response", total: 10, satisfied: 9, ots: 1, inherited: 0, na: 0 },
+  { id: "MA", name: "Maintenance", total: 6, satisfied: 5, ots: 1, inherited: 0, na: 0 },
+  { id: "MP", name: "Media Protection", total: 8, satisfied: 7, ots: 1, inherited: 0, na: 0 },
+  { id: "PE", name: "Physical & Environmental", total: 20, satisfied: 0, ots: 0, inherited: 18, na: 2 },
+  { id: "PL", name: "Planning", total: 9, satisfied: 8, ots: 1, inherited: 0, na: 0 },
+  { id: "PM", name: "Program Management", total: 16, satisfied: 14, ots: 2, inherited: 0, na: 0 },
+  { id: "PS", name: "Personnel Security", total: 8, satisfied: 0, ots: 1, inherited: 7, na: 0 },
+  { id: "PT", name: "PII Processing & Transparency", total: 8, satisfied: 7, ots: 1, inherited: 0, na: 0 },
+  { id: "RA", name: "Risk Assessment", total: 5, satisfied: 4, ots: 1, inherited: 0, na: 0 },
+  { id: "SA", name: "System & Services Acquisition", total: 22, satisfied: 18, ots: 3, inherited: 0, na: 1 },
+  { id: "SC", name: "System & Communications", total: 44, satisfied: 38, ots: 4, inherited: 0, na: 2 },
+  { id: "SI", name: "System & Information Integrity", total: 16, satisfied: 13, ots: 2, inherited: 0, na: 1 },
+  { id: "SR", name: "Supply Chain Risk", total: 4, satisfied: 3, ots: 1, inherited: 0, na: 0 }
+];
+
+const findings = [
+  {
+    id: "F-001", control: "AC-3", severity: "MODERATE",
+    title: "OpenBao manual unseal procedure",
+    description: "The secrets management system (OpenBao) requires manual intervention to unseal after pod restarts. While a CronJob runs every 5 minutes to auto-unseal, the unseal key is stored as a Kubernetes Secret rather than an HSM or cloud KMS, reducing the security posture of the key management infrastructure.",
+    evidence: "Examined OpenBao deployment configuration, Kubernetes Secret 'openbao-init-keys', and auto-unseal CronJob manifest. Verified unseal key is stored in plaintext within Kubernetes Secret.",
+    recommendation: "Migrate to HSM-backed or cloud KMS auto-unseal mechanism. Remove unseal keys from Kubernetes Secrets. Consider deploying OpenBao with Shamir seal requiring multiple key holders.",
+    poam: "POA&M-003"
+  },
+  {
+    id: "F-002", control: "SI-7", severity: "MODERATE",
+    title: "Image signature verification policy in Audit mode",
+    description: "The Kyverno verify-image-signatures ClusterPolicy is configured in Audit mode rather than Enforce mode. This means unsigned container images can be deployed to the cluster without being blocked. While violations are logged and visible in PolicyReports, they are not prevented.",
+    evidence: "Examined Kyverno ClusterPolicy 'verify-image-signatures' — validationFailureAction: Audit. Reviewed ClusterPolicyReport showing 6 audit violations for unsigned images.",
+    recommendation: "Switch the policy to Enforce mode after establishing the Cosign key trust chain and ensuring all approved images in Harbor are signed. Verify all 16 platform HelmReleases use signed images before enforcement.",
+    poam: "POA&M-001"
+  },
+  {
+    id: "F-003", control: "AU-6", severity: "MODERATE",
+    title: "No SIEM integration for centralized audit analysis",
+    description: "Audit logs are collected by Alloy, stored in Loki, and viewable in Grafana, but there is no integration with an enterprise SIEM (e.g., Splunk, Elastic SIEM, or ACAS). Audit review and correlation capabilities are limited to Grafana LogQL queries rather than purpose-built security analytics.",
+    evidence: "Examined Alloy pipeline configuration and Loki datasource in Grafana. No SIEM forwarder, syslog export, or external log shipping configured. Kubernetes API audit logs are captured but not forwarded.",
+    recommendation: "Configure Alloy or a dedicated log forwarder to export audit logs to the organization's approved SIEM solution. Establish automated correlation rules for security events.",
+    poam: "POA&M-009"
+  },
+  {
+    id: "F-004", control: "CP-10", severity: "HIGH",
+    title: "Single point of failure — control plane node",
+    description: "The RKE2 cluster runs a single control plane node (1 server at 192.168.2.50, 2 agents). Loss of the control plane node would result in loss of cluster management capability, etcd data store, and the Kubernetes API server. While workloads on agent nodes would continue running, no new scheduling, scaling, configuration changes, or management operations could occur.",
+    evidence: "Examined cluster topology via kubectl get nodes. Single server node confirmed. Etcd runs embedded on the single server with no replication. Verified no backup etcd members exist.",
+    recommendation: "Deploy a minimum of 3 control plane nodes to establish etcd quorum and eliminate the single point of failure. Use the existing Ansible rke2-server role with additional inventory hosts.",
+    poam: "POA&M-006"
+  },
+  {
+    id: "F-005", control: "IA-2(12)", severity: "HIGH",
+    title: "No CAC/PIV integration for DoD PKI authentication",
+    description: "Keycloak provides SSO with TOTP-based MFA for all platform services (Grafana, Harbor, NeuVector, Dashboard, OAuth2 Proxy), but does not integrate with DoD PKI infrastructure for CAC/PIV smartcard authentication. This is required for DoD systems to authenticate organizational users via their government-issued credentials.",
+    evidence: "Examined Keycloak SRE realm configuration. Five OIDC clients configured. Authentication flow uses username/password + TOTP. X.509 client certificate authentication flow not configured. No DoD Root CA certificates loaded in trust store.",
+    recommendation: "Configure Keycloak X.509 client certificate authentication with DoD PKI trust chain (DoD Root CA 3, DoD ID CA-59, etc.). Add CAC/PIV as a required authentication method for privileged access. Maintain TOTP as fallback for non-CAC environments.",
+    poam: "POA&M-005"
+  },
+  {
+    id: "F-006", control: "IA-5", severity: "MODERATE",
+    title: "Default credentials not rotated on initial deployment",
+    description: "Several platform components retain default or initial deployment credentials: Grafana (admin/prom-operator), Harbor (admin/Harbor12345), NeuVector (admin/admin). While documented in operational guides, automated credential rotation is not implemented and these defaults present a risk if the platform were exposed.",
+    evidence: "Verified default credentials on Grafana (port 443), Harbor (port 443), and NeuVector (port 443) web interfaces. Checked OpenBao for credential rotation policies — none configured for platform service accounts.",
+    recommendation: "Implement automated credential rotation via OpenBao dynamic credentials. Change all default passwords immediately and store in OpenBao. Configure ExternalSecrets to rotate platform credentials on a 90-day schedule.",
+    poam: "POA&M-006"
+  },
+  {
+    id: "F-007", control: "PM-1", severity: "MODERATE",
+    title: "System not registered in DITPR/eMASS",
+    description: "The SRE platform is not yet registered in the DoD IT Portfolio Repository (DITPR) or the Enterprise Mission Assurance Support Service (eMASS). Registration is required for formal authorization processing and continuous monitoring within the DoD RMF workflow.",
+    evidence: "Interviewed system owner. No DITPR ID or eMASS record exists for this system. The emass-guide.html document provides guidance but registration has not been initiated.",
+    recommendation: "Register the system in DITPR and create an eMASS package. Upload the SSP, SAR, and POA&M to eMASS. Assign ISSO and ISSM roles within the system.",
+    poam: "POA&M-007"
+  },
+  {
+    id: "F-008", control: "CA-8", severity: "MODERATE",
+    title: "No penetration test conducted",
+    description: "A formal penetration test has not been conducted against the SRE platform. While automated vulnerability scanning (Trivy image scanning, NeuVector runtime scanning, CIS benchmark checks) is in place, manual penetration testing is required to identify logic flaws, misconfigurations, and attack paths not detectable by automated tools.",
+    evidence: "No penetration test report available. Automated scan results from Trivy (Harbor) and NeuVector were reviewed — no critical vulnerabilities found in platform images. DAST pipeline runs in passive/baseline mode only.",
+    recommendation: "Schedule and conduct a penetration test by an approved testing organization (or internal red team) within 60 days of ATO issuance. Define scope to include all externally accessible services and the Kubernetes API.",
+    poam: "POA&M-004"
+  },
+  {
+    id: "F-009", control: "AU-4", severity: "LOW",
+    title: "Log storage capacity planning not formalized",
+    description: "Loki log retention is configured for 90 days with local-path-provisioner storage. Formal capacity planning documentation (projected growth rates, storage thresholds, alerting on capacity limits, and archival procedures) has not been completed.",
+    evidence: "Examined Loki retention configuration (90 days). Prometheus alerts for disk capacity exist. Formal capacity plan document is absent. Current log volume is approximately 2 GB/day across ~90 pods.",
+    recommendation: "Document formal log storage capacity plan including growth projections, threshold alerts, and archival procedures to S3-compatible object storage for long-term retention.",
+    poam: "POA&M-014"
+  },
+  {
+    id: "F-010", control: "CM-7", severity: "LOW",
+    title: "Privileged runtime security components",
+    description: "NeuVector (DaemonSet), MetalLB speaker (hostNetwork, NET_RAW), and Velero (volume snapshot privileges) require elevated privileges beyond the standard pod security baseline. These are documented security exceptions with compensating controls — Kyverno policies restrict privileged access to platform namespaces only, and PSS enforce=privileged is limited to those namespaces.",
+    evidence: "Examined NeuVector DaemonSet, MetalLB speaker DaemonSet, Velero deployment security contexts. All require elevated privileges. Kyverno ClusterPolicies exempt platform namespaces (documented in policy annotations). Tenant namespaces enforce restricted PSS.",
+    recommendation: "Maintain documentation of privileged component exceptions with justifications. Review necessity at each assessment cycle. Evaluate unprivileged alternatives as upstream projects mature.",
+    poam: "POA&M-010"
+  },
+  {
+    id: "F-011", control: "SC-7", severity: "MODERATE",
+    title: "PPSM port registration incomplete",
+    description: "The platform uses multiple network ports for inter-service communication (Istio control plane ports, Prometheus scraping endpoints, Grafana, Harbor, Keycloak, etc.). These ports have not been formally registered with the Ports, Protocols, and Services Management (PPSM) registry as required for DoD systems.",
+    evidence: "Reviewed NetworkPolicies (default-deny in all namespaces with explicit allows), Istio VirtualService configurations, and Service port definitions. Approximately 40 unique port/protocol combinations identified. No PPSM registration documentation found.",
+    recommendation: "Catalog all platform-required ports, protocols, and services. Complete PPSM registration via the PPSM Category Assurance List (CAL). Document in the SSP Appendix.",
+    poam: "POA&M-007"
+  },
+  {
+    id: "F-012", control: "CP-4", severity: "MODERATE",
+    title: "Backup restore testing not completed",
+    description: "Velero backup schedules are configured and executing successfully (daily/retain 7, weekly/retain 4, monthly/retain 3) but a full disaster recovery restore test has not been conducted. The restore testing CronJob template exists but has not been validated end-to-end with actual data recovery verification.",
+    evidence: "Examined Velero Schedule resources — all 3 schedules active and completing successfully. Reviewed backup logs confirming successful backups. No restore test execution logs or DR test report found.",
+    recommendation: "Execute a full DR restore test to a separate namespace or test cluster. Document results including recovery time objective (RTO) and recovery point objective (RPO) metrics. Schedule quarterly restore tests.",
+    poam: "POA&M-006"
+  },
+  {
+    id: "F-013", control: "PL-4", severity: "LOW",
+    title: "Rules of Behavior not signed by all users",
+    description: "A Rules of Behavior (RoB) document exists for the SRE platform but has not been formally signed or acknowledged by all platform operators and users. No electronic signature or acknowledgment workflow is implemented.",
+    evidence: "Reviewed Rules of Behavior document. No signed acknowledgment records found in any system. Keycloak user accounts do not have an RoB acceptance flag.",
+    recommendation: "Implement electronic RoB acknowledgment workflow via Keycloak user onboarding (custom required action) or integrate with organizational document management system. Track acceptance dates.",
+    poam: "POA&M-008"
+  },
+  {
+    id: "F-014", control: "AT-2", severity: "LOW",
+    title: "Security awareness training not tracked",
+    description: "Platform operators have not completed documented security awareness training specific to the SRE platform operations, security procedures, and incident response roles. General organizational security awareness training completion status is not tracked within the system boundary.",
+    evidence: "Interviewed platform team. No platform-specific training materials or completion records exist. General DoD Cyber Awareness Challenge completion is assumed but not verified within the system.",
+    recommendation: "Develop platform-specific security training module covering: operational security procedures, incident response roles, Kyverno policy exceptions, OpenBao seal/unseal procedures, and Velero restore procedures. Track completion in organizational LMS.",
+    poam: "POA&M-005"
+  },
+  {
+    id: "F-015", control: "CP-9", severity: "LOW",
+    title: "Dashboard application data not persistent",
+    description: "The SRE dashboard application (v2.0.1) stores user preferences, favorites, and session configuration in browser localStorage and in-memory state. Pod restart does not result in data loss for users (client-side storage), but server-side audit logs and configuration are not persisted across pod restarts.",
+    evidence: "Examined dashboard Deployment — no PersistentVolumeClaim attached. Server-side audit log entries confirmed lost on pod restart. Client-side user preferences persist via localStorage.",
+    recommendation: "Add persistent storage for dashboard server-side configuration and audit log data, or forward audit events to Loki via stdout for centralized retention.",
+    poam: "POA&M-015"
+  }
+];
+
+const strengths = [
+  {
+    title: "Full GitOps Configuration Management",
+    description: "All platform configuration is managed declaratively via Flux CD v2.8.1. Every change is tracked in Git with conventional commits, providing a complete audit trail and automated drift detection. 16 HelmReleases reconcile automatically, satisfying CM-2, CM-3, and SA-10."
+  },
+  {
+    title: "Zero-Trust Network Architecture",
+    description: "Istio service mesh enforces mTLS STRICT mode for all pod-to-pod communication. Combined with default-deny NetworkPolicies in every namespace and OAuth2 Proxy gateway authentication, the platform implements zero-trust networking satisfying SC-8, AC-4, and AC-14."
+  },
+  {
+    title: "Comprehensive Policy Enforcement",
+    description: "7 Kyverno ClusterPolicies (6 Enforce, 1 Audit) enforce Pod Security Standards, image registry restrictions, latest tag prohibition, required labels, security contexts, and network policy requirements. PolicyReports provide continuous compliance visibility (CM-6, CM-7, AC-6)."
+  },
+  {
+    title: "Full-Stack Observability",
+    description: "Prometheus + Grafana (metrics), Loki + Alloy (logs), and Tempo (traces) provide unified observability with 10 pre-built dashboards, 30+ PrometheusRules, and AlertManager with Slack/PagerDuty/email receivers. Satisfies AU-2, AU-6, SI-4, and IR-4."
+  },
+  {
+    title: "RAISE 2.0 Compliant CI/CD Pipeline",
+    description: "CI/CD pipeline implements all 8 RAISE 2.0 security gates: static analysis, SCA, container scanning (Trivy), DAST, image signing (Cosign), SBOM generation (Syft/CycloneDX), unit testing, and compliance validation. Both GitHub Actions and GitLab CI templates provided."
+  },
+  {
+    title: "FIPS 140-2 Cryptographic Compliance",
+    description: "RKE2 v1.34.4 ships with FIPS 140-2 validated GoBoring cryptographic module. Rocky Linux 9.7 FIPS mode enabled at OS level. All TLS connections use FIPS-approved cipher suites via system crypto-policies. cert-manager automates certificate lifecycle (SC-13, IA-5)."
+  },
+  {
+    title: "Automated Backup and Recovery",
+    description: "Velero provides automated cluster backup with 3 schedules (daily/7, weekly/4, monthly/3) covering all application namespaces. S3-compatible storage backend with CSI volume snapshots ensures persistent data protection (CP-9, CP-10)."
+  },
+  {
+    title: "Supply Chain Security Pipeline",
+    description: "Harbor registry with Trivy vulnerability scanning on push, Cosign image signing, and SBOM generation/attestation. Kyverno image registry restriction policy ensures only approved images from the internal Harbor instance can be deployed (SA-10, SI-7, SR-3)."
+  },
+  {
+    title: "Centralized Identity and SSO",
+    description: "Keycloak provides SSO via OIDC for all platform services (Grafana, Harbor, NeuVector, Dashboard) with 5 configured clients. OAuth2 Proxy with Istio ext-authz enforces authentication at the gateway level. MFA enabled for all users via TOTP (IA-2, AC-2, AC-17)."
+  },
+  {
+    title: "Runtime Security Monitoring",
+    description: "NeuVector provides container runtime protection with behavioral learning, network segmentation visualization, CIS benchmark scanning, and admission control. Alerts feed into the Prometheus/Grafana alerting pipeline for unified incident response (SI-3, SI-4, IR-5)."
+  }
+];
+
+// ===== Rendering =====
+
+function renderFamilyBarChart() {
+  const container = document.getElementById('family-bar-chart');
+  let html = '';
+  familyData.forEach(f => {
+    const satPct = (f.satisfied / f.total * 100).toFixed(1);
+    const otsPct = (f.ots / f.total * 100).toFixed(1);
+    const inhPct = (f.inherited / f.total * 100).toFixed(1);
+    const naPct = (f.na / f.total * 100).toFixed(1);
+    html += '<div class="bar-row">' +
+      '<div class="bar-label">' + f.id + '</div>' +
+      '<div class="bar-track">' +
+        (f.satisfied ? '<div class="bar-seg satisfied" style="width:' + satPct + '%"></div>' : '') +
+        (f.ots ? '<div class="bar-seg ots" style="width:' + otsPct + '%"></div>' : '') +
+        (f.inherited ? '<div class="bar-seg inherited" style="width:' + inhPct + '%"></div>' : '') +
+        (f.na ? '<div class="bar-seg na" style="width:' + naPct + '%"></div>' : '') +
+      '</div>' +
+      '<div class="bar-count">' + f.satisfied + '/' + f.total + '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderFamilyTable() {
+  const tbody = document.getElementById('family-tbody');
+  let html = '';
+  familyData.forEach(f => {
+    const satPct = (f.satisfied / f.total * 100).toFixed(0);
+    const otsPct = (f.ots / f.total * 100).toFixed(0);
+    const inhPct = (f.inherited / f.total * 100).toFixed(0);
+    const naPct = (f.na / f.total * 100).toFixed(0);
+    html += '<tr>' +
+      '<td class="family-name">' + f.id + '</td>' +
+      '<td>' + f.name + '</td>' +
+      '<td>' + f.total + '</td>' +
+      '<td class="text-green">' + f.satisfied + '</td>' +
+      '<td class="text-orange">' + (f.ots || '\u2014') + '</td>' +
+      '<td class="text-purple">' + (f.inherited || '\u2014') + '</td>' +
+      '<td class="text-dim">' + (f.na || '\u2014') + '</td>' +
+      '<td><div class="mini-bar">' +
+        (f.satisfied ? '<div class="bar-seg satisfied" style="width:' + satPct + '%"></div>' : '') +
+        (f.ots ? '<div class="bar-seg ots" style="width:' + otsPct + '%"></div>' : '') +
+        (f.inherited ? '<div class="bar-seg inherited" style="width:' + inhPct + '%"></div>' : '') +
+        (f.na ? '<div class="bar-seg na" style="width:' + naPct + '%"></div>' : '') +
+      '</div></td>' +
+    '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderFindings(data) {
+  const tbody = document.getElementById('findings-tbody');
+  let html = '';
+  data.forEach(f => {
+    const sevClass = f.severity === 'HIGH' ? 'sev-high' : f.severity === 'MODERATE' ? 'sev-moderate' : 'sev-low';
+    const dotClass = f.severity === 'HIGH' ? 'dot-high' : f.severity === 'MODERATE' ? 'dot-moderate' : 'dot-low';
+    html += '<tr onclick="toggleFinding(\'' + f.id + '\')">' +
+      '<td><span class="finding-id">' + f.id + '</span></td>' +
+      '<td>' + f.control + '</td>' +
+      '<td><span class="sev-badge ' + sevClass + '"><span class="severity-dot ' + dotClass + '"></span>' + f.severity + '</span></td>' +
+      '<td>' + f.title + '</td>' +
+      '<td><a class="poam-link" href="poam.html#' + f.poam + '" onclick="event.stopPropagation()">' + f.poam + '</a></td>' +
+    '</tr>' +
+    '<tr class="finding-detail" id="detail-' + f.id + '">' +
+      '<td colspan="5"><div class="detail-inner"><div class="detail-grid">' +
+        '<div class="detail-field full-width"><h5>Description</h5><p>' + f.description + '</p></div>' +
+        '<div class="detail-field"><h5>Evidence Examined</h5><p>' + f.evidence + '</p></div>' +
+        '<div class="detail-field"><h5>Recommendation</h5><p>' + f.recommendation + '</p></div>' +
+        '<div class="detail-field"><h5>POA&M Reference</h5><p><a class="poam-link" href="poam.html#' + f.poam + '">' + f.poam + '</a></p></div>' +
+        '<div class="detail-field"><h5>Severity</h5><p><span class="sev-badge ' + sevClass + '"><span class="severity-dot ' + dotClass + '"></span>' + f.severity + '</span></p></div>' +
+      '</div></div></td>' +
+    '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function renderStrengths() {
+  const container = document.getElementById('strengths-list');
+  let html = '';
+  strengths.forEach(s => {
+    html += '<div class="strength-item">' +
+      '<h4>' + s.title + '</h4>' +
+      '<p>' + s.description + '</p>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ===== Interactions =====
+
+function toggleSection(header) {
+  header.classList.toggle('collapsed');
+}
+
+function toggleFinding(id) {
+  const detail = document.getElementById('detail-' + id);
+  const wasOpen = detail.classList.contains('show');
+  document.querySelectorAll('.finding-detail').forEach(function(d) { d.classList.remove('show'); });
+  document.querySelectorAll('.findings-table tbody tr.expanded-parent').forEach(function(r) { r.classList.remove('expanded-parent'); });
+  if (!wasOpen) {
+    detail.classList.add('show');
+    detail.previousElementSibling.classList.add('expanded-parent');
+  }
+}
+
+var currentSevFilter = 'all';
+var currentSort = { col: 'id', asc: true };
+
+function filterFindings(btn, sev) {
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  currentSevFilter = sev;
+  applyFindingsFilters();
+}
+
+function sortFindings(col) {
+  if (currentSort.col === col) {
+    currentSort.asc = !currentSort.asc;
+  } else {
+    currentSort.col = col;
+    currentSort.asc = true;
+  }
+  var ths = document.querySelectorAll('.findings-table thead th');
+  ths.forEach(function(th) { th.classList.remove('sorted'); });
+  var headers = { id: 0, control: 1, severity: 2 };
+  if (headers[col] !== undefined) {
+    var th = ths[headers[col]];
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').innerHTML = currentSort.asc ? '&#9650;' : '&#9660;';
+  }
+  applyFindingsFilters();
+}
+
+function applyFindingsFilters() {
+  var searchTerm = document.getElementById('findings-search').value.toLowerCase();
+  var filtered = findings.filter(function(f) {
+    if (currentSevFilter !== 'all' && f.severity !== currentSevFilter) return false;
+    if (searchTerm) {
+      var text = (f.id + ' ' + f.control + ' ' + f.severity + ' ' + f.title + ' ' + f.description + ' ' + f.poam).toLowerCase();
+      if (text.indexOf(searchTerm) === -1) return false;
+    }
+    return true;
+  });
+
+  var sevOrder = { HIGH: 0, MODERATE: 1, LOW: 2 };
+  filtered.sort(function(a, b) {
+    var cmp = 0;
+    if (currentSort.col === 'id') cmp = a.id.localeCompare(b.id);
+    else if (currentSort.col === 'control') cmp = a.control.localeCompare(b.control);
+    else if (currentSort.col === 'severity') cmp = sevOrder[a.severity] - sevOrder[b.severity];
+    return currentSort.asc ? cmp : -cmp;
+  });
+
+  renderFindings(filtered);
+}
+
+function selectRec(btn) {
+  document.querySelectorAll('.rec-option').forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  localStorage.setItem('sar-rec-choice', btn.dataset.rec);
+}
+
+function navTo(e, id) {
+  e.preventDefault();
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  e.currentTarget.classList.add('active');
+  var section = document.getElementById(id);
+  if (section) {
+    var header = section.querySelector('.section-header');
+    if (header && header.classList.contains('collapsed')) {
+      header.classList.remove('collapsed');
+    }
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ===== LocalStorage persistence =====
+
+function saveEditables() {
+  document.querySelectorAll('[data-save]').forEach(function(el) {
+    var key = 'sar-' + el.dataset.save;
+    el.addEventListener('input', function() { localStorage.setItem(key, el.value); });
+    var saved = localStorage.getItem(key);
+    if (saved !== null) el.value = saved;
+  });
+}
+
+function restoreRec() {
+  var choice = localStorage.getItem('sar-rec-choice');
+  if (choice) {
+    document.querySelectorAll('.rec-option').forEach(function(b) {
+      b.classList.toggle('selected', b.dataset.rec === choice);
+    });
+  }
+}
+
+// ===== Export =====
+
+function exportJSON() {
+  var data = {
+    documentType: "Security Assessment Report (SAR)",
+    status: "DRAFT",
+    generatedBy: "SRE Platform Self-Assessment (Pending Independent SCA Validation)",
+    system: {
+      name: "Secure Runtime Environment (SRE)",
+      fips199: "Moderate-Moderate-Moderate",
+      type: "DoD/Navy Kubernetes DevSecOps Platform",
+      k8sDistribution: "RKE2 v1.34.4",
+      os: "Rocky Linux 9.7",
+      gitops: "Flux CD v2.8.1"
+    },
+    summary: {
+      totalControls: 325,
+      satisfied: 280,
+      otherThanSatisfied: 30,
+      inherited: 25,
+      notAssessed: 15,
+      overallRisk: "MODERATE",
+      recommendation: "ATO with conditions"
+    },
+    familyResults: familyData,
+    findings: findings.map(function(f) {
+      return {
+        id: f.id,
+        control: f.control,
+        severity: f.severity,
+        title: f.title,
+        description: f.description,
+        evidence: f.evidence,
+        recommendation: f.recommendation,
+        poamReference: f.poam
+      };
+    }),
+    riskSummary: {
+      critical: 0,
+      high: 2,
+      moderate: 8,
+      low: 5
+    },
+    exportedAt: new Date().toISOString()
+  };
+
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'sre-sar-draft-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== Scroll spy =====
+
+function initScrollSpy() {
+  var sections = document.querySelectorAll('.sar-section');
+  var navItems = document.querySelectorAll('.nav-item');
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        navItems.forEach(function(n) { n.classList.remove('active'); });
+        var target = document.querySelector('.nav-item[href="#' + entry.target.id + '"]');
+        if (target) target.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(function(s) { observer.observe(s); });
+}
+
+// ===== Init =====
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderFamilyBarChart();
+  renderFamilyTable();
+  renderFindings(findings);
+  renderStrengths();
+  saveEditables();
+  restoreRec();
+  initScrollSpy();
+
+  document.getElementById('findings-search').addEventListener('input', applyFindingsFilters);
+});
+</script>
+</body>
+</html>

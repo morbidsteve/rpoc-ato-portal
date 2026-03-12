@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — System Security Plan | SRE Platform</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1724;--bg2:#151e2d;--bg3:#1a2536;--bg4:#1f2d42;--border:#2a3a52;--text:#c8d6e5;--text2:#8899aa;--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--purple:#a855f7;--cyan:#06b6d4;--radius:8px;--font:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+input,select,textarea{font-family:var(--font);font-size:.875rem;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px;width:100%}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899aa'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}
+button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--radius);padding:8px 16px;font-size:.875rem;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg4);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+
+/* Layout */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--bg4);color:var(--text);font-size:18px;text-decoration:none;transition:all .2s;border:1px solid var(--border);flex-shrink:0}
+.back-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);text-decoration:none}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.logo{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;letter-spacing:-1px}
+.topbar-title{font-size:1.1rem;font-weight:700;color:#fff}
+.topbar-sub{font-size:.75rem;color:var(--text2)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.container{max-width:1280px;margin:0 auto;padding:24px}
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+.section-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.section-header:hover{background:var(--bg3)}
+.section-header h2{font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.section-header .chevron{transition:transform .2s;color:var(--text2);font-size:.75rem}
+.section-header.collapsed .chevron{transform:rotate(-90deg)}
+.section-body{padding:20px}
+.section-body.hidden{display:none}
+
+/* Dashboard */
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:#fff}
+.stat-label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.stat-bar{height:4px;background:var(--bg4);border-radius:2px;margin-top:8px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:32px;padding:20px}
+.donut-svg{width:180px;height:180px}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:.85rem}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.donut-center{font-size:1.6rem;font-weight:800;fill:#fff}
+.donut-center-sub{font-size:.55rem;fill:var(--text2)}
+
+/* Tables */
+.info-grid{display:grid;grid-template-columns:200px 1fr;gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.info-grid>div{padding:10px 14px;background:var(--bg2)}
+.info-grid .label{background:var(--bg3);font-weight:600;color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+.hw-table,.sw-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.hw-table th,.sw-table th{text-align:left;padding:8px 12px;background:var(--bg3);color:var(--text2);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.hw-table td,.sw-table td{padding:8px 12px;border-bottom:1px solid var(--border)}
+
+/* Personnel */
+.personnel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.person-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.person-card h4{color:var(--accent2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.person-field{margin-bottom:8px}
+.person-field label{display:block;font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.person-field input{width:100%;font-size:.8rem;padding:5px 8px}
+
+/* Controls */
+.controls-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.controls-toolbar input[type=text]{flex:1;min-width:200px}
+.filter-btns{display:flex;gap:4px;flex-wrap:wrap}
+.filter-btn{padding:4px 12px;font-size:.75rem;border-radius:20px;background:var(--bg4);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.family-section{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.family-header{padding:12px 16px;background:var(--bg3);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.family-header:hover{background:var(--bg4)}
+.family-header h3{font-size:.9rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.family-header .family-stats{display:flex;gap:8px;align-items:center;font-size:.75rem}
+.family-progress{width:120px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.family-progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.family-body{display:none}
+.family-body.open{display:block}
+.control-row{border-top:1px solid var(--border);padding:12px 16px;display:grid;grid-template-columns:80px 1fr 160px;gap:12px;align-items:start;font-size:.85rem}
+.control-row:hover{background:var(--bg3)}
+.control-id{font-weight:700;color:var(--accent2);font-family:var(--mono);font-size:.8rem;padding-top:2px}
+.control-title{font-weight:600;color:#fff;margin-bottom:4px}
+.control-desc{color:var(--text2);font-size:.8rem}
+.control-impl{margin-top:6px}
+.control-impl textarea{font-size:.8rem;min-height:40px}
+.status-impl{color:var(--green)}
+.status-partial{color:var(--yellow)}
+.status-planned{color:var(--orange)}
+.status-inherited{color:var(--purple)}
+.status-na{color:var(--text2)}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:600;text-transform:uppercase}
+.status-badge.implemented{background:rgba(34,197,94,.15);color:var(--green)}
+.status-badge.partial{background:rgba(234,179,8,.15);color:var(--yellow)}
+.status-badge.planned{background:rgba(249,115,22,.15);color:var(--orange)}
+.status-badge.inherited{background:rgba(168,85,247,.15);color:var(--purple)}
+.status-badge.na{background:rgba(136,153,170,.15);color:var(--text2)}
+
+/* Boundary */
+.boundary-diagram{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:var(--mono);font-size:.7rem;line-height:1.4;white-space:pre;overflow-x:auto;color:var(--text2)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:.85rem;font-weight:600;transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* Print */
+@media print{
+  body{background:#fff;color:#000;font-size:11px}
+  .topbar,.topbar-actions,.controls-toolbar button,.btn-primary,.btn-secondary{display:none!important}
+  .section,.family-section{break-inside:avoid;border-color:#ccc}
+  .section-header,.family-header{background:#f0f0f0!important;color:#000!important}
+  .section-header h2,.family-header h3{color:#000!important}
+  .section-body.hidden{display:block!important}
+  .family-body{display:block!important}
+  .control-row{grid-template-columns:70px 1fr 120px}
+  .stat-card{border-color:#ccc}
+  .stat-num{color:#000}
+  .info-grid .label{background:#eee}
+  .boundary-diagram{background:#f9f9f9;border-color:#ccc;color:#333}
+  .controls-toolbar input,.controls-toolbar .filter-btns{display:none!important}
+  textarea,input,select{border:1px solid #ccc!important;background:#fff!important;color:#000!important}
+}
+@media(max-width:768px){
+  .container{padding:12px}
+  .dashboard{grid-template-columns:repeat(2,1fr)}
+  .control-row{grid-template-columns:1fr;gap:6px}
+  .donut-wrap{flex-direction:column}
+  .info-grid{grid-template-columns:1fr}
+  .personnel-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <div class="logo">R2</div>
+    <div>
+      <div class="topbar-title">RAISE 2.0 &mdash; System Security Plan</div>
+      <div class="topbar-sub">Secure Runtime Environment (SRE) &bull; FIPS 199: Moderate-Moderate-Moderate</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-secondary btn-sm" onclick="exportJSON()" title="Export for eMASS prep">Export JSON</button>
+    <button class="btn-secondary btn-sm" onclick="window.print()" title="Print / Save as PDF">Print PDF</button>
+    <button class="btn-primary btn-sm" onclick="saveAll()">Save</button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- PROGRESS DASHBOARD -->
+<div id="dashboard-section">
+  <div class="donut-wrap">
+    <svg class="donut-svg" viewBox="0 0 42 42" id="donut"></svg>
+    <div class="donut-legend" id="donut-legend"></div>
+  </div>
+  <div class="dashboard" id="stat-cards"></div>
+</div>
+
+<!-- SYSTEM INFORMATION -->
+<div class="section" id="sec-sysinfo">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="chevron">&#9660;</span> 1. System Information</h2>
+  </div>
+  <div class="section-body">
+    <div class="info-grid">
+      <div class="label">System Name</div><div>Secure Runtime Environment (SRE)</div>
+      <div class="label">Acronym</div><div>SRE</div>
+      <div class="label">Version</div><div>2.0</div>
+      <div class="label">eMASS ID</div><div><input type="text" data-field="emass_id" placeholder="Enter eMASS System ID" style="width:200px"></div>
+      <div class="label">Date</div><div>2026-03-11</div>
+      <div class="label">FIPS 199 Categorization</div><div><strong style="color:var(--yellow)">MODERATE &mdash; MODERATE &mdash; MODERATE</strong> (Confidentiality &mdash; Integrity &mdash; Availability)</div>
+      <div class="label">System Type</div><div>IS Enclave &mdash; Kubernetes DevSecOps Platform</div>
+      <div class="label">Operational Status</div><div>Operational</div>
+      <div class="label">Authorization Type</div><div>ATO + RAISE 2.0 RPOC Designation</div>
+      <div class="label">Description</div>
+      <div>A government-compliant, open-source Kubernetes platform providing a hardened runtime for deploying containerized applications. Built on RKE2 (DISA STIG-certified), Rocky Linux 9.7 (FIPS 140-2 enabled), and the CNCF ecosystem. Targets ATO, CMMC 2.0 Level 2, FedRAMP Moderate, NIST 800-53 Rev 5, and DISA STIGs. Provides zero-trust networking (Istio mTLS STRICT), policy-as-code (Kyverno), full observability (Prometheus/Grafana/Loki/Tempo), secrets management (OpenBao + ESO), supply chain security (Harbor + Trivy + Cosign), and GitOps-driven deployment (Flux CD).</div>
+      <div class="label">Authorization Boundary</div>
+      <div>The SRE authorization boundary encompasses the entire Kubernetes cluster including all control plane and worker nodes, the RKE2 distribution, all platform services deployed via Flux CD, the Istio service mesh, and all tenant workloads running within the cluster. External dependencies (DNS, NTP, upstream OS package repos) are outside the boundary. The cluster runs on Proxmox VE hypervisor infrastructure which is documented separately.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONNEL -->
+<div class="section" id="sec-personnel">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="chevron">&#9660;</span> 2. Information System Owner &amp; Key Personnel</h2>
+  </div>
+  <div class="section-body">
+    <div class="personnel-grid" id="personnel-grid"></div>
+  </div>
+</div>
+
+<!-- SYSTEM ENVIRONMENT -->
+<div class="section" id="sec-env">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="chevron">&#9660;</span> 3. System Environment</h2>
+  </div>
+  <div class="section-body">
+    <h3 style="color:#fff;margin-bottom:12px;font-size:.95rem">3.1 Hardware Inventory</h3>
+    <table class="hw-table" style="margin-bottom:24px">
+      <thead><tr><th>Hostname</th><th>Role</th><th>IP Address</th><th>OS</th><th>CPU</th><th>RAM</th><th>Storage</th></tr></thead>
+      <tbody>
+        <tr><td>sre-cp-1</td><td>Control Plane (server)</td><td>192.168.2.10</td><td>Rocky Linux 9.7</td><td>4 vCPU</td><td>16 GB</td><td>100 GB</td></tr>
+        <tr><td>sre-worker-1</td><td>Worker (agent)</td><td>192.168.2.11</td><td>Rocky Linux 9.7</td><td>4 vCPU</td><td>16 GB</td><td>100 GB</td></tr>
+        <tr><td>sre-worker-2</td><td>Worker (agent)</td><td>192.168.2.12</td><td>Rocky Linux 9.7</td><td>4 vCPU</td><td>16 GB</td><td>100 GB</td></tr>
+      </tbody>
+    </table>
+    <h3 style="color:#fff;margin-bottom:12px;font-size:.95rem">3.2 Software Inventory</h3>
+    <table class="sw-table">
+      <thead><tr><th>Component</th><th>Version</th><th>Purpose</th><th>Layer</th></tr></thead>
+      <tbody>
+        <tr><td>Rocky Linux</td><td>9.7</td><td>Base operating system (DISA STIG hardened, FIPS enabled, SELinux enforcing)</td><td>OS</td></tr>
+        <tr><td>RKE2</td><td>v1.34.4</td><td>DISA STIG-certified Kubernetes distribution (FIPS 140-2, CIS Benchmark)</td><td>Cluster</td></tr>
+        <tr><td>Flux CD</td><td>v2.8.1</td><td>GitOps engine &mdash; continuous reconciliation of cluster state from Git</td><td>Platform</td></tr>
+        <tr><td>Istio</td><td>1.25.2</td><td>Service mesh &mdash; mTLS STRICT, AuthorizationPolicy, traffic management</td><td>Core</td></tr>
+        <tr><td>Kyverno</td><td>3.3.7</td><td>Policy engine &mdash; admission control, image verification, Pod Security Standards</td><td>Core</td></tr>
+        <tr><td>cert-manager</td><td>1.14.4</td><td>Certificate lifecycle management &mdash; internal CA, Let's Encrypt integration</td><td>Core</td></tr>
+        <tr><td>kube-prometheus-stack</td><td>72.6.2</td><td>Monitoring &mdash; Prometheus, Grafana, AlertManager</td><td>Core</td></tr>
+        <tr><td>Grafana Loki</td><td>6.29.0</td><td>Log aggregation and querying</td><td>Core</td></tr>
+        <tr><td>Grafana Alloy</td><td>0.12.2</td><td>Log/trace/metric collection agent (replaces Promtail)</td><td>Core</td></tr>
+        <tr><td>Grafana Tempo</td><td>1.18.2</td><td>Distributed tracing storage and querying</td><td>Core</td></tr>
+        <tr><td>OpenBao</td><td>0.9.0</td><td>Secrets management (Vault-compatible, HA Raft storage, auto-unseal)</td><td>Core</td></tr>
+        <tr><td>External Secrets Operator</td><td>0.9.13</td><td>Sync secrets from OpenBao to Kubernetes Secrets</td><td>Core</td></tr>
+        <tr><td>NeuVector</td><td>2.8.6</td><td>Runtime security &mdash; container scanning, network DLP/WAF, behavioral monitoring</td><td>Core</td></tr>
+        <tr><td>Velero</td><td>11.3.2</td><td>Backup and disaster recovery (S3 backend, scheduled backups)</td><td>Core</td></tr>
+        <tr><td>MetalLB</td><td>0.14.9</td><td>Bare-metal LoadBalancer implementation (L2 mode, IP pool 192.168.2.200-210)</td><td>Core</td></tr>
+        <tr><td>OAuth2 Proxy</td><td>7.6.0</td><td>SSO gateway &mdash; Istio ext-authz integration with Keycloak OIDC</td><td>Core</td></tr>
+        <tr><td>Harbor</td><td>1.16.3</td><td>Container registry &mdash; Trivy scanning, Cosign verification, replication</td><td>Addon</td></tr>
+        <tr><td>Keycloak</td><td>24.8.1</td><td>Identity &amp; SSO &mdash; OIDC/SAML, MFA, RBAC group mapping</td><td>Addon</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- AUTHORIZATION BOUNDARY -->
+<div class="section" id="sec-boundary">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="chevron">&#9660;</span> 4. Authorization Boundary</h2>
+  </div>
+  <div class="section-body">
+    <p style="margin-bottom:16px;color:var(--text2)">The following diagram depicts the SRE authorization boundary, encompassing all cluster nodes, platform services, and tenant workloads. External systems (DNS, NTP, upstream repos, Proxmox hypervisor) are outside the boundary.</p>
+    <div class="boundary-diagram">
+ ┌─────────────────────────────────────────────────────────────────────────────────────┐
+ │                        SRE AUTHORIZATION BOUNDARY                                   │
+ │                                                                                     │
+ │  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐               │
+ │  │   sre-cp-1        │  │   sre-worker-1    │  │   sre-worker-2    │               │
+ │  │   192.168.2.10    │  │   192.168.2.11    │  │   192.168.2.12    │               │
+ │  │   Rocky 9.7 STIG  │  │   Rocky 9.7 STIG  │  │   Rocky 9.7 STIG  │               │
+ │  │   RKE2 Server     │  │   RKE2 Agent      │  │   RKE2 Agent      │               │
+ │  │   SELinux Enforc.  │  │   SELinux Enforc.  │  │   SELinux Enforc.  │               │
+ │  │   FIPS 140-2      │  │   FIPS 140-2      │  │   FIPS 140-2      │               │
+ │  └───────┬───────────┘  └───────┬───────────┘  └───────┬───────────┘               │
+ │          │                      │                      │                            │
+ │          └──────────────────────┼──────────────────────┘                            │
+ │                                 │                                                   │
+ │  ┌──────────────────────────────┴──────────────────────────────────────┐            │
+ │  │                     KUBERNETES CLUSTER (RKE2 v1.34.4)               │            │
+ │  │                                                                     │            │
+ │  │  ┌─────────────────────────────────────────────────────────────┐   │            │
+ │  │  │  PLATFORM SERVICES (Flux CD GitOps)                         │   │            │
+ │  │  │                                                             │   │            │
+ │  │  │  Istio 1.25.2 (mTLS STRICT) ──── Kyverno 3.3.7 (Policy)  │   │            │
+ │  │  │  cert-manager 1.14.4 ──── Prometheus/Grafana 72.6.2       │   │            │
+ │  │  │  Loki 6.29.0 + Alloy 0.12.2 ──── Tempo 1.18.2            │   │            │
+ │  │  │  OpenBao 0.9.0 + ESO 0.9.13 ──── NeuVector 2.8.6         │   │            │
+ │  │  │  Harbor 1.16.3 ──── Keycloak 24.8.1 ──── MetalLB 0.14.9  │   │            │
+ │  │  │  OAuth2 Proxy ──── Velero 11.3.2                           │   │            │
+ │  │  └─────────────────────────────────────────────────────────────┘   │            │
+ │  │                                                                     │            │
+ │  │  ┌─────────────────────────────────────────────────────────────┐   │            │
+ │  │  │  TENANT WORKLOADS                                           │   │            │
+ │  │  │  team-alpha / team-beta / ...                               │   │            │
+ │  │  │  (ResourceQuota, LimitRange, NetworkPolicy, Istio sidecar)  │   │            │
+ │  │  └─────────────────────────────────────────────────────────────┘   │            │
+ │  └─────────────────────────────────────────────────────────────────────┘            │
+ │                                                                                     │
+ │  ┌────────────────────┐                                                            │
+ │  │  MetalLB LB Pool   │  192.168.2.200 ── Istio Gateway (443/80)                  │
+ │  │  192.168.2.200-210 │  192.168.2.201 ── Harbor Registry                          │
+ │  └────────────────────┘                                                            │
+ └─────────────────────────────┬───────────────────────────────────────────────────────┘
+                               │
+              ─ ─ ─ ─ ─ ─ ─ ─ ┼ ─ ─ ─ ─ ─ ─ ─ ─  EXTERNAL (Outside Boundary)
+                               │
+                ┌──────────────┴──────────────┐
+                │  Proxmox VE Hypervisor      │
+                │  DNS / NTP / Upstream Repos  │
+                │  End User Browsers           │
+                └─────────────────────────────┘</div>
+  </div>
+</div>
+
+<!-- SECURITY CONTROLS -->
+<div class="section" id="sec-controls">
+  <div class="section-header" onclick="toggleSection(this)">
+    <h2><span class="chevron">&#9660;</span> 5. Security Controls (NIST 800-53 Rev 5 &mdash; Moderate Baseline)</h2>
+  </div>
+  <div class="section-body">
+    <div class="controls-toolbar">
+      <input type="text" id="control-search" placeholder="Search controls by ID or keyword..." oninput="filterControls()">
+      <div class="filter-btns">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All</button>
+        <button class="filter-btn" data-filter="Implemented" onclick="setFilter(this)">Implemented</button>
+        <button class="filter-btn" data-filter="Partially Implemented" onclick="setFilter(this)">Partial</button>
+        <button class="filter-btn" data-filter="Planned" onclick="setFilter(this)">Planned</button>
+        <button class="filter-btn" data-filter="Inherited" onclick="setFilter(this)">Inherited</button>
+        <button class="filter-btn" data-filter="Not Applicable" onclick="setFilter(this)">N/A</button>
+      </div>
+    </div>
+    <div id="controls-container"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- DATA ----
+const PERSONNEL_ROLES = [
+  {key:'sys_owner',title:'System Owner'},
+  {key:'issm',title:'Information System Security Manager (ISSM)'},
+  {key:'isso',title:'Information System Security Officer (ISSO)'},
+  {key:'ao',title:'Authorizing Official (AO)'},
+  {key:'sca',title:'Security Control Assessor (SCA)'}
+];
+
+const CONTROL_FAMILIES = [
+  {id:'AC',name:'Access Control',desc:'Policies and mechanisms for controlling access to information systems and resources.',controls:[
+    {id:'AC-1',title:'Policy and Procedures',status:'Implemented',impl:'Access control policy documented in the SRE operator guide and enforced via GitOps. Kubernetes RBAC policies, Istio AuthorizationPolicies, and Kyverno ClusterPolicies are version-controlled in Git and continuously reconciled by Flux CD. Policy reviews conducted quarterly.',party:'System Owner'},
+    {id:'AC-2',title:'Account Management',status:'Implemented',impl:'Keycloak 24.8.1 provides centralized identity management with automated provisioning/deprovisioning. Three RBAC groups (sre-admins, sre-viewers, developers) map to Kubernetes ClusterRoles. OIDC clients configured for all platform UIs (Grafana, Harbor, NeuVector, Dashboard). Account reviews enforced via Keycloak admin console. Inactive accounts disabled after 90 days.',party:'ISSM'},
+    {id:'AC-3',title:'Access Enforcement',status:'Implemented',impl:'Multi-layer enforcement: (1) Kubernetes RBAC with least-privilege ClusterRoles/Roles bound to Keycloak groups, (2) Istio AuthorizationPolicy CRDs enforce service-to-service access at L7, (3) Kyverno policies prevent namespace escape and privilege escalation, (4) NetworkPolicies enforce default-deny with explicit allows per namespace.',party:'System Admin'},
+    {id:'AC-4',title:'Information Flow Enforcement',status:'Implemented',impl:'Istio mTLS STRICT mode encrypts all pod-to-pod communication. NetworkPolicies enforce default-deny-all in every namespace with explicit ingress/egress rules. Istio AuthorizationPolicy restricts which services can communicate. NeuVector network DLP monitors for sensitive data in transit.',party:'System Admin'},
+    {id:'AC-5',title:'Separation of Duties',status:'Implemented',impl:'Keycloak groups enforce role separation: sre-admins (platform operations), developers (app deployment only), sre-viewers (read-only monitoring). Flux CD RBAC restricts platform namespace modifications to flux-system ServiceAccount only. Git branch protection requires PR reviews.',party:'ISSM'},
+    {id:'AC-6',title:'Least Privilege',status:'Implemented',impl:'All workloads run as non-root with read-only root filesystem. Kyverno policies enforce: disallow-privileged-containers, require-run-as-nonroot, drop-all-capabilities. RBAC roles scoped to specific namespaces. ServiceAccounts have automountServiceAccountToken=false by default. Pod Security Standards (Restricted) enforced via Kyverno.',party:'System Admin'},
+    {id:'AC-7',title:'Unsuccessful Logon Attempts',status:'Implemented',impl:'Keycloak brute force detection enabled: account locked after 5 failed attempts for 30 minutes. Failed authentication events logged to Loki via Keycloak audit log. AlertManager rule triggers on excessive failed logins.',party:'ISSM'},
+    {id:'AC-8',title:'System Use Notification',status:'Implemented',impl:'Login banner configured on all SSH sessions via Ansible os-hardening role. Keycloak login page displays DoD consent banner. Istio gateway returns system use notification for unauthenticated requests.',party:'ISSO'},
+    {id:'AC-11',title:'Session Lock',status:'Implemented',impl:'Keycloak SSO session timeout set to 30 minutes idle / 8 hours max. OAuth2 Proxy enforces session expiry. Dashboard implements client-side session timeout with automatic logout.',party:'System Admin'},
+    {id:'AC-12',title:'Session Termination',status:'Implemented',impl:'Keycloak terminates sessions after configurable idle period. OAuth2 Proxy session cookies have expiry. All platform UIs inherit session management from Keycloak OIDC.',party:'System Admin'},
+    {id:'AC-14',title:'Permitted Actions Without Identification',status:'Implemented',impl:'Istio PeerAuthentication STRICT mode prevents all unauthenticated service-to-service communication. OAuth2 Proxy + Istio ext-authz requires Keycloak authentication for all external-facing services. Only the health check endpoints (/healthz, /readyz) are accessible without authentication.',party:'System Admin'},
+    {id:'AC-17',title:'Remote Access',status:'Implemented',impl:'All management interfaces protected by Keycloak SSO with MFA. SSH access requires key-based authentication (password auth disabled). Istio gateway terminates TLS for all remote access. VPN required for cluster API access in production.',party:'ISSM'},
+    {id:'AC-20',title:'Use of External Systems',status:'Planned',impl:'Policy to be documented for external system connections. Currently, Istio egress policies restrict outbound traffic to approved destinations only. NetworkPolicies enforce default-deny egress.',party:'ISSM'},
+    {id:'AC-22',title:'Publicly Accessible Content',status:'Implemented',impl:'No content is publicly accessible by default. All services are behind OAuth2 Proxy requiring Keycloak authentication. Istio gateway restricts ingress to authenticated users only.',party:'ISSO'}
+  ]},
+  {id:'AT',name:'Awareness and Training',desc:'Security awareness and training for personnel.',controls:[
+    {id:'AT-1',title:'Policy and Procedures',status:'Inherited',impl:'Security awareness and training policy inherited from the parent organization. SRE-specific training materials maintained in docs/ directory.',party:'Organization'},
+    {id:'AT-2',title:'Literacy Training and Awareness',status:'Inherited',impl:'Annual security awareness training provided by the parent organization. Platform-specific security practices documented in security-guide.md and onboarding-guide.md.',party:'Organization'},
+    {id:'AT-3',title:'Role-Based Training',status:'Inherited',impl:'Role-based training inherited from organization. SRE operator and developer guides provide platform-specific training materials. New team members complete onboarding wizard in the SRE Dashboard.',party:'Organization'},
+    {id:'AT-4',title:'Training Records',status:'Inherited',impl:'Training records maintained by parent organization HR/training department.',party:'Organization'}
+  ]},
+  {id:'AU',name:'Audit and Accountability',desc:'Audit event generation, review, analysis, reporting, and protection.',controls:[
+    {id:'AU-1',title:'Policy and Procedures',status:'Implemented',impl:'Audit policy defined in platform configuration and enforced via GitOps. Kubernetes API audit policy captures all authentication and resource CRUD operations. All platform components configured to output structured JSON logs to stdout/stderr for collection by Alloy.',party:'ISSM'},
+    {id:'AU-2',title:'Event Logging',status:'Implemented',impl:'Comprehensive audit events captured: (1) Kubernetes API server audit log (all auth, create, update, delete, patch), (2) Istio access logs for all mesh traffic with source/destination identity, (3) Keycloak authentication events (login, logout, failed attempts, token issuance), (4) OpenBao audit log (all secret access, policy changes), (5) Kyverno admission decisions (allow/deny with policy details), (6) NeuVector security events (process anomalies, network violations).',party:'System Admin'},
+    {id:'AU-3',title:'Content of Audit Records',status:'Implemented',impl:'All audit records include: timestamp (UTC), source IP/identity, action performed, resource affected, outcome (success/failure), and user/ServiceAccount identity. Kubernetes audit log includes request/response bodies for mutating operations. Istio logs include full L7 metadata.',party:'System Admin'},
+    {id:'AU-4',title:'Audit Log Storage Capacity',status:'Implemented',impl:'Loki deployed with S3-compatible object storage backend. Default retention: 30 days for application logs, 90 days for audit namespace logs. Storage capacity monitored by Prometheus with AlertManager alerts at 80% threshold. Long-term archival configurable to external S3.',party:'System Admin'},
+    {id:'AU-5',title:'Response to Audit Processing Failures',status:'Implemented',impl:'Prometheus monitors Loki ingestion rate and lag. AlertManager fires critical alert on Loki ingestion failures or disk pressure. Alloy configured with retry and backpressure mechanisms. Grafana dashboard "SRE Logging Health" provides real-time visibility into audit pipeline status.',party:'System Admin'},
+    {id:'AU-6',title:'Audit Record Review, Analysis, Reporting',status:'Implemented',impl:'Grafana dashboards provide: (1) Security Events dashboard with Keycloak auth events, (2) Kyverno Violations dashboard with policy compliance trends, (3) NeuVector Alerts dashboard with runtime security events, (4) Kubernetes Audit dashboard with API server activity. Daily compliance scanner CronJob generates automated reports.',party:'ISSO'},
+    {id:'AU-8',title:'Time Stamps',status:'Implemented',impl:'NTP (chrony) configured on all nodes via Ansible os-hardening role. All logs use UTC timestamps. Kubernetes API server, Istio proxy, and all platform components synchronized to the same NTP source. Time skew monitored by Prometheus node_exporter.',party:'System Admin'},
+    {id:'AU-9',title:'Protection of Audit Information',status:'Implemented',impl:'Loki log storage encrypted at rest via S3 backend encryption. RBAC restricts log access: only sre-admins can query audit namespace logs. Kubernetes audit logs written to separate log volume. Alloy runs with read-only access to log sources. Tamper detection via log hash verification.',party:'System Admin'},
+    {id:'AU-11',title:'Audit Record Retention',status:'Implemented',impl:'Retention policy: application logs 30 days, audit logs 90 days, security events 1 year. Loki retention enforced via compactor configuration. Velero backs up Loki configuration. Long-term archival to S3 with lifecycle policies.',party:'ISSM'},
+    {id:'AU-12',title:'Audit Record Generation',status:'Implemented',impl:'All platform components configured to output structured JSON logs to stdout/stderr. Alloy DaemonSet collects from all nodes and containers. Kubernetes audit policy set to RequestResponse level for sensitive resources. Istio access logging enabled mesh-wide. OpenBao audit backend enabled with file output to Alloy.',party:'System Admin'}
+  ]},
+  {id:'CA',name:'Assessment, Authorization, and Monitoring',desc:'Security assessment, system authorization, and continuous monitoring.',controls:[
+    {id:'CA-1',title:'Policy and Procedures',status:'Implemented',impl:'Assessment and authorization procedures documented. Continuous monitoring implemented via Prometheus, Grafana, Kyverno policy reports, and NeuVector. OSCAL SSP maintained in compliance/ directory.',party:'ISSM'},
+    {id:'CA-2',title:'Control Assessments',status:'Implemented',impl:'Automated control assessment via: (1) Kyverno PolicyReports (continuous compliance checks against all ClusterPolicies), (2) NeuVector CIS Kubernetes benchmark scanning, (3) Daily compliance scanner CronJob running 8 automated checks, (4) OSCAL-format compliance artifacts generated from live cluster state.',party:'SCA'},
+    {id:'CA-3',title:'Information Exchange',status:'Planned',impl:'Interconnection Security Agreements (ISA) to be documented for external system connections. Istio egress policies restrict and audit all outbound connections.',party:'ISSM'},
+    {id:'CA-5',title:'Plan of Action and Milestones',status:'Implemented',impl:'POA&M tracked in this SSP. Gaps identified via automated compliance scanning are added to the POA&M section. Kyverno Audit-mode policies generate findings that feed into POA&M.',party:'ISSO'},
+    {id:'CA-6',title:'Authorization',status:'Planned',impl:'ATO package in preparation. This SSP, along with OSCAL artifacts in compliance/oscal/, STIG checklists, and Kyverno policy reports form the authorization evidence package.',party:'AO'},
+    {id:'CA-7',title:'Continuous Monitoring',status:'Implemented',impl:'Continuous monitoring via: (1) Prometheus + Grafana (real-time infrastructure and application metrics, 30+ PrometheusRules), (2) AlertManager (Slack, PagerDuty, email notification channels), (3) Kyverno background scanning (reports on non-compliant existing resources), (4) NeuVector runtime anomaly detection, (5) Harbor + Trivy continuous vulnerability scanning, (6) Daily compliance CronJob with 8 automated checks.',party:'ISSO'},
+    {id:'CA-9',title:'Internal System Connections',status:'Implemented',impl:'All internal system connections documented via Istio service mesh topology. Kiali provides real-time visualization of service-to-service communication. NetworkPolicies explicitly define all allowed internal connections.',party:'System Admin'}
+  ]},
+  {id:'CM',name:'Configuration Management',desc:'Configuration baseline, change control, and least functionality.',controls:[
+    {id:'CM-1',title:'Policy and Procedures',status:'Implemented',impl:'Configuration management policy enforced through GitOps. All platform and application configuration stored in Git with version control. Flux CD continuously reconciles cluster state to match Git baseline. Changes require PR review and automated validation.',party:'ISSM'},
+    {id:'CM-2',title:'Baseline Configuration',status:'Implemented',impl:'Git repository IS the configuration baseline. Flux CD reconciles all 16+ HelmReleases every 10 minutes, detecting and reverting any drift. RKE2 CIS benchmark profile is the Kubernetes baseline. Rocky Linux 9 DISA STIG applied via Ansible is the OS baseline. All component versions pinned explicitly (no :latest tags).',party:'System Admin'},
+    {id:'CM-3',title:'Configuration Change Control',status:'Implemented',impl:'All changes follow GitOps workflow: (1) Create feature branch, (2) Submit PR with conventional commit message, (3) Automated linting and validation (task lint, task validate), (4) Peer review required, (5) Merge to main triggers Flux reconciliation, (6) Full audit trail in Git history. Emergency changes documented and reviewed post-facto.',party:'System Admin'},
+    {id:'CM-4',title:'Impact Analyses',status:'Implemented',impl:'Flux dry-run (flux diff) used before applying changes. Helm template rendering validates manifests before deploy. Kyverno policies catch non-compliant configurations at admission time. Flagger available for canary deployments to limit blast radius.',party:'System Admin'},
+    {id:'CM-5',title:'Access Restrictions for Change',status:'Implemented',impl:'Git branch protection: only authorized users can merge to main. Flux RBAC: only flux-system ServiceAccount can modify platform namespaces. Kyverno policies prevent direct kubectl modifications to platform resources. Keycloak RBAC restricts who can access CI/CD pipelines.',party:'ISSM'},
+    {id:'CM-6',title:'Configuration Settings',status:'Implemented',impl:'OS: Rocky Linux 9 DISA STIG applied via Ansible os-hardening role (SSHD hardening, auditd, sysctl, filesystem, kernel, firewall, crypto-policy, AIDE). Kubernetes: RKE2 CIS 1.23 hardening profile enabled by default. Applications: Kyverno enforces 7 ClusterPolicies (6 Enforce, 1 Audit) including security contexts, resource limits, label requirements.',party:'System Admin'},
+    {id:'CM-7',title:'Least Functionality',status:'Implemented',impl:'Kyverno policies restrict: privileged containers, host namespaces, host ports, dangerous sysctls, privilege escalation, volume types. All containers run with minimal capabilities (drop ALL). NeuVector behavioral learning blocks unexpected processes and network connections. Only approved container images from Harbor allowed.',party:'System Admin'},
+    {id:'CM-8',title:'System Component Inventory',status:'Implemented',impl:'Flux tracks all deployed components with exact versions. Harbor maintains complete image inventory with SBOMs (SPDX + CycloneDX). This SSP software inventory table maintained. Kubernetes API provides real-time inventory of all running workloads.',party:'System Admin'},
+    {id:'CM-10',title:'Software Usage Restrictions',status:'Implemented',impl:'Kyverno restrict-image-registries policy limits all container images to harbor.sre.internal. Harbor enforces Trivy scan gates (CRITICAL/HIGH vulnerabilities block deployment). Cosign image signature verification ensures only signed images deploy.',party:'System Admin'},
+    {id:'CM-11',title:'User-Installed Software',status:'Implemented',impl:'Kyverno ClusterPolicy restrict-image-registries prevents users from deploying images from unauthorized registries. verify-image-signatures policy requires Cosign signatures. Tenant namespaces have ResourceQuotas preventing resource abuse.',party:'System Admin'}
+  ]},
+  {id:'CP',name:'Contingency Planning',desc:'Contingency planning, backup, and disaster recovery.',controls:[
+    {id:'CP-1',title:'Policy and Procedures',status:'Implemented',impl:'Contingency planning documented in operator-guide.md. Velero backup schedules configured. Disaster recovery runbooks maintained. RTO: 4 hours, RPO: 1 hour.',party:'ISSM'},
+    {id:'CP-2',title:'Contingency Plan',status:'Implemented',impl:'Contingency plan includes: (1) Velero backup/restore procedures, (2) RKE2 cluster rebuild from Ansible playbooks, (3) GitOps recovery (re-bootstrap Flux from Git repo), (4) Data recovery from S3 backups. Alternative processing site: rebuild on any Proxmox VE or cloud environment.',party:'ISSO'},
+    {id:'CP-4',title:'Contingency Plan Testing',status:'Planned',impl:'Velero restore testing CronJob configured (restores to test namespace, validates, cleans up). Full DR test planned quarterly. GitOps rebuild test validates Flux can re-deploy all components from scratch.',party:'ISSO'},
+    {id:'CP-6',title:'Alternate Storage Site',status:'Implemented',impl:'Velero backups stored in S3-compatible object storage. Backup replication to alternate storage location configurable. Git repository serves as source-of-truth for all configuration (stored in GitHub/GitLab).',party:'System Admin'},
+    {id:'CP-7',title:'Alternate Processing Site',status:'Planned',impl:'Platform can be rebuilt on any Proxmox VE or cloud environment (AWS, Azure) using OpenTofu modules and Ansible playbooks. Air-gap scripts (mirror-images, export-bundle, import) enable portable deployment.',party:'System Admin'},
+    {id:'CP-9',title:'System Backup',status:'Implemented',impl:'Velero backup schedules: daily (retain 7 days), weekly (retain 4 weeks), monthly (retain 3 months). Backups include all namespaces except kube-system and flux-system. PV snapshots via CSI. Git repo backed up via standard Git hosting (GitHub/GitLab). OpenBao data backed up via Raft snapshots.',party:'System Admin'},
+    {id:'CP-10',title:'System Recovery and Reconstitution',status:'Implemented',impl:'Recovery procedures: (1) Rebuild nodes via Ansible playbooks, (2) Bootstrap RKE2 cluster, (3) Bootstrap Flux CD from Git, (4) Flux reconciles all platform services automatically, (5) Restore data from Velero backups. Estimated recovery time: 2-4 hours for full platform.',party:'System Admin'}
+  ]},
+  {id:'IA',name:'Identification and Authentication',desc:'User/device identification and authentication mechanisms.',controls:[
+    {id:'IA-1',title:'Policy and Procedures',status:'Implemented',impl:'Identification and authentication policy enforced through Keycloak configuration, Istio mTLS, and Kyverno policies. All authentication requirements documented in security-guide.md.',party:'ISSM'},
+    {id:'IA-2',title:'Identification and Authentication (Organizational Users)',status:'Implemented',impl:'Keycloak 24.8.1 provides SSO with OIDC for all platform UIs. MFA enforced for all users. Five OIDC clients configured (Grafana, Harbor, NeuVector, Dashboard, OAuth2 Proxy). Users authenticate via Keycloak, which federates to AD/LDAP as needed. Kubernetes API authentication via OIDC tokens.',party:'ISSM'},
+    {id:'IA-2(1)',title:'Multi-Factor Authentication to Privileged Accounts',status:'Implemented',impl:'Keycloak MFA (TOTP/WebAuthn) required for all sre-admins group members. OTP policy enforced at Keycloak realm level. Failed MFA attempts logged and alerted.',party:'ISSM'},
+    {id:'IA-2(2)',title:'Multi-Factor Authentication to Non-Privileged Accounts',status:'Implemented',impl:'Keycloak MFA enforced for all users in SRE realm, including developers and sre-viewers groups. MFA configuration managed centrally in Keycloak.',party:'ISSM'},
+    {id:'IA-3',title:'Device Identification and Authentication',status:'Implemented',impl:'Istio mTLS with SPIFFE identity framework provides cryptographic identity for all workloads. Every pod gets a unique X.509 certificate via Istio Citadel. Service-to-service communication requires mutual TLS authentication.',party:'System Admin'},
+    {id:'IA-4',title:'Identifier Management',status:'Implemented',impl:'Keycloak manages user identifiers with uniqueness enforcement. Kubernetes ServiceAccounts provide workload identity. Istio SPIFFE IDs (spiffe://cluster.local/ns/<ns>/sa/<sa>) provide mesh identity.',party:'ISSM'},
+    {id:'IA-5',title:'Authenticator Management',status:'Implemented',impl:'Keycloak password policies: minimum 12 characters, complexity requirements, 90-day rotation. cert-manager automates certificate rotation. OpenBao manages secret rotation with configurable TTLs. SSH keys managed via Ansible with regular rotation.',party:'ISSM'},
+    {id:'IA-6',title:'Authentication Feedback',status:'Implemented',impl:'Keycloak login page provides generic error messages that do not reveal whether username or password was incorrect. Failed authentication attempts are rate-limited and logged.',party:'System Admin'},
+    {id:'IA-8',title:'Identification and Authentication (Non-Organizational Users)',status:'Implemented',impl:'All external traffic passes through Istio gateway with OAuth2 Proxy requiring Keycloak authentication. No anonymous access to any platform service. API access requires valid OIDC token.',party:'ISSM'}
+  ]},
+  {id:'IR',name:'Incident Response',desc:'Incident response planning, handling, and reporting.',controls:[
+    {id:'IR-1',title:'Policy and Procedures',status:'Implemented',impl:'Incident response procedures documented in security-guide.md. AlertManager configured with Slack (security channel), PagerDuty, and email receivers. Grafana dashboards provide incident visibility.',party:'ISSM'},
+    {id:'IR-2',title:'Incident Response Training',status:'Inherited',impl:'Incident response training provided by parent organization. Platform-specific incident procedures documented in operator-guide.md.',party:'Organization'},
+    {id:'IR-4',title:'Incident Handling',status:'Implemented',impl:'Incident handling pipeline: (1) NeuVector detects runtime anomaly or Kyverno reports policy violation, (2) Alert fires via Prometheus/AlertManager, (3) Notification sent to security Slack channel + PagerDuty, (4) Responder uses Grafana dashboards for investigation (metrics, logs, traces), (5) Containment via NeuVector network quarantine or Flux rollback.',party:'ISSO'},
+    {id:'IR-5',title:'Incident Monitoring',status:'Implemented',impl:'Continuous monitoring via: (1) NeuVector runtime security events (process anomalies, file system changes, network violations), (2) Kyverno policy violation reports, (3) Prometheus alert history in AlertManager, (4) 10+ Grafana dashboards for security event visualization, (5) Keycloak authentication event monitoring.',party:'ISSO'},
+    {id:'IR-6',title:'Incident Reporting',status:'Implemented',impl:'Grafana dashboards with exportable incident reports. Kyverno PolicyReports queryable via kubectl. AlertManager provides alert history with timestamps and resolution status. Compliance scanner CronJob generates daily incident summary.',party:'ISSO'},
+    {id:'IR-7',title:'Incident Response Assistance',status:'Planned',impl:'Runbooks linked from AlertManager alert annotations. On-call rotation to be established. Escalation procedures to be documented.',party:'ISSO'},
+    {id:'IR-8',title:'Incident Response Plan',status:'Implemented',impl:'IRP documented covering: detection (monitoring stack), analysis (Grafana investigation), containment (NeuVector quarantine, Flux suspend), eradication (patch and redeploy via GitOps), recovery (Velero restore if needed), lessons learned (post-incident review).',party:'ISSM'}
+  ]},
+  {id:'MA',name:'Maintenance',desc:'System maintenance procedures and tools.',controls:[
+    {id:'MA-1',title:'Policy and Procedures',status:'Implemented',impl:'Maintenance policy enforced through GitOps workflow. All maintenance activities performed via Git PRs and Flux reconciliation. Ansible playbooks for OS-level maintenance are version-controlled and idempotent.',party:'ISSM'},
+    {id:'MA-2',title:'Controlled Maintenance',status:'Implemented',impl:'All maintenance performed via: (1) Ansible playbooks for OS patching and hardening updates, (2) Flux CD HelmRelease version bumps for platform component upgrades, (3) Git PR workflow ensures all changes are reviewed and audited. Maintenance windows scheduled and communicated.',party:'System Admin'},
+    {id:'MA-3',title:'Maintenance Tools',status:'Implemented',impl:'Approved maintenance tools: Ansible (OS management), kubectl/flux CLI (Kubernetes), Git (configuration changes), Helm (chart management). All tools version-controlled. No ad-hoc SSH modifications permitted in production.',party:'System Admin'},
+    {id:'MA-4',title:'Nonlocal Maintenance',status:'Implemented',impl:'Remote maintenance via SSH with key-based authentication only (password disabled). All SSH sessions audited via auditd. Session recording via Kubernetes audit log for kubectl access. MFA required for all remote management via Keycloak SSO.',party:'System Admin'},
+    {id:'MA-5',title:'Maintenance Personnel',status:'Implemented',impl:'Maintenance access restricted to sre-admins Keycloak group. Kubernetes RBAC limits cluster-admin access. All maintenance actions logged in Git history and Kubernetes audit log.',party:'ISSM'},
+    {id:'MA-6',title:'Timely Maintenance',status:'Implemented',impl:'Automated monitoring via Prometheus detects component health issues. AlertManager triggers maintenance alerts. Flux CD automatically remediates failed deployments (3 retry attempts). Velero backup schedules ensure data protection during maintenance.',party:'System Admin'}
+  ]},
+  {id:'MP',name:'Media Protection',desc:'Protection of digital and physical media.',controls:[
+    {id:'MP-1',title:'Policy and Procedures',status:'Inherited',impl:'Media protection policy inherited from parent organization and facility management.',party:'Organization'},
+    {id:'MP-2',title:'Media Access',status:'Implemented',impl:'OpenBao access policies restrict secret access to authorized ServiceAccounts. Kubernetes Secrets encrypted at rest (RKE2 default encryption). RBAC restricts access to sensitive ConfigMaps and Secrets. Harbor project RBAC controls image access.',party:'System Admin'},
+    {id:'MP-4',title:'Media Storage',status:'Implemented',impl:'All persistent data encrypted at rest. OpenBao uses encrypted storage backend. Loki log storage encrypted via S3 backend. Velero backups encrypted. Kubernetes etcd encrypted at rest (RKE2 default).',party:'System Admin'},
+    {id:'MP-6',title:'Media Sanitization',status:'Inherited',impl:'Physical media sanitization inherited from facility management. Kubernetes PV reclaim policy set to Delete. OpenBao secure deletion of secrets.',party:'Organization'},
+    {id:'MP-7',title:'Media Use',status:'Implemented',impl:'Kyverno restrict-volume-types policy limits PV types to approved list. hostPath mounts restricted by Kyverno policy. Container images sourced only from approved Harbor registry.',party:'System Admin'}
+  ]},
+  {id:'PE',name:'Physical and Environmental Protection',desc:'Physical access controls and environmental protections.',controls:[
+    {id:'PE-1',title:'Policy and Procedures',status:'Inherited',impl:'Physical and environmental protection policies inherited from facility management. SRE platform runs on Proxmox VE infrastructure managed by the hosting facility.',party:'Facility'},
+    {id:'PE-2',title:'Physical Access Authorizations',status:'Inherited',impl:'Physical access to server hardware managed by facility security. SRE team does not have direct physical access requirements — all management is remote.',party:'Facility'},
+    {id:'PE-3',title:'Physical Access Control',status:'Inherited',impl:'Physical access controls (badge readers, cameras, mantrap) provided by hosting facility.',party:'Facility'},
+    {id:'PE-6',title:'Monitoring Physical Access',status:'Inherited',impl:'Physical access monitoring (cameras, visitor logs) provided by hosting facility.',party:'Facility'},
+    {id:'PE-8',title:'Visitor Access Records',status:'Inherited',impl:'Visitor access records maintained by hosting facility.',party:'Facility'},
+    {id:'PE-9',title:'Power Equipment and Cabling',status:'Inherited',impl:'Power protection (UPS, generator) provided by hosting facility.',party:'Facility'},
+    {id:'PE-10',title:'Emergency Shutoff',status:'Inherited',impl:'Emergency power shutoff capabilities provided by hosting facility.',party:'Facility'},
+    {id:'PE-11',title:'Emergency Power',status:'Inherited',impl:'Emergency power (UPS/generator) provided by hosting facility.',party:'Facility'},
+    {id:'PE-12',title:'Emergency Lighting',status:'Inherited',impl:'Emergency lighting provided by hosting facility.',party:'Facility'},
+    {id:'PE-13',title:'Fire Protection',status:'Inherited',impl:'Fire detection and suppression provided by hosting facility.',party:'Facility'},
+    {id:'PE-14',title:'Environmental Controls',status:'Inherited',impl:'Temperature and humidity controls provided by hosting facility HVAC systems.',party:'Facility'},
+    {id:'PE-15',title:'Water Damage Protection',status:'Inherited',impl:'Water damage protection provided by hosting facility.',party:'Facility'},
+    {id:'PE-16',title:'Delivery and Removal',status:'Inherited',impl:'Equipment delivery and removal procedures managed by hosting facility.',party:'Facility'}
+  ]},
+  {id:'PL',name:'Planning',desc:'Security planning and rules of behavior.',controls:[
+    {id:'PL-1',title:'Policy and Procedures',status:'Implemented',impl:'Security planning policy documented in this SSP and supporting documents. System security plan maintained as version-controlled artifacts in the Git repository.',party:'ISSM'},
+    {id:'PL-2',title:'System Security and Privacy Plans',status:'Implemented',impl:'This SSP serves as the system security plan. Maintained as an interactive HTML document with JSON export capability for eMASS. OSCAL SSP artifacts in compliance/oscal/. Updated with each platform change.',party:'ISSM'},
+    {id:'PL-4',title:'Rules of Behavior',status:'Planned',impl:'Rules of behavior document to be created and signed by all users. SSH login banner and Keycloak consent screen reference the rules of behavior.',party:'ISSM'},
+    {id:'PL-8',title:'Security and Privacy Architectures',status:'Implemented',impl:'Security architecture documented in docs/architecture.md and docs/decisions.md (9 ADRs). Architecture covers all four layers: cluster foundation, platform services, developer experience, and supply chain security. Authorization boundary diagram included in this SSP.',party:'System Admin'},
+    {id:'PL-10',title:'Baseline Selection',status:'Implemented',impl:'NIST 800-53 Rev 5 Moderate baseline selected based on FIPS 199 categorization of Moderate-Moderate-Moderate. All applicable control families addressed in this SSP.',party:'ISSM'},
+    {id:'PL-11',title:'Baseline Tailoring',status:'Implemented',impl:'Baseline tailored for containerized Kubernetes environment. Physical controls (PE family) inherited from facility. Some personnel controls (PS family) inherited from organization. Platform-specific controls enhanced beyond baseline where automation enables stronger implementation.',party:'ISSM'}
+  ]},
+  {id:'PM',name:'Program Management',desc:'Information security program management.',controls:[
+    {id:'PM-1',title:'Information Security Program Plan',status:'Inherited',impl:'Information security program plan maintained by parent organization CISO office.',party:'Organization'},
+    {id:'PM-2',title:'Information Security Program Leadership Role',status:'Inherited',impl:'CISO and security program leadership roles filled by parent organization.',party:'Organization'},
+    {id:'PM-3',title:'Information Security and Privacy Resources',status:'Inherited',impl:'Security resource allocation managed by parent organization.',party:'Organization'},
+    {id:'PM-4',title:'Plan of Action and Milestones Process',status:'Implemented',impl:'POA&M maintained in this SSP. Automated compliance scanning identifies gaps. Kyverno Audit-mode policies generate findings that feed POA&M. Gaps tracked to closure with target dates.',party:'ISSM'},
+    {id:'PM-5',title:'System Inventory',status:'Implemented',impl:'SRE platform registered in organizational system inventory. All components tracked in this SSP software inventory table and via Flux CD component tracking.',party:'ISSM'},
+    {id:'PM-6',title:'Measures of Performance',status:'Implemented',impl:'Security metrics collected via Prometheus: policy compliance rate (Kyverno), vulnerability scan results (Trivy/Harbor), incident response time (AlertManager), patch currency (Flux HelmRelease versions). Grafana dashboards visualize security posture.',party:'ISSO'},
+    {id:'PM-9',title:'Risk Management Strategy',status:'Inherited',impl:'Enterprise risk management strategy inherited from parent organization. Platform-level risk managed through continuous monitoring and automated compliance checking.',party:'Organization'},
+    {id:'PM-10',title:'Authorization Process',status:'Planned',impl:'ATO authorization process in progress. This SSP and supporting OSCAL artifacts form the authorization evidence package. RAISE 2.0 RPOC designation sought.',party:'AO'}
+  ]},
+  {id:'PS',name:'Personnel Security',desc:'Personnel screening, access agreements, and termination.',controls:[
+    {id:'PS-1',title:'Policy and Procedures',status:'Inherited',impl:'Personnel security policy inherited from parent organization HR and security departments.',party:'Organization'},
+    {id:'PS-2',title:'Position Risk Designation',status:'Inherited',impl:'Position risk designations managed by parent organization HR.',party:'Organization'},
+    {id:'PS-3',title:'Personnel Screening',status:'Inherited',impl:'Background investigations and personnel screening managed by parent organization security office.',party:'Organization'},
+    {id:'PS-4',title:'Personnel Termination',status:'Implemented',impl:'Upon termination, Keycloak account disabled immediately. RBAC bindings removed via GitOps. SSH keys revoked via Ansible. Git access revoked. All actions logged and audited.',party:'ISSM'},
+    {id:'PS-5',title:'Personnel Transfer',status:'Implemented',impl:'Upon transfer, Keycloak group membership updated to reflect new role. RBAC bindings adjusted via GitOps PR. Access reviewed and right-sized within 24 hours.',party:'ISSM'},
+    {id:'PS-6',title:'Access Agreements',status:'Inherited',impl:'Access agreements managed by parent organization. Platform-specific acceptable use covered by Keycloak consent banner.',party:'Organization'},
+    {id:'PS-7',title:'External Personnel Security',status:'Inherited',impl:'External personnel security requirements managed by parent organization contracting office.',party:'Organization'},
+    {id:'PS-8',title:'Personnel Sanctions',status:'Inherited',impl:'Personnel sanctions process managed by parent organization HR and legal.',party:'Organization'}
+  ]},
+  {id:'RA',name:'Risk Assessment',desc:'Risk assessment, vulnerability management, and scanning.',controls:[
+    {id:'RA-1',title:'Policy and Procedures',status:'Implemented',impl:'Risk assessment policy implemented through automated scanning and continuous monitoring. Vulnerability management lifecycle documented in operator-guide.md.',party:'ISSM'},
+    {id:'RA-2',title:'Security Categorization',status:'Implemented',impl:'System categorized as FIPS 199 Moderate-Moderate-Moderate based on information types processed. Categorization documented in this SSP header.',party:'ISSM'},
+    {id:'RA-3',title:'Risk Assessment',status:'Implemented',impl:'Risk assessment performed using automated tools: (1) Trivy vulnerability scanning in Harbor (CRITICAL/HIGH/MEDIUM/LOW), (2) NeuVector CIS Kubernetes benchmark, (3) Kyverno policy compliance reports, (4) DISA STIG compliance via Ansible. Risk findings tracked in POA&M.',party:'SCA'},
+    {id:'RA-5',title:'Vulnerability Monitoring and Scanning',status:'Implemented',impl:'Multi-layer vulnerability scanning: (1) Harbor + Trivy scans all container images on push and daily rescan, (2) NeuVector scans running containers for new CVEs, (3) NeuVector CIS benchmark scans for Kubernetes configuration, (4) Kyverno reports on policy violations (non-compliant resources), (5) Daily compliance scanner CronJob runs 8 automated checks. CRITICAL vulnerabilities trigger immediate AlertManager notification.',party:'System Admin'},
+    {id:'RA-7',title:'Risk Response',status:'Implemented',impl:'Risk response automated where possible: (1) Kyverno Enforce mode blocks non-compliant deployments, (2) NeuVector admission control blocks images with CRITICAL CVEs, (3) Harbor scan gates prevent deployment of vulnerable images, (4) Flux automated rollback on failed deployments. Residual risks documented in POA&M.',party:'ISSO'}
+  ]},
+  {id:'SA',name:'System and Services Acquisition',desc:'System development lifecycle, supply chain, and acquisition.',controls:[
+    {id:'SA-1',title:'Policy and Procedures',status:'Implemented',impl:'System acquisition and development policy enforced through GitOps workflow. All platform components are open-source with documented supply chain. SBOM generation for all deployed images.',party:'ISSM'},
+    {id:'SA-2',title:'Allocation of Resources',status:'Implemented',impl:'Resource allocation managed via Kubernetes ResourceQuotas and LimitRanges per tenant namespace. Platform resource requirements documented. Prometheus monitors resource utilization with alerting on capacity thresholds.',party:'System Owner'},
+    {id:'SA-3',title:'System Development Life Cycle',status:'Implemented',impl:'SDLC enforced via: (1) Git-based version control with branch protection, (2) CI/CD pipelines with automated testing (GitHub Actions/GitLab CI templates), (3) Image scanning in CI (Trivy), (4) Policy validation at admission (Kyverno), (5) GitOps deployment (Flux CD), (6) Continuous monitoring in production.',party:'System Admin'},
+    {id:'SA-4',title:'Acquisition Process',status:'Implemented',impl:'All platform components are open-source with no proprietary dependencies. Component selection documented in docs/decisions.md (9 ADRs). License compliance: all components are Apache 2.0, MPL 2.0, or MIT licensed.',party:'System Owner'},
+    {id:'SA-8',title:'Security and Privacy Engineering Principles',status:'Implemented',impl:'Security engineering principles: (1) Zero-trust networking (Istio mTLS STRICT), (2) Least privilege (Kyverno policies, RBAC), (3) Defense in depth (multiple security layers), (4) Fail secure (Kyverno Enforce mode), (5) Separation of concerns (namespace isolation), (6) Immutable infrastructure (GitOps).',party:'System Admin'},
+    {id:'SA-9',title:'External System Services',status:'Implemented',impl:'External service dependencies minimized. Current external dependencies: upstream OS package repos (Rocky Linux), container image registries (mirrored to Harbor), NTP servers, DNS. All external connections audited via Istio egress policies.',party:'System Admin'},
+    {id:'SA-10',title:'Developer Configuration Management',status:'Implemented',impl:'GitOps workflow: all changes via Git PRs. Flux CD provides continuous reconciliation with audit trail. Conventional commit messages (feat/fix/docs/refactor). Branch protection requires reviews. task lint and task validate required before merge.',party:'System Admin'},
+    {id:'SA-11',title:'Developer Testing and Evaluation',status:'Implemented',impl:'Multi-level testing: (1) Kyverno policy tests (kyverno-test.yaml for every policy), (2) Helm chart linting and template validation, (3) OpenTofu validate, (4) Ansible-lint, (5) YAML linting, (6) CI/CD pipeline integration tests. All tests run via task test.',party:'System Admin'}
+  ]},
+  {id:'SC',name:'System and Communications Protection',desc:'System boundary protection, cryptography, and communication security.',controls:[
+    {id:'SC-1',title:'Policy and Procedures',status:'Implemented',impl:'System and communications protection policy enforced through Istio service mesh configuration, NetworkPolicies, and FIPS cryptographic modules. All encryption configurations version-controlled in Git.',party:'ISSM'},
+    {id:'SC-2',title:'Separation of User and System Functionality',status:'Implemented',impl:'Platform services run in dedicated namespaces (istio-system, monitoring, logging, kyverno, openbao, etc.) isolated from tenant workloads. Kyverno policies prevent tenants from modifying platform resources. RBAC restricts access to platform namespaces.',party:'System Admin'},
+    {id:'SC-3',title:'Security Function Isolation',status:'Implemented',impl:'Security functions isolated via: (1) Dedicated namespaces with NetworkPolicies (default-deny), (2) Istio AuthorizationPolicies restrict access to security components, (3) Kyverno prevents cross-namespace privilege escalation, (4) OpenBao runs in isolated namespace with strict RBAC.',party:'System Admin'},
+    {id:'SC-4',title:'Information in Shared Resources',status:'Implemented',impl:'Kubernetes namespace isolation prevents information leakage. ResourceQuotas prevent resource starvation. NetworkPolicies prevent cross-namespace communication unless explicitly allowed. Istio mTLS ensures encrypted isolation.',party:'System Admin'},
+    {id:'SC-5',title:'Denial-of-Service Protection',status:'Implemented',impl:'Multi-layer DoS protection: (1) Istio rate limiting at gateway, (2) Kubernetes ResourceQuotas prevent resource exhaustion, (3) HPA autoscaling absorbs load spikes, (4) PodDisruptionBudgets maintain availability during disruptions, (5) AlertManager alerts on unusual traffic patterns.',party:'System Admin'},
+    {id:'SC-7',title:'Boundary Protection',status:'Implemented',impl:'Istio ingress gateway is the single entry point for all external traffic (LoadBalancer on 192.168.2.200, ports 443/80). NetworkPolicies enforce default-deny egress in all namespaces with explicit allows only for required destinations. NeuVector network segmentation provides additional L7 filtering.',party:'System Admin'},
+    {id:'SC-8',title:'Transmission Confidentiality and Integrity',status:'Implemented',impl:'Istio mTLS STRICT mode encrypts ALL in-cluster pod-to-pod communication with mutual TLS. External traffic terminates TLS at Istio gateway with certificates managed by cert-manager. No unencrypted communication permitted within the mesh. FIPS 140-2 cryptographic modules used.',party:'System Admin'},
+    {id:'SC-10',title:'Network Disconnect',status:'Implemented',impl:'Keycloak session management terminates idle sessions after 30 minutes. OAuth2 Proxy enforces session cookies with expiry. Istio gateway terminates inactive connections based on configurable timeouts.',party:'System Admin'},
+    {id:'SC-12',title:'Cryptographic Key Establishment and Management',status:'Implemented',impl:'cert-manager automates certificate lifecycle (issuance, renewal, revocation). Internal CA chain: self-signed root CA + intermediate CA. Wildcard certificate for *.apps.sre.example.com. OpenBao PKI secrets engine for dynamic certificate generation. Istio Citadel manages mesh certificates with automatic rotation.',party:'System Admin'},
+    {id:'SC-13',title:'Cryptographic Protection',status:'Implemented',impl:'RKE2 compiled with FIPS 140-2 BoringCrypto module. Rocky Linux 9 FIPS mode enabled at OS level via Ansible crypto-policy task. TLS 1.2+ enforced everywhere. FIPS-approved algorithms only (AES-256, SHA-256, RSA-2048+, ECDSA P-256/P-384).',party:'System Admin'},
+    {id:'SC-15',title:'Collaborative Computing Devices and Applications',status:'Not Applicable',impl:'No collaborative computing devices (cameras, microphones) present in this system.',party:'N/A'},
+    {id:'SC-17',title:'Public Key Infrastructure Certificates',status:'Implemented',impl:'cert-manager manages all certificates. Internal CA for service-to-service TLS. Let\'s Encrypt integration for public-facing certificates. Certificate transparency logging. Automated renewal before expiry with AlertManager notifications.',party:'System Admin'},
+    {id:'SC-18',title:'Mobile Code',status:'Not Applicable',impl:'Platform does not execute mobile code (ActiveX, Java applets). Web interfaces use standard HTML/CSS/JS.',party:'N/A'},
+    {id:'SC-20',title:'Secure Name/Address Resolution Service',status:'Implemented',impl:'CoreDNS within RKE2 provides internal DNS. External DNS resolution via configured upstream resolvers. DNS queries within the mesh use Istio service discovery.',party:'System Admin'},
+    {id:'SC-21',title:'Secure Name/Address Resolution Service (Recursive/Caching)',status:'Implemented',impl:'CoreDNS configured with caching and security extensions. DNS traffic within cluster encrypted via Istio mTLS.',party:'System Admin'},
+    {id:'SC-22',title:'Architecture and Provisioning for Name/Address Resolution',status:'Implemented',impl:'CoreDNS deployed in HA mode within RKE2. Service discovery via Kubernetes DNS. External DNS resolution configured with redundant upstream servers.',party:'System Admin'},
+    {id:'SC-23',title:'Session Authenticity',status:'Implemented',impl:'Session authenticity via: (1) Keycloak OIDC tokens with signature verification, (2) OAuth2 Proxy session cookies with HMAC, (3) Istio mTLS mutual authentication, (4) CSRF protection in Keycloak and Grafana.',party:'System Admin'},
+    {id:'SC-28',title:'Protection of Information at Rest',status:'Implemented',impl:'Kubernetes Secrets encrypted at rest (RKE2 default encryption-at-rest configuration). OpenBao encrypted storage backend (AES-256-GCM). Loki log storage encrypted via S3 backend. Velero backup encryption. etcd encryption enabled by RKE2.',party:'System Admin'},
+    {id:'SC-39',title:'Process Isolation',status:'Implemented',impl:'Container isolation via Linux namespaces, cgroups, and seccomp profiles (RuntimeDefault). SELinux enforcing mode provides MAC. Kyverno enforces: non-root, read-only rootfs, drop ALL capabilities, no privilege escalation. NeuVector provides additional process-level isolation.',party:'System Admin'}
+  ]},
+  {id:'SI',name:'System and Information Integrity',desc:'Flaw remediation, malicious code protection, monitoring, and integrity verification.',controls:[
+    {id:'SI-1',title:'Policy and Procedures',status:'Implemented',impl:'System integrity policy enforced through automated scanning, image signing, and continuous monitoring. All integrity requirements codified as Kyverno policies and NeuVector rules.',party:'ISSM'},
+    {id:'SI-2',title:'Flaw Remediation',status:'Implemented',impl:'Multi-layer flaw remediation: (1) Harbor + Trivy scans all images on push and daily rescan with severity-based alerting, (2) Flux CD enables rapid patching via GitOps (bump image version, PR, merge, auto-deploy), (3) Ansible playbooks for OS-level patching, (4) AlertManager notifications for CRITICAL/HIGH CVEs within 24 hours.',party:'System Admin'},
+    {id:'SI-3',title:'Malicious Code Protection',status:'Implemented',impl:'NeuVector provides runtime malicious code protection: (1) Process monitoring blocks unexpected executables, (2) File system monitoring detects unauthorized file modifications, (3) Network DLP scans for sensitive data exfiltration patterns, (4) Behavioral learning establishes baseline and alerts on anomalies.',party:'System Admin'},
+    {id:'SI-4',title:'System Monitoring',status:'Implemented',impl:'Comprehensive monitoring: (1) Prometheus collects metrics from all nodes and pods (30+ PrometheusRules), (2) Loki aggregates logs from all containers and system journals, (3) Tempo captures distributed traces (10% sampling), (4) NeuVector monitors runtime behavior (process, file, network), (5) Kyverno reports on policy violations, (6) 10+ Grafana dashboards for security visibility.',party:'ISSO'},
+    {id:'SI-5',title:'Security Alerts, Advisories, and Directives',status:'Implemented',impl:'AlertManager configured with: (1) Security Slack channel for real-time alerts, (2) PagerDuty for critical/high severity, (3) Email for non-urgent notifications. NeuVector CVE alerts for newly discovered vulnerabilities in running containers. Harbor vulnerability report notifications.',party:'ISSO'},
+    {id:'SI-6',title:'Security Functionality Verification',status:'Implemented',impl:'Automated security verification: (1) NeuVector CIS Kubernetes benchmark scanning, (2) Kyverno background scanning verifies all existing resources against policies, (3) Daily compliance scanner CronJob runs 8 automated checks, (4) cert-manager certificate readiness checks.',party:'System Admin'},
+    {id:'SI-7',title:'Software, Firmware, and Information Integrity',status:'Implemented',impl:'Cosign image signatures verified by Kyverno verify-image-signatures ClusterPolicy. SBOM (SPDX + CycloneDX) generated at build time via Syft and attached as Cosign attestation. Harbor stores signed images and SBOMs. Flux CD detects configuration drift and auto-reconciles to Git baseline.',party:'System Admin'},
+    {id:'SI-10',title:'Information Input Validation',status:'Implemented',impl:'Kyverno validates all Kubernetes resource inputs at admission time. Helm values.schema.json validates chart inputs. OpenTofu variable validation blocks prevent invalid infrastructure configuration.',party:'System Admin'},
+    {id:'SI-11',title:'Error Handling',status:'Implemented',impl:'All platform components configured to output structured JSON error logs without sensitive data. Kyverno validation messages provide actionable error descriptions. Istio returns generic error responses to external clients.',party:'System Admin'},
+    {id:'SI-12',title:'Information Management and Retention',status:'Implemented',impl:'Log retention: 30 days application, 90 days audit, 1 year security events. Velero backup retention: 7 daily, 4 weekly, 3 monthly. Harbor image retention policies per project. OpenBao secret lease TTLs enforced.',party:'ISSM'},
+    {id:'SI-16',title:'Memory Protection',status:'Implemented',impl:'Container isolation via Linux kernel namespaces, cgroups v2, and seccomp profiles. SELinux enforcing mode. Kyverno enforces seccompProfile: RuntimeDefault. No privileged containers allowed (except documented exceptions for NeuVector and MetalLB).',party:'System Admin'}
+  ]},
+  {id:'SR',name:'Supply Chain Risk Management',desc:'Supply chain protection, provenance, and integrity.',controls:[
+    {id:'SR-1',title:'Policy and Procedures',status:'Implemented',impl:'Supply chain risk management implemented through: Harbor container registry with Trivy scanning, Cosign image signatures, SBOM generation, and Kyverno admission control. All platform components are open-source with documented provenance.',party:'ISSM'},
+    {id:'SR-2',title:'Supply Chain Risk Management Plan',status:'Implemented',impl:'Supply chain controls: (1) All base images from trusted sources (Chainguard, distroless, Alpine), (2) Harbor mirrors upstream registries with Trivy scan gates, (3) Kyverno restrict-image-registries limits to harbor.sre.internal, (4) Cosign signature verification required for deployment, (5) SBOM generated for all builds.',party:'ISSM'},
+    {id:'SR-3',title:'Supply Chain Controls and Processes',status:'Implemented',impl:'CI/CD supply chain: (1) Build image from Dockerfile, (2) Trivy scan (fail on CRITICAL/HIGH), (3) Generate SBOM with Syft, (4) Sign with Cosign, (5) Push to Harbor, (6) Kyverno verifies signature at deployment. Air-gap scripts available for disconnected environments.',party:'System Admin'},
+    {id:'SR-5',title:'Acquisition Strategies, Tools, and Methods',status:'Implemented',impl:'All platform components selected based on: open-source license (no proprietary dependencies), active community, security track record, compliance suitability. Selection decisions documented in docs/decisions.md (9 ADRs).',party:'System Owner'},
+    {id:'SR-6',title:'Supplier Assessments and Reviews',status:'Implemented',impl:'Component supply chain assessed: all 18 platform components are CNCF graduated/sandbox or Linux Foundation projects. Upstream images scanned by Trivy on import to Harbor. Component versions pinned explicitly.',party:'System Admin'},
+    {id:'SR-10',title:'Inspection of Systems or Components',status:'Implemented',impl:'Automated inspection: (1) Trivy scans all images for vulnerabilities and misconfigurations, (2) NeuVector scans running containers, (3) Kyverno validates all resource configurations, (4) SBOM enables component-level CVE tracking (e.g., "which apps use log4j?").',party:'System Admin'},
+    {id:'SR-11',title:'Component Authenticity',status:'Implemented',impl:'Image authenticity verified via Cosign signatures. Kyverno verify-image-signatures policy enforces signature verification at admission. Harbor Cosign/Notation integration for image signing. SBOM attestations attached to images.',party:'System Admin'},
+    {id:'SR-12',title:'Component Disposal',status:'Implemented',impl:'Deprecated images removed from Harbor via garbage collection CronJob. Kubernetes PV reclaim policy deletes data. Old chart versions pruned. Flux prune:true removes resources no longer in Git.',party:'System Admin'}
+  ]}
+];
+
+// ---- STATE ----
+let currentFilter = 'all';
+let savedData = JSON.parse(localStorage.getItem('ssp_data') || '{}');
+
+// ---- INIT ----
+document.addEventListener('DOMContentLoaded', () => {
+  renderPersonnel();
+  renderControls();
+  updateDashboard();
+  loadSavedData();
+});
+
+// ---- PERSONNEL ----
+function renderPersonnel() {
+  const g = document.getElementById('personnel-grid');
+  g.innerHTML = PERSONNEL_ROLES.map(r => `
+    <div class="person-card">
+      <h4>${r.title}</h4>
+      <div class="person-field"><label>Name</label><input type="text" data-person="${r.key}" data-pfield="name" placeholder="Full Name" oninput="autoSave()"></div>
+      <div class="person-field"><label>Organization</label><input type="text" data-person="${r.key}" data-pfield="org" placeholder="Organization" oninput="autoSave()"></div>
+      <div class="person-field"><label>Phone</label><input type="text" data-person="${r.key}" data-pfield="phone" placeholder="(xxx) xxx-xxxx" oninput="autoSave()"></div>
+      <div class="person-field"><label>Email</label><input type="text" data-person="${r.key}" data-pfield="email" placeholder="name@example.mil" oninput="autoSave()"></div>
+    </div>
+  `).join('');
+}
+
+// ---- CONTROLS ----
+function renderControls() {
+  const c = document.getElementById('controls-container');
+  c.innerHTML = CONTROL_FAMILIES.map(fam => {
+    const counts = getCounts(fam);
+    const pct = fam.controls.length > 0 ? Math.round(((counts.impl + counts.inherited) / fam.controls.length) * 100) : 0;
+    return `
+    <div class="family-section" data-family="${fam.id}">
+      <div class="family-header" onclick="toggleFamily(this)">
+        <h3>${fam.id} &mdash; ${fam.name}</h3>
+        <div class="family-stats">
+          <span style="color:var(--green)">${counts.impl}I</span>
+          <span style="color:var(--purple)">${counts.inherited}H</span>
+          <span style="color:var(--yellow)">${counts.partial}P</span>
+          <span style="color:var(--orange)">${counts.planned}Pl</span>
+          <span style="color:var(--text2)">${counts.na}NA</span>
+          <div class="family-progress"><div class="family-progress-fill" style="width:${pct}%"></div></div>
+          <span style="font-weight:700;color:#fff">${fam.controls.length}</span>
+        </div>
+      </div>
+      <div class="family-body">
+        ${fam.controls.map(ctrl => renderControl(fam.id, ctrl)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderControl(famId, ctrl) {
+  const sid = `${famId}_${ctrl.id}`;
+  const statusClass = ctrl.status === 'Implemented' ? 'implemented' : ctrl.status === 'Partially Implemented' ? 'partial' : ctrl.status === 'Planned' ? 'planned' : ctrl.status === 'Inherited' ? 'inherited' : 'na';
+  return `
+  <div class="control-row" data-control-id="${ctrl.id}" data-status="${ctrl.status}">
+    <div class="control-id">${ctrl.id}</div>
+    <div>
+      <div class="control-title">${ctrl.title}</div>
+      <div class="control-impl">
+        <textarea data-sid="${sid}" data-cfield="impl" oninput="autoSave()">${ctrl.impl}</textarea>
+      </div>
+      <div style="margin-top:4px;font-size:.75rem;color:var(--text2)">Responsible: <input type="text" data-sid="${sid}" data-cfield="party" value="${ctrl.party}" style="width:140px;font-size:.75rem;padding:2px 6px" oninput="autoSave()"></div>
+    </div>
+    <div>
+      <select data-sid="${sid}" data-cfield="status" onchange="statusChanged(this)">
+        <option value="Implemented" ${ctrl.status==='Implemented'?'selected':''}>Implemented</option>
+        <option value="Partially Implemented" ${ctrl.status==='Partially Implemented'?'selected':''}>Partially Implemented</option>
+        <option value="Planned" ${ctrl.status==='Planned'?'selected':''}>Planned</option>
+        <option value="Inherited" ${ctrl.status==='Inherited'?'selected':''}>Inherited</option>
+        <option value="Not Applicable" ${ctrl.status==='Not Applicable'?'selected':''}>Not Applicable</option>
+      </select>
+    </div>
+  </div>`;
+}
+
+function getCounts(fam) {
+  let impl=0,inherited=0,partial=0,planned=0,na=0;
+  fam.controls.forEach(c => {
+    const s = getControlStatus(fam.id, c);
+    if(s==='Implemented') impl++;
+    else if(s==='Inherited') inherited++;
+    else if(s==='Partially Implemented') partial++;
+    else if(s==='Planned') planned++;
+    else na++;
+  });
+  return {impl,inherited,partial,planned,na};
+}
+
+function getControlStatus(famId, ctrl) {
+  const key = `${famId}_${ctrl.id}`;
+  if(savedData[key] && savedData[key].status) return savedData[key].status;
+  return ctrl.status;
+}
+
+function statusChanged(el) {
+  const sid = el.dataset.sid;
+  const row = el.closest('.control-row');
+  row.dataset.status = el.value;
+  autoSave();
+  updateDashboard();
+  updateFamilyStats();
+}
+
+function toggleFamily(el) {
+  const body = el.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function toggleSection(el) {
+  el.classList.toggle('collapsed');
+  const body = el.nextElementSibling;
+  body.classList.toggle('hidden');
+}
+
+// ---- FILTER & SEARCH ----
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  filterControls();
+}
+
+function filterControls() {
+  const q = document.getElementById('control-search').value.toLowerCase();
+  document.querySelectorAll('.control-row').forEach(row => {
+    const id = row.dataset.controlId.toLowerCase();
+    const text = row.textContent.toLowerCase();
+    const status = row.querySelector('select').value;
+    const matchFilter = currentFilter === 'all' || status === currentFilter;
+    const matchSearch = !q || id.includes(q) || text.includes(q);
+    row.style.display = (matchFilter && matchSearch) ? '' : 'none';
+  });
+  // Show/hide empty families
+  document.querySelectorAll('.family-section').forEach(fs => {
+    const visible = fs.querySelectorAll('.control-row:not([style*="display: none"])');
+    fs.style.display = visible.length > 0 || !q && currentFilter === 'all' ? '' : 'none';
+  });
+}
+
+// ---- DASHBOARD ----
+function updateDashboard() {
+  let total=0,impl=0,inherited=0,partial=0,planned=0,na=0;
+  CONTROL_FAMILIES.forEach(fam => {
+    fam.controls.forEach(ctrl => {
+      total++;
+      const s = getControlStatus(fam.id, ctrl);
+      if(s==='Implemented') impl++;
+      else if(s==='Inherited') inherited++;
+      else if(s==='Partially Implemented') partial++;
+      else if(s==='Planned') planned++;
+      else na++;
+    });
+  });
+  const gap = total - impl - inherited - partial - planned - na;
+
+  // Stat cards
+  const cards = document.getElementById('stat-cards');
+  const stats = [
+    {n:total,l:'Total Controls',c:'var(--accent)',p:100},
+    {n:impl,l:'Implemented',c:'var(--green)',p:(impl/total*100)},
+    {n:inherited,l:'Inherited',c:'var(--purple)',p:(inherited/total*100)},
+    {n:partial,l:'Partially Impl.',c:'var(--yellow)',p:(partial/total*100)},
+    {n:planned,l:'Planned',c:'var(--orange)',p:(planned/total*100)},
+    {n:na,l:'Not Applicable',c:'var(--text2)',p:(na/total*100)}
+  ];
+  cards.innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-num" style="color:${s.c}">${s.n}</div>
+      <div class="stat-label">${s.l}</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${s.p}%;background:${s.c}"></div></div>
+    </div>`).join('');
+
+  // Donut
+  const svg = document.getElementById('donut');
+  const data = [
+    {v:impl,c:'#22c55e',l:'Implemented'},
+    {v:inherited,c:'#a855f7',l:'Inherited'},
+    {v:partial,c:'#eab308',l:'Partial'},
+    {v:planned,c:'#f97316',l:'Planned'},
+    {v:na,c:'#4b5563',l:'N/A'}
+  ];
+  const r=15.9155, cx=21, cy=21;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  let paths = '';
+  data.forEach(d => {
+    const pct = d.v / total;
+    const len = pct * circ;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.c}" stroke-width="4" stroke-dasharray="${len} ${circ - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += len;
+  });
+  const implPct = Math.round((impl + inherited) / total * 100);
+  svg.innerHTML = paths + `<text x="${cx}" y="${cy}" text-anchor="middle" class="donut-center" dy=".1em">${implPct}%</text><text x="${cx}" y="${cy}" text-anchor="middle" class="donut-center-sub" dy="1.8em">Coverage</text>`;
+
+  const legend = document.getElementById('donut-legend');
+  legend.innerHTML = data.map(d => `<div class="legend-item"><div class="legend-dot" style="background:${d.c}"></div>${d.l}: <strong>${d.v}</strong></div>`).join('');
+}
+
+function updateFamilyStats() {
+  CONTROL_FAMILIES.forEach(fam => {
+    const el = document.querySelector(`.family-section[data-family="${fam.id}"]`);
+    if(!el) return;
+    // Recount from DOM
+    let impl=0,inherited=0,partial=0,planned=0,na=0,total=0;
+    el.querySelectorAll('.control-row select').forEach(sel => {
+      total++;
+      const v = sel.value;
+      if(v==='Implemented') impl++;
+      else if(v==='Inherited') inherited++;
+      else if(v==='Partially Implemented') partial++;
+      else if(v==='Planned') planned++;
+      else na++;
+    });
+    const stats = el.querySelector('.family-stats');
+    if(stats) {
+      const pct = total > 0 ? Math.round(((impl + inherited) / total) * 100) : 0;
+      stats.innerHTML = `
+        <span style="color:var(--green)">${impl}I</span>
+        <span style="color:var(--purple)">${inherited}H</span>
+        <span style="color:var(--yellow)">${partial}P</span>
+        <span style="color:var(--orange)">${planned}Pl</span>
+        <span style="color:var(--text2)">${na}NA</span>
+        <div class="family-progress"><div class="family-progress-fill" style="width:${pct}%"></div></div>
+        <span style="font-weight:700;color:#fff">${total}</span>`;
+    }
+  });
+}
+
+// ---- SAVE/LOAD ----
+function autoSave() {
+  collectData();
+  localStorage.setItem('ssp_data', JSON.stringify(savedData));
+}
+
+function collectData() {
+  // Personnel
+  document.querySelectorAll('[data-person]').forEach(el => {
+    const key = `person_${el.dataset.person}_${el.dataset.pfield}`;
+    savedData[key] = el.value;
+  });
+  // eMASS
+  document.querySelectorAll('[data-field]').forEach(el => {
+    savedData[el.dataset.field] = el.value;
+  });
+  // Controls
+  document.querySelectorAll('[data-sid]').forEach(el => {
+    const sid = el.dataset.sid;
+    if(!savedData[sid]) savedData[sid] = {};
+    savedData[sid][el.dataset.cfield] = el.value;
+  });
+}
+
+function loadSavedData() {
+  // Personnel
+  document.querySelectorAll('[data-person]').forEach(el => {
+    const key = `person_${el.dataset.person}_${el.dataset.pfield}`;
+    if(savedData[key]) el.value = savedData[key];
+  });
+  // eMASS
+  document.querySelectorAll('[data-field]').forEach(el => {
+    if(savedData[el.dataset.field]) el.value = savedData[el.dataset.field];
+  });
+  // Controls
+  document.querySelectorAll('[data-sid]').forEach(el => {
+    const sid = el.dataset.sid;
+    if(savedData[sid] && savedData[sid][el.dataset.cfield] !== undefined) {
+      el.value = savedData[sid][el.dataset.cfield];
+      if(el.dataset.cfield === 'status') {
+        const row = el.closest('.control-row');
+        if(row) row.dataset.status = el.value;
+      }
+    }
+  });
+  updateDashboard();
+  updateFamilyStats();
+}
+
+function saveAll() {
+  collectData();
+  localStorage.setItem('ssp_data', JSON.stringify(savedData));
+  showToast('All changes saved to browser storage');
+}
+
+// ---- EXPORT ----
+function exportJSON() {
+  collectData();
+  const out = {
+    metadata: {
+      title: 'RAISE 2.0 System Security Plan',
+      system: 'Secure Runtime Environment (SRE)',
+      categorization: 'Moderate-Moderate-Moderate',
+      emass_id: savedData.emass_id || '',
+      date: '2026-03-11',
+      version: '2.0',
+      generated: new Date().toISOString()
+    },
+    personnel: {},
+    controls: {}
+  };
+  PERSONNEL_ROLES.forEach(r => {
+    out.personnel[r.key] = {
+      title: r.title,
+      name: savedData[`person_${r.key}_name`] || '',
+      org: savedData[`person_${r.key}_org`] || '',
+      phone: savedData[`person_${r.key}_phone`] || '',
+      email: savedData[`person_${r.key}_email`] || ''
+    };
+  });
+  CONTROL_FAMILIES.forEach(fam => {
+    out.controls[fam.id] = {name: fam.name, controls: {}};
+    fam.controls.forEach(ctrl => {
+      const sid = `${fam.id}_${ctrl.id}`;
+      out.controls[fam.id].controls[ctrl.id] = {
+        title: ctrl.title,
+        status: (savedData[sid] && savedData[sid].status) || ctrl.status,
+        implementation: (savedData[sid] && savedData[sid].impl) || ctrl.impl,
+        responsible_party: (savedData[sid] && savedData[sid].party) || ctrl.party
+      };
+    });
+  });
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sre-ssp-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('SSP exported as JSON');
+}
+
+// ---- TOAST ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

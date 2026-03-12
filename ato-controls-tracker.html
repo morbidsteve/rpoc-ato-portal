@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — ATO Controls Tracker</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: #475569;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --accent: #38bdf8;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --blue: #60a5fa;
+  --gray: #64748b;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+}
+
+/* ── Topbar ── */
+.topbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 10px 20px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0;
+  z-index: 200; flex-wrap: wrap; gap: 10px;
+}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--surface-hover);color:var(--text);font-size:18px;text-decoration:none;transition:all .15s;border:1px solid var(--border);flex-shrink:0}
+.back-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);text-decoration:none}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.topbar h1 { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.topbar h1 span { color: var(--accent); }
+.topbar-pct { font-size: 20px; font-weight: 800; color: var(--accent); }
+.topbar-progress { width: 160px; height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.topbar-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width .4s; }
+.topbar-stats { display: flex; gap: 14px; font-size: 12px; flex-wrap: wrap; }
+.topbar-stat { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.topbar-stat .dot { width: 8px; height: 8px; border-radius: 50%; }
+.topbar-stat .v { font-weight: 700; }
+.topbar-actions { display: flex; gap: 6px; }
+.btn {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); font-size: 12px;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.btn:hover { background: var(--border); border-color: var(--accent); }
+.btn-accent { background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600; }
+.btn-accent:hover { background: #7dd3fc; }
+
+/* ── Layout ── */
+.layout { display: flex; min-height: calc(100vh - 50px); }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 250px; background: var(--surface); border-right: 1px solid var(--border);
+  padding: 10px 0; overflow-y: auto; flex-shrink: 0;
+  position: sticky; top: 50px; height: calc(100vh - 50px);
+}
+.sidebar-hdr { padding: 6px 14px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.sb-item {
+  padding: 7px 10px 7px 14px; cursor: pointer; display: flex;
+  align-items: center; gap: 7px; font-size: 12px;
+  transition: background .15s; border-left: 3px solid transparent;
+}
+.sb-item:hover { background: var(--surface2); }
+.sb-item.active { background: var(--surface2); border-left-color: var(--accent); }
+.sb-item .fid { font-weight: 700; color: var(--accent); width: 26px; flex-shrink: 0; font-size: 11px; }
+.sb-item .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-item .fcnt { font-size: 10px; color: var(--text-dim); flex-shrink: 0; }
+.sb-mini { width: 44px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.sb-mini-fill { height: 100%; border-radius: 2px; background: var(--green); transition: width .3s; }
+
+/* ── Main ── */
+.main { flex: 1; padding: 20px 28px; overflow-y: auto; }
+
+/* ── Dashboard Cards ── */
+.dash-row { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 20px; }
+.dash-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; text-align: center; transition: border-color .2s;
+}
+.dash-card:hover { border-color: var(--accent); }
+.dash-card .num { font-size: 28px; font-weight: 800; }
+.dash-card .lbl { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* ── Toolbar ── */
+.toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.search-box {
+  flex: 1; min-width: 180px; padding: 7px 12px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 13px; outline: none;
+}
+.search-box:focus { border-color: var(--accent); }
+.search-box::placeholder { color: var(--text-dim); }
+.filter-group { display: flex; gap: 3px; flex-wrap: wrap; }
+.fbtn {
+  padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); font-size: 11px;
+  cursor: pointer; transition: all .15s;
+}
+.fbtn:hover { border-color: var(--text-dim); color: var(--text); }
+.fbtn.active { border-color: var(--accent); color: var(--accent); background: rgba(56,189,248,.1); }
+.sort-ctl { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-dim); }
+.sort-ctl button { padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 10px; cursor: pointer; }
+.sort-ctl button.active { border-color: var(--accent); color: var(--accent); }
+
+/* ── Family Header ── */
+.fam-hdr { margin-bottom: 16px; }
+.fam-hdr h2 { font-size: 20px; font-weight: 700; }
+.fam-hdr h2 .fhi { color: var(--accent); }
+.fam-hdr p { color: var(--text-dim); font-size: 13px; }
+.fam-stats { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; }
+.fam-stats .fs { display: flex; align-items: center; gap: 3px; }
+.fam-stats .fs .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── Control Card ── */
+.cc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: border-color .2s; }
+.cc:hover { border-color: var(--accent); }
+.cc-hdr { padding: 11px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.cc-id { font-weight: 700; font-size: 13px; color: var(--accent); width: 72px; flex-shrink: 0; font-family: 'SF Mono','Consolas',monospace; }
+.cc-title { flex: 1; font-size: 13px; font-weight: 500; }
+.badge { padding: 2px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; flex-shrink: 0; }
+.s-implemented { background: rgba(52,211,153,.15); color: var(--green); }
+.s-inherited { background: rgba(96,165,250,.15); color: var(--blue); }
+.s-planned { background: rgba(251,191,36,.15); color: var(--yellow); }
+.s-na { background: rgba(100,116,139,.15); color: var(--gray); }
+.s-gap { background: rgba(248,113,113,.15); color: var(--red); }
+.chev { width: 18px; height: 18px; color: var(--text-dim); transition: transform .2s; flex-shrink: 0; }
+.cc.open .chev { transform: rotate(90deg); }
+.cc-det { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+.cc.open .cc-det { display: block; }
+.dg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.df { display: flex; flex-direction: column; gap: 3px; }
+.df.full { grid-column: 1/-1; }
+.dl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--text-dim); }
+.di, .ds, .dt {
+  padding: 7px 10px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 12px;
+  font-family: inherit; outline: none; transition: border-color .2s;
+}
+.di:focus, .ds:focus, .dt:focus { border-color: var(--accent); }
+.dt { resize: vertical; min-height: 60px; line-height: 1.5; }
+.ds { cursor: pointer; }
+.ds option { background: var(--surface); }
+
+/* ── Empty ── */
+.empty { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 14px; }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 18px; background: var(--surface); border: 1px solid var(--accent); border-radius: 7px; font-size: 12px; z-index: 999; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Print ── */
+@media print {
+  :root { --bg:#fff; --surface:#fff; --surface2:#f1f5f9; --border:#cbd5e1; --text:#0f172a; --text-dim:#475569; }
+  body { background:#fff; color:#0f172a; font-size:10px; }
+  .topbar { position:static; }
+  .topbar-actions { display:none; }
+  .sidebar { display:none; }
+  .layout { display:block; }
+  .main { max-width:100%; padding:12px; }
+  .cc { break-inside:avoid; }
+  .cc.open .cc-det { display:block; }
+  .chev { display:none; }
+  .toolbar { display:none; }
+  .dash-row { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width:700px) {
+  .sidebar { display:none; }
+  .layout { display:block; }
+  .dash-row { grid-template-columns: repeat(3,1fr); }
+  .dg { grid-template-columns:1fr; }
+}
+::-webkit-scrollbar { width:7px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <h1><span>RAISE 2.0</span> — ATO Controls Tracker</h1>
+    <div class="topbar-progress"><div class="topbar-progress-fill" id="tpf"></div></div>
+    <span class="topbar-pct" id="tpct">0%</span>
+  </div>
+  <div class="topbar-stats" id="tst"></div>
+  <div class="topbar-actions">
+    <button class="btn" onclick="xAll()">Expand All</button>
+    <button class="btn" onclick="cAll()">Collapse All</button>
+    <button class="btn" onclick="xAll();setTimeout(()=>window.print(),200)">Print</button>
+    <button class="btn btn-accent" onclick="doExport()">Export JSON</button>
+  </div>
+</div>
+<div class="layout">
+  <div class="sidebar" id="sb"></div>
+  <div class="main" id="mn"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// NIST 800-53 Rev 5 Moderate Baseline — All 20 Families
+// ═══════════════════════════════════════════════════════════════════════════════
+const D={
+"AC":{n:"Access Control",c:[
+{id:"AC-1",t:"Policy and Procedures",s:"implemented",d:"Documented in compliance/raise/ directory. GitOps workflow enforces change control.",p:"Platform Team",e:"compliance/raise/, CLAUDE.md"},
+{id:"AC-2",t:"Account Management",s:"implemented",d:"Keycloak SSO with group-based RBAC (sre-admins, sre-viewers, developers). Automated deprovisioning on group removal.",p:"Platform Team",e:"Keycloak SRE realm, 3 groups, 5 OIDC clients"},
+{id:"AC-2(1)",t:"Account Management | Automated System Account Management",s:"implemented",d:"Keycloak automates account lifecycle. Kubernetes ServiceAccounts managed via GitOps (Flux CD).",p:"Platform Team",e:"Keycloak admin console, Flux manifests"},
+{id:"AC-2(2)",t:"Account Management | Automated Temporary and Emergency Account Management",s:"planned",d:"Need automated expiration for temporary accounts in Keycloak. Configure time-limited group membership.",p:"Platform Team",e:""},
+{id:"AC-2(3)",t:"Account Management | Disable Accounts",s:"implemented",d:"Keycloak supports account disable/lock. 30-day inactive accounts auto-disabled.",p:"Platform Team",e:"Keycloak user management settings"},
+{id:"AC-2(4)",t:"Account Management | Automated Audit Actions",s:"implemented",d:"Keycloak audit events forwarded to Loki via Alloy. Account create/modify/delete logged with timestamps.",p:"Platform Team",e:"Keycloak event logging, Loki queries"},
+{id:"AC-2(5)",t:"Account Management | Inactivity Logout",s:"implemented",d:"Keycloak SSO session idle timeout 30 minutes. OAuth2 Proxy cookie expiry enforced.",p:"Platform Team",e:"Keycloak session settings, OAuth2 Proxy config"},
+{id:"AC-2(13)",t:"Account Management | Disable Accounts for High-Risk Individuals",s:"planned",d:"Need integration between HR risk indicators and Keycloak account status.",p:"Org/HR",e:""},
+{id:"AC-3",t:"Access Enforcement",s:"implemented",d:"Kubernetes RBAC + Istio AuthorizationPolicy + Kyverno namespace isolation. Three-tier model: platform-admin, developer, viewer.",p:"Platform Team",e:"RBAC manifests, AuthorizationPolicies, ClusterPolicies"},
+{id:"AC-4",t:"Information Flow Enforcement",s:"implemented",d:"Istio mTLS STRICT mode cluster-wide. NetworkPolicies default-deny in every namespace. Kyverno egress restriction policies.",p:"Platform Team",e:"PeerAuthentication, NetworkPolicy manifests, Kyverno policies"},
+{id:"AC-4(21)",t:"Information Flow Enforcement | Physical or Logical Separation of Information Flows",s:"implemented",d:"Namespace isolation with dedicated NetworkPolicies per tenant. Istio AuthorizationPolicy enforces logical separation.",p:"Platform Team",e:"Namespace architecture, NetworkPolicies"},
+{id:"AC-5",t:"Separation of Duties",s:"implemented",d:"RBAC roles: platform-admin (full cluster), developer (namespace-scoped), viewer (read-only). Flux RBAC restricts GitOps to flux-system SA only.",p:"Platform Team",e:"ClusterRoles, RoleBindings, Keycloak groups"},
+{id:"AC-6",t:"Least Privilege",s:"implemented",d:"Pod security contexts enforce non-root, drop ALL capabilities, read-only rootfs. Namespace-scoped RBAC. ServiceAccount per workload with automountServiceAccountToken: false.",p:"Platform Team",e:"SecurityContexts in Helm charts, Kyverno enforcement"},
+{id:"AC-6(1)",t:"Least Privilege | Authorize Access to Security Functions",s:"implemented",d:"Only flux-system SA can modify platform namespaces. Kyverno policies protect platform resources from tenant modification.",p:"Platform Team",e:"Flux RBAC, Kyverno ClusterPolicies"},
+{id:"AC-6(2)",t:"Least Privilege | Non-Privileged Access for Non-Security Functions",s:"implemented",d:"All application containers run as non-root (UID 65534) with minimal capabilities. Enforced by Kyverno require-run-as-nonroot.",p:"Platform Team",e:"Kyverno require-run-as-nonroot policy"},
+{id:"AC-6(5)",t:"Least Privilege | Privileged Accounts",s:"implemented",d:"Privileged K8s access limited to sre-admins Keycloak group. No direct node SSH for developers. Emergency break-glass documented.",p:"Platform Team",e:"Keycloak sre-admins group, ClusterRoleBinding"},
+{id:"AC-6(9)",t:"Least Privilege | Log Use of Privileged Functions",s:"implemented",d:"Kubernetes API server audit policy logs all privileged operations to Loki. Istio access logs capture admin API calls.",p:"Platform Team",e:"K8s audit policy, Loki dashboards"},
+{id:"AC-6(10)",t:"Least Privilege | Prohibit Non-Privileged Users from Executing Privileged Functions",s:"implemented",d:"Kyverno enforces: disallow-privileged-containers, disallow-privilege-escalation, require-run-as-nonroot. Pod Security Standards restricted profile.",p:"Platform Team",e:"6 Kyverno Enforce policies"},
+{id:"AC-7",t:"Unsuccessful Logon Attempts",s:"implemented",d:"Keycloak brute force detection: max 5 failed attempts triggers 15-minute lockout. Events logged to Loki.",p:"Platform Team",e:"Keycloak realm brute force settings"},
+{id:"AC-8",t:"System Use Notification",s:"implemented",d:"Keycloak login page displays DoD-standard consent banner before authentication. Customized via Keycloak theme.",p:"Platform Team",e:"Keycloak theme, login page screenshot"},
+{id:"AC-11",t:"Device Lock",s:"implemented",d:"Keycloak SSO session idle timeout: 30 minutes. Dashboard auto-logout with session timeout warning.",p:"Platform Team",e:"Keycloak session settings, dashboard session config"},
+{id:"AC-11(1)",t:"Device Lock | Pattern-Hiding Displays",s:"inherited",d:"Endpoint device screen lock and pattern-hiding managed by organizational MDM/GPO policy.",p:"Org/HR",e:"Organizational endpoint policy"},
+{id:"AC-12",t:"Session Termination",s:"implemented",d:"Keycloak absolute session timeout: 10 hours. OAuth2 Proxy cookie expiry aligned. Logout propagated via OIDC back-channel.",p:"Platform Team",e:"OAuth2 Proxy config, Keycloak session settings"},
+{id:"AC-14",t:"Permitted Actions Without Identification or Authentication",s:"implemented",d:"Istio PeerAuthentication STRICT — zero unauthenticated service-to-service communication. Health check endpoints excluded via AuthorizationPolicy.",p:"Platform Team",e:"PeerAuthentication manifest, health check exclusion"},
+{id:"AC-17",t:"Remote Access",s:"implemented",d:"All management via Keycloak SSO/MFA through Istio gateway with TLS 1.2+ termination. No direct SSH to cluster nodes for routine operations.",p:"Platform Team",e:"Istio Gateway config, Keycloak MFA"},
+{id:"AC-17(1)",t:"Remote Access | Monitoring and Control",s:"implemented",d:"All remote sessions logged via Istio access logs and K8s audit log, forwarded to Loki.",p:"Platform Team",e:"Istio access logs, Grafana dashboards"},
+{id:"AC-17(2)",t:"Remote Access | Protection of Confidentiality and Integrity Using Encryption",s:"implemented",d:"TLS 1.2+ at Istio gateway (FIPS-compliant ciphers). mTLS STRICT for all internal traffic via Istio.",p:"Platform Team",e:"Gateway TLS config, PeerAuthentication"},
+{id:"AC-17(4)",t:"Remote Access | Privileged Commands and Access",s:"implemented",d:"Privileged kubectl commands audited via K8s API audit log. Alert on cluster-admin usage.",p:"Platform Team",e:"K8s audit policy, PrometheusRule for admin actions"},
+{id:"AC-18",t:"Wireless Access",s:"na",d:"Platform is server/container infrastructure with no wireless access points or wireless network interfaces.",p:"Facility",e:""},
+{id:"AC-19",t:"Access Control for Mobile Devices",s:"na",d:"No mobile device management in scope for this platform. Mobile access policy is organizational responsibility.",p:"Org/HR",e:""},
+{id:"AC-20",t:"Use of External Systems",s:"implemented",d:"Kyverno restrict-image-registries policy limits container sources to Harbor only. NetworkPolicies block unauthorized egress.",p:"Platform Team",e:"Kyverno restrict-image-registries, NetworkPolicies"},
+{id:"AC-20(1)",t:"Use of External Systems | Limits on Authorized Use",s:"implemented",d:"External system access requires explicit NetworkPolicy egress rule. Default-deny blocks all unauthorized connections.",p:"Platform Team",e:"NetworkPolicy default-deny manifests"},
+{id:"AC-21",t:"Information Sharing",s:"implemented",d:"Istio AuthorizationPolicy controls inter-service communication. Cross-namespace access requires explicit allow.",p:"Platform Team",e:"AuthorizationPolicies, NetworkPolicies"},
+{id:"AC-22",t:"Publicly Accessible Content",s:"implemented",d:"No public-facing content. All access requires Keycloak authentication via OAuth2 Proxy ext-authz on Istio gateway.",p:"Platform Team",e:"OAuth2 Proxy ext-authz config, Keycloak SSO gate"}
+]},
+"AT":{n:"Awareness and Training",c:[
+{id:"AT-1",t:"Policy and Procedures",s:"planned",d:"Organization must establish security awareness and training policy document.",p:"Org/HR",e:""},
+{id:"AT-2",t:"Literacy Training and Awareness",s:"inherited",d:"Annual security awareness training is organizational HR responsibility, not platform-level.",p:"Org/HR",e:"Organizational training records"},
+{id:"AT-2(2)",t:"Literacy Training | Insider Threat",s:"inherited",d:"Insider threat awareness training managed by organizational security program.",p:"Org/HR",e:"Organizational insider threat program"},
+{id:"AT-3",t:"Role-Based Training",s:"planned",d:"Platform operator training docs exist at docs/operator-guide.md. Need formal role-based training program with completion tracking.",p:"Platform Team",e:"docs/operator-guide.md"},
+{id:"AT-4",t:"Training Records",s:"inherited",d:"Organizational HR/training system (e.g., LMS) tracks completion records.",p:"Org/HR",e:"Organizational LMS"}
+]},
+"AU":{n:"Audit and Accountability",c:[
+{id:"AU-1",t:"Policy and Procedures",s:"implemented",d:"Audit policy documented. All platform components output structured JSON logs to stdout, collected by Grafana Alloy.",p:"Platform Team",e:"compliance/raise/, logging architecture docs"},
+{id:"AU-2",t:"Audit Events",s:"implemented",d:"K8s API server audit policy captures: authentication events, resource CRUD, privilege escalation, policy violations. Istio captures all HTTP traffic metadata.",p:"Platform Team",e:"K8s audit policy YAML, Istio telemetry config"},
+{id:"AU-3",t:"Content of Audit Records",s:"implemented",d:"Every audit record contains: timestamp (UTC), source IP, authenticated user/SA, action verb, target resource, namespace, response code, latency.",p:"Platform Team",e:"Log format standards doc, sample Loki queries"},
+{id:"AU-3(1)",t:"Content of Audit Records | Additional Audit Information",s:"implemented",d:"K8s audit RequestResponse level for sensitive resources. Istio logs include HTTP headers, JWT claims, mTLS peer identity.",p:"Platform Team",e:"K8s audit policy level config"},
+{id:"AU-4",t:"Audit Log Storage Capacity",s:"implemented",d:"Loki with S3-compatible backend. Storage scales independently. 90-day default retention with configurable per-namespace overrides.",p:"Platform Team",e:"Loki HelmRelease values, S3 bucket config"},
+{id:"AU-4(1)",t:"Audit Log Storage Capacity | Transfer to Alternate Storage",s:"implemented",d:"Loki compactor moves old chunks to long-term S3 storage automatically.",p:"Platform Team",e:"Loki compactor config"},
+{id:"AU-5",t:"Response to Audit Processing Failures",s:"implemented",d:"PrometheusRules alert on: Loki ingestion failures, Alloy scrape errors, disk pressure. AlertManager routes to security Slack channel.",p:"Platform Team",e:"PrometheusRules for logging stack"},
+{id:"AU-5(1)",t:"Response to Audit Processing Failures | Storage Capacity Warning",s:"implemented",d:"AlertManager fires warning at 80% storage capacity, critical at 90%. Runbook linked from alert.",p:"Platform Team",e:"AlertManager rules, storage monitoring dashboard"},
+{id:"AU-6",t:"Audit Review, Analysis, and Reporting",s:"implemented",d:"10 Grafana dashboards including audit-specific views. Pre-built LogQL queries for security event analysis.",p:"Platform Team",e:"Grafana dashboards (10 deployed)"},
+{id:"AU-6(1)",t:"Audit Review | Automated Process Integration",s:"implemented",d:"Compliance scanner CronJob runs daily with 8 automated checks. Results stored and alerted.",p:"Platform Team",e:"Compliance scanner CronJob"},
+{id:"AU-6(3)",t:"Audit Review | Correlate Audit Record Repositories",s:"implemented",d:"Grafana correlates logs (Loki), metrics (Prometheus), and traces (Tempo) via unified query interface.",p:"Platform Team",e:"Grafana Explore, trace-to-logs linking"},
+{id:"AU-7",t:"Audit Reduction and Report Generation",s:"implemented",d:"Loki LogQL provides filtering, aggregation, and correlation. Grafana supports scheduled PDF report generation.",p:"Platform Team",e:"Grafana Loki datasource, saved queries"},
+{id:"AU-7(1)",t:"Audit Reduction | Automatic Processing",s:"implemented",d:"LogQL supports automatic filtering by severity, source, user, time range, namespace, and resource type.",p:"Platform Team",e:"LogQL query documentation"},
+{id:"AU-8",t:"Time Stamps",s:"implemented",d:"Chrony NTP enforced on all nodes via Ansible os-hardening role. All logs timestamped in UTC. Clock skew alerts configured.",p:"Platform Team",e:"Ansible chrony config, node NTP verification"},
+{id:"AU-9",t:"Protection of Audit Information",s:"implemented",d:"Loki storage encrypted at rest (S3 SSE). Grafana RBAC restricts log access. Logs cannot be modified once ingested.",p:"Platform Team",e:"S3 encryption config, Grafana org roles"},
+{id:"AU-9(4)",t:"Protection of Audit Information | Access by Subset of Privileged Users",s:"implemented",d:"Grafana org admin role limited to sre-admins Keycloak group. Developers get viewer role only.",p:"Platform Team",e:"Grafana OIDC role mapping config"},
+{id:"AU-11",t:"Audit Record Retention",s:"implemented",d:"Default: 90 days. Security events: 1 year. Configurable per compliance requirement. Retention enforced by Loki compactor.",p:"Platform Team",e:"Loki retention configuration"},
+{id:"AU-12",t:"Audit Record Generation",s:"implemented",d:"All platform components output structured JSON to stdout/stderr. Alloy DaemonSet collects from every node and pod.",p:"Platform Team",e:"Alloy DaemonSet config, component logging standards"},
+{id:"AU-12(1)",t:"Audit Record Generation | System-Wide and Time-Correlated Audit Trail",s:"implemented",d:"Loki + Tempo provide correlated logs and traces. Trace IDs link HTTP requests across all services. UTC timestamps enable correlation.",p:"Platform Team",e:"Grafana trace-to-logs, Tempo datasource"},
+{id:"AU-12(3)",t:"Audit Record Generation | Changes by Authorized Individuals",s:"implemented",d:"K8s audit policy logs all changes with authenticated user identity. Git commits provide change attribution.",p:"Platform Team",e:"K8s audit logs, Git history"}
+]},
+"CA":{n:"Assessment, Authorization, and Monitoring",c:[
+{id:"CA-1",t:"Policy and Procedures",s:"planned",d:"Need formal assessment and authorization policy document aligned with RMF.",p:"Platform Team",e:""},
+{id:"CA-2",t:"Control Assessments",s:"implemented",d:"Kyverno PolicyReports provide continuous control assessment. NeuVector CIS benchmarks. Compliance scanner CronJob (8 daily checks).",p:"Platform Team",e:"PolicyReports, CIS scan results, scanner CronJob"},
+{id:"CA-2(1)",t:"Control Assessments | Independent Assessors",s:"planned",d:"Need to engage independent 3PAO for formal assessment per RMF requirements.",p:"Org/HR",e:""},
+{id:"CA-3",t:"Information Exchange",s:"planned",d:"Document all system interconnections (DNS, NTP, cloud APIs) with formal ISAs/MOUs.",p:"Platform Team",e:""},
+{id:"CA-3(6)",t:"Information Exchange | Transfer Authorizations",s:"planned",d:"Need formal data transfer authorization documentation.",p:"Platform Team",e:""},
+{id:"CA-5",t:"Plan of Action and Milestones",s:"implemented",d:"POA&M template documented. This tracker serves as the living POA&M for ATO pursuit.",p:"Platform Team",e:"compliance/raise/poam-template.md, ato-controls-tracker.html"},
+{id:"CA-6",t:"Authorization",s:"gap",d:"Need Authorizing Official (AO) to review SSP, POA&M, and issue ATO decision. Critical path item.",p:"Org/HR",e:""},
+{id:"CA-7",t:"Continuous Monitoring",s:"implemented",d:"Prometheus + Grafana (real-time), NeuVector (runtime anomaly), Kyverno reports (policy compliance), compliance scanner (daily).",p:"Platform Team",e:"Grafana dashboards, PrometheusRules, NeuVector, scanner"},
+{id:"CA-7(1)",t:"Continuous Monitoring | Independent Assessment",s:"planned",d:"Need independent assessor for ongoing ConMon validation per ATO requirements.",p:"Org/HR",e:""},
+{id:"CA-7(4)",t:"Continuous Monitoring | Risk Monitoring",s:"implemented",d:"NeuVector monitors runtime risk. Trivy monitors vulnerability risk. Kyverno monitors policy risk. All feed Grafana.",p:"Platform Team",e:"Risk dashboards in Grafana"},
+{id:"CA-8",t:"Penetration Testing",s:"planned",d:"Need formal pen test process and schedule with AO approval. NeuVector provides some automated testing.",p:"Platform Team",e:""},
+{id:"CA-9",t:"Internal System Connections",s:"implemented",d:"All internal connections visible via Istio service mesh telemetry and Kiali service graph visualization.",p:"Platform Team",e:"Kiali service graph, Istio telemetry"}
+]},
+"CM":{n:"Configuration Management",c:[
+{id:"CM-1",t:"Policy and Procedures",s:"implemented",d:"GitOps workflow IS the CM policy. All changes require Git PRs with review. Conventional commits enforced. Documented in CLAUDE.md.",p:"Platform Team",e:"CLAUDE.md, docs/architecture.md"},
+{id:"CM-2",t:"Baseline Configuration",s:"implemented",d:"Git repository IS the authoritative baseline. Flux CD continuously reconciles cluster state to match. Any drift auto-corrected.",p:"Platform Team",e:"Git repo main branch, Flux Kustomizations"},
+{id:"CM-2(2)",t:"Baseline Configuration | Automation Support for Accuracy and Currency",s:"implemented",d:"Flux CD reconciles every 10 minutes. Drift detected and corrected automatically. Reconciliation events logged.",p:"Platform Team",e:"Flux reconciliation logs, events"},
+{id:"CM-2(3)",t:"Baseline Configuration | Retention of Previous Configurations",s:"implemented",d:"Full Git history provides complete audit trail of every configuration change with author, timestamp, and rationale.",p:"Platform Team",e:"Git log, GitHub PR history"},
+{id:"CM-2(7)",t:"Baseline Configuration | Configure Systems and Components for High-Risk Areas",s:"implemented",d:"Kyverno restricted PSS profile for tenant namespaces. NeuVector enforce mode for production workloads.",p:"Platform Team",e:"Kyverno policies, NeuVector profiles"},
+{id:"CM-3",t:"Configuration Change Control",s:"implemented",d:"All changes via Git PRs with required reviews. Conventional commits provide structured change descriptions. Flux provides deployment audit trail.",p:"Platform Team",e:"GitHub PR history, Git log, Flux events"},
+{id:"CM-3(1)",t:"Configuration Change Control | Automated Documentation, Notification, and Prohibition of Changes",s:"implemented",d:"Flux automatically documents all deployments. AlertManager notifies on changes. Kyverno prohibits unauthorized manual changes.",p:"Platform Team",e:"Flux events, AlertManager, Kyverno"},
+{id:"CM-3(2)",t:"Configuration Change Control | Testing, Validation, and Documentation",s:"implemented",d:"PR pipeline: lint, validate, policy tests, Helm template checks. Changes documented in conventional commit messages.",p:"Platform Team",e:"GitHub Actions, task lint, task validate"},
+{id:"CM-4",t:"Impact Analysis",s:"implemented",d:"flux diff shows planned changes before apply. PR reviews assess impact. Staging environment for pre-prod validation.",p:"Platform Team",e:"flux diff output, PR review process"},
+{id:"CM-5",t:"Access Restrictions for Change",s:"implemented",d:"GitHub branch protection requires PR reviews. Flux RBAC restricts who can modify platform resources. Kyverno prevents manual kubectl changes.",p:"Platform Team",e:"GitHub branch rules, Flux RBAC, Kyverno protect policies"},
+{id:"CM-6",t:"Configuration Settings",s:"implemented",d:"Ansible DISA STIG roles (OS layer), RKE2 CIS benchmark profile (K8s layer), Kyverno policies (workload layer). Three-tier hardening.",p:"Platform Team",e:"Ansible roles, RKE2 config, 7 Kyverno ClusterPolicies"},
+{id:"CM-7",t:"Least Functionality",s:"implemented",d:"Kyverno restricts capabilities, volume types, host access. NeuVector process whitelisting blocks unexpected executables.",p:"Platform Team",e:"Kyverno policies, NeuVector process profiles"},
+{id:"CM-7(1)",t:"Least Functionality | Periodic Review",s:"implemented",d:"Kyverno background scanning continuously checks all resources against policies. PolicyReports updated in real-time.",p:"Platform Team",e:"Kyverno PolicyReports, background scan"},
+{id:"CM-7(2)",t:"Least Functionality | Prevent Program Execution",s:"implemented",d:"NeuVector process profile whitelisting blocks unauthorized executables in containers. Read-only rootfs prevents binary injection.",p:"Platform Team",e:"NeuVector process rules, readOnlyRootFilesystem"},
+{id:"CM-8",t:"System Component Inventory",s:"implemented",d:"Flux tracks all deployed K8s components. Harbor maintains image inventory with SBOMs (SPDX + CycloneDX). ~90 running pods tracked.",p:"Platform Team",e:"flux get all, Harbor project inventory"},
+{id:"CM-8(1)",t:"System Component Inventory | Updates During Installation and Removal",s:"implemented",d:"Flux automatically updates component inventory on every reconciliation cycle (10 min).",p:"Platform Team",e:"Flux reconciliation events"},
+{id:"CM-8(3)",t:"System Component Inventory | Automated Unauthorized Component Detection",s:"implemented",d:"Kyverno restrict-image-registries blocks images not from Harbor. NeuVector detects unauthorized processes.",p:"Platform Team",e:"Kyverno image registry policy, NeuVector alerts"},
+{id:"CM-9",t:"Configuration Management Plan",s:"implemented",d:"GitOps-based CM plan documented in docs/architecture.md. CLAUDE.md defines standards. Session playbook defines build process.",p:"Platform Team",e:"docs/architecture.md, CLAUDE.md, docs/session-playbook.md"},
+{id:"CM-10",t:"Software Usage Restrictions",s:"implemented",d:"All components are open-source (verified in docs/decisions.md ADRs). Kyverno disallow-latest-tag enforces version pinning.",p:"Platform Team",e:"docs/decisions.md, Kyverno policies"},
+{id:"CM-11",t:"User-Installed Software",s:"implemented",d:"Kyverno restrict-image-registries allows only harbor.sre.internal. verify-image-signatures validates Cosign signatures on all pods.",p:"Platform Team",e:"Kyverno restrict-image-registries, verify-image-signatures"}
+]},
+"CP":{n:"Contingency Planning",c:[
+{id:"CP-1",t:"Policy and Procedures",s:"planned",d:"Need formal contingency planning policy document with roles and responsibilities.",p:"Platform Team",e:""},
+{id:"CP-2",t:"Contingency Plan",s:"planned",d:"Need formal contingency plan with RTOs, RPOs, recovery procedures, and communication plan.",p:"Platform Team",e:""},
+{id:"CP-2(1)",t:"Contingency Plan | Coordinate with Related Plans",s:"planned",d:"Coordinate with organizational COOP, DR, and business continuity plans.",p:"Org/HR",e:""},
+{id:"CP-2(3)",t:"Contingency Plan | Resume Mission-Essential Functions",s:"planned",d:"Define RTOs/RPOs per data classification. GitOps enables rapid re-bootstrap.",p:"Platform Team",e:""},
+{id:"CP-2(8)",t:"Contingency Plan | Identify Critical Assets",s:"implemented",d:"Platform critical assets inventoried via Flux. Critical path: etcd, Istio, Kyverno, monitoring.",p:"Platform Team",e:"Platform dependency chain in docs/architecture.md"},
+{id:"CP-3",t:"Contingency Training",s:"planned",d:"Need DR drill schedule, training materials, and completion tracking.",p:"Platform Team",e:""},
+{id:"CP-4",t:"Contingency Plan Testing",s:"planned",d:"Velero restore test CronJob provides automated validation. Need formal test plan with full DR scenario.",p:"Platform Team",e:"Velero restore-test CronJob"},
+{id:"CP-4(1)",t:"Contingency Plan Testing | Coordinate with Related Plans",s:"planned",d:"Coordinate DR testing with organizational exercises.",p:"Org/HR",e:""},
+{id:"CP-6",t:"Alternate Storage Site",s:"implemented",d:"Velero backs up to S3-compatible storage (off-cluster, separate availability zone).",p:"Platform Team",e:"Velero BackupStorageLocation config"},
+{id:"CP-6(1)",t:"Alternate Storage Site | Separation from Primary Site",s:"implemented",d:"Backup S3 bucket in separate AZ/region from primary cluster.",p:"Platform Team",e:"S3 bucket configuration"},
+{id:"CP-6(3)",t:"Alternate Storage Site | Accessibility",s:"implemented",d:"S3 backup accessible from any cluster in the account for restore operations.",p:"Platform Team",e:"S3 access policy"},
+{id:"CP-7",t:"Alternate Processing Site",s:"planned",d:"Need documented failover site or multi-cluster capability for DR.",p:"Platform Team",e:""},
+{id:"CP-8",t:"Telecommunications Services",s:"planned",d:"Need documented alternate network connectivity for DR scenarios.",p:"Facility",e:""},
+{id:"CP-9",t:"System Backup",s:"implemented",d:"Velero schedules: daily (retain 7), weekly (retain 4), monthly (retain 3). All namespaces except kube-system, flux-system.",p:"Platform Team",e:"Velero Schedule manifests"},
+{id:"CP-9(1)",t:"System Backup | Testing for Reliability and Integrity",s:"implemented",d:"Velero restore test CronJob restores to test namespace, validates, cleans up.",p:"Platform Team",e:"Velero restore-test CronJob results"},
+{id:"CP-9(8)",t:"System Backup | Cryptographic Protection",s:"implemented",d:"Backups encrypted at rest in S3 (SSE-S3). Secrets encrypted in etcd before backup.",p:"Platform Team",e:"S3 encryption, etcd encryption config"},
+{id:"CP-10",t:"System Recovery and Reconstitution",s:"implemented",d:"Velero restore for data. Flux re-bootstrap from Git for platform state. Documented in operator guide.",p:"Platform Team",e:"docs/operator-guide.md, scripts/bootstrap.sh"}
+]},
+"IA":{n:"Identification and Authentication",c:[
+{id:"IA-1",t:"Policy and Procedures",s:"implemented",d:"Authentication policy enforced by Keycloak for all platform services. Policy documented.",p:"Platform Team",e:"Keycloak realm settings, docs/"},
+{id:"IA-2",t:"Identification and Authentication (Organizational Users)",s:"implemented",d:"Keycloak SSO with MFA for all platform UIs. OIDC integration with K8s API server.",p:"Platform Team",e:"Keycloak SRE realm, 5 OIDC clients"},
+{id:"IA-2(1)",t:"ID and Auth | Multi-Factor Authentication to Privileged Accounts",s:"implemented",d:"Keycloak MFA (TOTP) required for sre-admins group members.",p:"Platform Team",e:"Keycloak auth flow, sre-admins group config"},
+{id:"IA-2(2)",t:"ID and Auth | Multi-Factor Authentication to Non-Privileged Accounts",s:"implemented",d:"Keycloak MFA configurable per group. Recommended for all users.",p:"Platform Team",e:"Keycloak authentication flow settings"},
+{id:"IA-2(8)",t:"ID and Auth | Access to Accounts — Replay Resistant",s:"implemented",d:"OIDC tokens short-lived (5 min access, 30 min refresh) with nonce validation. OAuth2 Proxy validates token freshness.",p:"Platform Team",e:"OIDC token lifetime config"},
+{id:"IA-2(12)",t:"ID and Auth | Acceptance of PIV Credentials",s:"planned",d:"Keycloak supports X.509/smart card auth for CAC/PIV. Needs DoD PKI trust chain configuration.",p:"Platform Team",e:""},
+{id:"IA-3",t:"Device Identification and Authentication",s:"implemented",d:"Istio mTLS assigns SPIFFE identities (spiffe://cluster.local/ns/X/sa/Y) to every workload. Mutual authentication required.",p:"Platform Team",e:"Istio SPIFFE certificates, PeerAuthentication"},
+{id:"IA-4",t:"Identifier Management",s:"implemented",d:"Keycloak manages human user identifiers with uniqueness enforcement. K8s ServiceAccounts provide workload identifiers.",p:"Platform Team",e:"Keycloak user management, ServiceAccount manifests"},
+{id:"IA-4(4)",t:"Identifier Management | Identify User Status",s:"implemented",d:"Keycloak tracks account status: active, disabled, locked. Status visible in admin console and audit logs.",p:"Platform Team",e:"Keycloak admin console"},
+{id:"IA-5",t:"Authenticator Management",s:"implemented",d:"Keycloak password policies enforced. cert-manager rotates TLS certificates. OpenBao rotates secrets. Multi-layer authenticator management.",p:"Platform Team",e:"Keycloak policy, cert-manager Certificates, OpenBao leases"},
+{id:"IA-5(1)",t:"Authenticator Management | Password-Based Authentication",s:"implemented",d:"Keycloak enforces: min 12 chars, complexity (upper+lower+digit+special), 24 password history, 90-day expiry, no dictionary words.",p:"Platform Team",e:"Keycloak password policy configuration"},
+{id:"IA-5(2)",t:"Authenticator Management | PKI-Based Authentication",s:"implemented",d:"cert-manager manages full PKI lifecycle: root CA, intermediate CA, workload certs. Auto-rotation before expiry.",p:"Platform Team",e:"cert-manager ClusterIssuers, Certificate resources"},
+{id:"IA-5(6)",t:"Authenticator Management | Protection of Authenticators",s:"implemented",d:"All secrets stored in OpenBao (encrypted at rest). K8s Secrets encrypted in etcd. No plaintext credentials in Git.",p:"Platform Team",e:"OpenBao config, etcd encryption, .gitignore"},
+{id:"IA-6",t:"Authentication Feedback",s:"implemented",d:"Keycloak obscures password input. Generic 'Invalid credentials' on failure (no user enumeration).",p:"Platform Team",e:"Keycloak login page behavior"},
+{id:"IA-7",t:"Cryptographic Module Authentication",s:"implemented",d:"FIPS 140-2 validated modules: RKE2 BoringCrypto (Go FIPS), Rocky Linux 9 FIPS crypto-policies.",p:"Platform Team",e:"fips-mode-setup output, RKE2 FIPS flag"},
+{id:"IA-8",t:"ID and Auth (Non-Organizational Users)",s:"implemented",d:"All external traffic must authenticate via Keycloak through Istio gateway ext-authz. No anonymous access.",p:"Platform Team",e:"Istio ext-authz config, OAuth2 Proxy"},
+{id:"IA-8(1)",t:"ID and Auth | Acceptance of PIV Credentials from Other Agencies",s:"planned",d:"Keycloak federation supports external IdP trust. Needs PIV/CAC cross-agency configuration.",p:"Platform Team",e:""},
+{id:"IA-8(2)",t:"ID and Auth | Acceptance of External Authenticators",s:"planned",d:"Keycloak supports SAML/OIDC federation for external authenticator acceptance.",p:"Platform Team",e:""},
+{id:"IA-8(4)",t:"ID and Auth | Use of Defined Profiles",s:"implemented",d:"Standard OIDC profiles with well-defined claims used across all 5 platform OIDC clients.",p:"Platform Team",e:"OIDC client configurations in Keycloak"}
+]},
+"IR":{n:"Incident Response",c:[
+{id:"IR-1",t:"Policy and Procedures",s:"planned",d:"Need formal incident response policy with classification levels, response timelines, and escalation procedures.",p:"Platform Team",e:""},
+{id:"IR-2",t:"Incident Response Training",s:"planned",d:"Need IR training schedule tied to roles. Platform operators need hands-on IR training.",p:"Org/HR",e:""},
+{id:"IR-2(1)",t:"Incident Response Training | Simulated Events",s:"planned",d:"Need tabletop exercises and purple team drills using NeuVector alerts.",p:"Platform Team",e:""},
+{id:"IR-2(2)",t:"Incident Response Training | Automated Training Environments",s:"planned",d:"Could leverage staging cluster for IR training scenarios.",p:"Platform Team",e:""},
+{id:"IR-3",t:"Incident Response Testing",s:"planned",d:"Need formal IR test plan with tabletop exercises and after-action reports.",p:"Platform Team",e:""},
+{id:"IR-3(2)",t:"Incident Response Testing | Coordination with Related Plans",s:"planned",d:"Coordinate IR testing with organizational COOP/DR exercises.",p:"Org/HR",e:""},
+{id:"IR-4",t:"Incident Handling",s:"implemented",d:"Detection: NeuVector + Prometheus alerts. Analysis: Grafana dashboards + Loki queries. Containment: NeuVector network isolation. Recovery: Velero restore.",p:"Platform Team",e:"AlertManager config, NeuVector, Grafana, Velero"},
+{id:"IR-4(1)",t:"Incident Handling | Automated Incident Handling Processes",s:"implemented",d:"Prometheus alerting pipeline automates detection and notification. 30+ PrometheusRules cover security events.",p:"Platform Team",e:"30+ PrometheusRules, AlertManager receivers"},
+{id:"IR-5",t:"Incident Monitoring",s:"implemented",d:"NeuVector runtime security events, Kyverno policy violations, Prometheus alert history, K8s audit log anomalies — all in Grafana.",p:"Platform Team",e:"Grafana security dashboards, NeuVector console"},
+{id:"IR-6",t:"Incident Reporting",s:"planned",d:"Need formal reporting procedures, POCs, and integration with organizational CSIRT.",p:"Platform Team",e:""},
+{id:"IR-6(1)",t:"Incident Reporting | Automated Reporting",s:"implemented",d:"AlertManager sends automated incident notifications to Slack (security channel), PagerDuty, and email.",p:"Platform Team",e:"AlertManager Slack/PagerDuty/email receivers"},
+{id:"IR-7",t:"Incident Response Assistance",s:"planned",d:"Need documented escalation contacts, external coordination procedures, and vendor support agreements.",p:"Org/HR",e:""},
+{id:"IR-7(1)",t:"Incident Response Assistance | Automation Support for Availability of Information and Support",s:"implemented",d:"Runbooks linked from Grafana alerts. NeuVector provides automated threat intelligence context.",p:"Platform Team",e:"Grafana alert annotations with runbook URLs"},
+{id:"IR-8",t:"Incident Response Plan",s:"gap",d:"CRITICAL GAP: Need formal IR plan document with roles, responsibilities, communication procedures, and recovery steps.",p:"Platform Team",e:""}
+]},
+"MA":{n:"Maintenance",c:[
+{id:"MA-1",t:"Policy and Procedures",s:"planned",d:"Need formal maintenance policy covering scheduled and emergency maintenance windows.",p:"Platform Team",e:""},
+{id:"MA-2",t:"Controlled Maintenance",s:"implemented",d:"All changes via GitOps (PR-reviewed, Flux-deployed). Ansible playbooks for OS-level maintenance. Maintenance windows documented.",p:"Platform Team",e:"Git PR history, Ansible playbooks"},
+{id:"MA-3",t:"Maintenance Tools",s:"implemented",d:"Authorized tools: kubectl, flux CLI, ansible, helm — all open-source, version-pinned. Usage audited via K8s audit log.",p:"Platform Team",e:"K8s audit logs, tool inventory"},
+{id:"MA-3(1)",t:"Maintenance Tools | Inspect Tools",s:"implemented",d:"All CLI tools installed from trusted package managers with GPG verification. Checksums validated.",p:"Platform Team",e:"Package manifest, install scripts"},
+{id:"MA-3(2)",t:"Maintenance Tools | Inspect Media",s:"implemented",d:"Container images scanned by Trivy in Harbor before deployment. No unscanned images allowed (Kyverno enforced).",p:"Platform Team",e:"Harbor Trivy scan results"},
+{id:"MA-4",t:"Nonlocal Maintenance",s:"implemented",d:"All remote maintenance via SSH with key-based auth (no password). Sessions audit logged via auditd and K8s audit.",p:"Platform Team",e:"sshd_config (PasswordAuthentication no), auditd rules"},
+{id:"MA-5",t:"Maintenance Personnel",s:"planned",d:"Need documented authorization list for maintenance personnel with access approval workflow.",p:"Org/HR",e:""},
+{id:"MA-6",t:"Timely Maintenance",s:"implemented",d:"Vulnerability SLAs: CRITICAL 7 days, HIGH 21 days, MEDIUM 60 days. Automated alerts on SLA breach.",p:"Platform Team",e:"Vulnerability remediation SLA doc"}
+]},
+"MP":{n:"Media Protection",c:[
+{id:"MP-1",t:"Policy and Procedures",s:"planned",d:"Need formal media protection policy document.",p:"Org/HR",e:""},
+{id:"MP-2",t:"Media Access",s:"implemented",d:"OpenBao access policies restrict secret access. K8s Secrets encrypted at rest via RKE2 etcd encryption. RBAC controls data access.",p:"Platform Team",e:"OpenBao policies, RKE2 encryption config"},
+{id:"MP-3",t:"Media Marking",s:"inherited",d:"Physical media marking is organizational/facility responsibility.",p:"Facility",e:"Organizational media handling policy"},
+{id:"MP-4",t:"Media Storage",s:"inherited",d:"Physical media storage handled by cloud provider/hosting facility per their authorization.",p:"Cloud Provider",e:"Cloud provider compliance documentation"},
+{id:"MP-5",t:"Media Transport",s:"inherited",d:"Physical media transport handled by cloud provider/hosting facility.",p:"Cloud Provider",e:"Cloud provider chain-of-custody procedures"},
+{id:"MP-6",t:"Media Sanitization",s:"inherited",d:"Disk sanitization performed by cloud provider per DoD 5220.22-M or NIST 800-88.",p:"Cloud Provider",e:"Cloud provider sanitization certification"},
+{id:"MP-7",t:"Media Use",s:"na",d:"No removable media in scope. Platform is entirely software-defined infrastructure.",p:"Platform Team",e:""}
+]},
+"PE":{n:"Physical and Environmental Protection",c:[
+{id:"PE-1",t:"Policy and Procedures",s:"inherited",d:"Physical security policy responsibility of hosting facility/cloud provider.",p:"Facility",e:"Facility authorization package"},
+{id:"PE-2",t:"Physical Access Authorizations",s:"inherited",d:"Facility manages physical access authorization lists.",p:"Facility",e:"Facility access control records"},
+{id:"PE-3",t:"Physical Access Control",s:"inherited",d:"Data center physical access: badge readers, mantrap, biometric. Managed by facility.",p:"Facility",e:"Facility physical security plan"},
+{id:"PE-4",t:"Access Control for Transmission",s:"inherited",d:"Physical cabling and transmission infrastructure protected by facility.",p:"Facility",e:"Facility wiring standards"},
+{id:"PE-5",t:"Access Control for Output Devices",s:"inherited",d:"No local output devices. All access via network through Istio gateway.",p:"Facility",e:""},
+{id:"PE-6",t:"Monitoring Physical Access",s:"inherited",d:"CCTV, badge readers, visitor logs managed by facility.",p:"Facility",e:"Facility monitoring records"},
+{id:"PE-6(1)",t:"Monitoring Physical Access | Intrusion Alarms and Surveillance",s:"inherited",d:"IDS and camera systems managed by facility security.",p:"Facility",e:"Facility security systems documentation"},
+{id:"PE-8",t:"Visitor Access Records",s:"inherited",d:"Visitor management system maintained by facility.",p:"Facility",e:"Facility visitor logs"},
+{id:"PE-9",t:"Power Equipment and Cabling",s:"inherited",d:"UPS, PDUs, redundant power managed by facility.",p:"Facility",e:"Facility power infrastructure plan"},
+{id:"PE-10",t:"Emergency Shutoff",s:"inherited",d:"Emergency power off (EPO) switches managed by facility.",p:"Facility",e:"Facility emergency procedures"},
+{id:"PE-11",t:"Emergency Power",s:"inherited",d:"Generator backup and UPS systems managed by facility.",p:"Facility",e:"Facility power redundancy plan"},
+{id:"PE-11(1)",t:"Emergency Power | Alternate Power Supply — Automatic Transfer",s:"inherited",d:"Automatic transfer switch (ATS) to generator managed by facility.",p:"Facility",e:"Facility ATS documentation"},
+{id:"PE-12",t:"Emergency Lighting",s:"inherited",d:"Battery-backed emergency lighting managed by facility.",p:"Facility",e:"Facility safety plan"},
+{id:"PE-13",t:"Fire Protection",s:"inherited",d:"Fire detection and suppression systems managed by facility.",p:"Facility",e:"Facility fire safety plan"},
+{id:"PE-13(3)",t:"Fire Protection | Automatic Fire Suppression",s:"inherited",d:"FM-200 or equivalent clean agent fire suppression managed by facility.",p:"Facility",e:"Facility fire suppression certification"},
+{id:"PE-14",t:"Environmental Controls",s:"inherited",d:"HVAC with temperature and humidity monitoring managed by facility.",p:"Facility",e:"Facility environmental monitoring"},
+{id:"PE-14(2)",t:"Environmental Controls | Monitoring with Alarms and Notifications",s:"inherited",d:"Environmental monitoring with automated alerts managed by facility.",p:"Facility",e:"Facility BMS alerts"},
+{id:"PE-15",t:"Water Damage Protection",s:"inherited",d:"Raised floors, water sensors, drainage managed by facility.",p:"Facility",e:"Facility water protection plan"},
+{id:"PE-16",t:"Delivery and Removal",s:"inherited",d:"Controlled delivery/removal procedures managed by facility.",p:"Facility",e:"Facility asset management procedures"},
+{id:"PE-17",t:"Alternate Work Site",s:"inherited",d:"Remote work security controls managed by organizational policy.",p:"Org/HR",e:"Organizational telework policy"}
+]},
+"PL":{n:"Planning",c:[
+{id:"PL-1",t:"Policy and Procedures",s:"planned",d:"Need formal security planning policy document.",p:"Platform Team",e:""},
+{id:"PL-2",t:"System Security and Privacy Plans",s:"implemented",d:"OSCAL SSP at compliance/oscal/. This ATO tracker provides living SSP supplement. eMASS SSP to be completed.",p:"Platform Team",e:"compliance/oscal/, ato-controls-tracker.html"},
+{id:"PL-2(3)",t:"System Security Plans | Plan and Coordinate with Other Organizational Entities",s:"planned",d:"Need to coordinate SSP with organizational security program office.",p:"Org/HR",e:""},
+{id:"PL-4",t:"Rules of Behavior",s:"planned",d:"Need rules of behavior document for all system users and administrators.",p:"Org/HR",e:""},
+{id:"PL-4(1)",t:"Rules of Behavior | Social Media and External Site Restrictions",s:"planned",d:"Need usage policy for social media and external sites from organizational perspective.",p:"Org/HR",e:""},
+{id:"PL-10",t:"Baseline Selection",s:"implemented",d:"NIST 800-53 Moderate baseline selected per FIPS 199 categorization (Moderate-Moderate-Moderate).",p:"Platform Team",e:"Security categorization document"},
+{id:"PL-11",t:"Baseline Tailoring",s:"planned",d:"Document all baseline tailoring decisions with rationale for each scoping/compensating determination.",p:"Platform Team",e:""}
+]},
+"PM":{n:"Program Management",c:[
+{id:"PM-1",t:"Information Security Program Plan",s:"planned",d:"Need formal organizational information security program plan.",p:"Org/HR",e:""},
+{id:"PM-2",t:"Information Security Program Leadership Role",s:"planned",d:"Assign CISO or security program lead with authority and accountability.",p:"Org/HR",e:""},
+{id:"PM-3",t:"Information Security and Privacy Resources",s:"planned",d:"Need budget and staffing plan for ongoing security program operations.",p:"Org/HR",e:""},
+{id:"PM-4",t:"Plan of Action and Milestones Process",s:"implemented",d:"POA&M template and tracking in place. This ATO tracker and raise-tracker.html serve as living POA&M.",p:"Platform Team",e:"compliance/raise/poam-template.md, raise-tracker.html"},
+{id:"PM-5",t:"System Inventory",s:"implemented",d:"Flux tracks 16 HelmReleases, ~90 pods. Harbor tracks all container images with SBOMs.",p:"Platform Team",e:"flux get all output, Harbor project list"},
+{id:"PM-5(1)",t:"System Inventory | Inventory of Personally Identifiable Information",s:"planned",d:"Need PII data flow mapping if hosted applications process PII.",p:"App Owner",e:""},
+{id:"PM-6",t:"Measures of Performance",s:"implemented",d:"Grafana dashboards with platform SLOs: availability, latency, error rates. Compliance metrics tracked.",p:"Platform Team",e:"Grafana dashboards"},
+{id:"PM-9",t:"Risk Management Strategy",s:"planned",d:"Need formal organizational risk management strategy and risk appetite statement.",p:"Org/HR",e:""},
+{id:"PM-10",t:"Authorization Process",s:"planned",d:"Pursuing ATO via RMF and RAISE 2.0 RPOC designation simultaneously.",p:"Platform Team",e:"raise-tracker.html, ato-controls-tracker.html"},
+{id:"PM-11",t:"Mission and Business Process Definition",s:"planned",d:"Need mission/business process definition for accurate security categorization.",p:"Org/HR",e:""},
+{id:"PM-14",t:"Testing, Training, and Monitoring",s:"implemented",d:"Continuous monitoring: Prometheus/Grafana. Automated compliance: scanner CronJob. Policy testing: Kyverno tests.",p:"Platform Team",e:"Compliance scanner, Kyverno test suites"},
+{id:"PM-15",t:"Security and Privacy Groups and Associations",s:"planned",d:"Document participation in security communities, ISACs, and information sharing groups.",p:"Org/HR",e:""},
+{id:"PM-16",t:"Threat Awareness Program",s:"planned",d:"Need threat intelligence feeds and awareness distribution program.",p:"Platform Team",e:""}
+]},
+"PS":{n:"Personnel Security",c:[
+{id:"PS-1",t:"Policy and Procedures",s:"inherited",d:"Personnel security policy is organizational HR responsibility.",p:"Org/HR",e:"Organizational personnel security policy"},
+{id:"PS-2",t:"Position Risk Designation",s:"inherited",d:"HR designates position risk levels per OPM guidance based on system access.",p:"Org/HR",e:"Position risk designations"},
+{id:"PS-3",t:"Personnel Screening",s:"inherited",d:"HR conducts background investigations appropriate to position risk level.",p:"Org/HR",e:"Background investigation records"},
+{id:"PS-4",t:"Personnel Termination",s:"inherited",d:"HR termination procedures include: disable Keycloak account, revoke certificates, remove from groups.",p:"Org/HR",e:"Termination checklist"},
+{id:"PS-5",t:"Personnel Transfer",s:"inherited",d:"HR transfer procedures update Keycloak group memberships to match new role.",p:"Org/HR",e:"Transfer procedures"},
+{id:"PS-6",t:"Access Agreements",s:"inherited",d:"HR manages NDAs, acceptable use agreements, rules of behavior signatures.",p:"Org/HR",e:"Signed access agreements"},
+{id:"PS-7",t:"External Personnel Security",s:"inherited",d:"HR manages contractor security requirements and third-party personnel agreements.",p:"Org/HR",e:"Contractor security agreements"},
+{id:"PS-8",t:"Personnel Sanctions",s:"inherited",d:"HR manages disciplinary actions for security policy violations.",p:"Org/HR",e:"Disciplinary procedures"}
+]},
+"RA":{n:"Risk Assessment",c:[
+{id:"RA-1",t:"Policy and Procedures",s:"planned",d:"Need formal risk assessment policy with methodology and frequency requirements.",p:"Platform Team",e:""},
+{id:"RA-2",t:"Security Categorization",s:"implemented",d:"FIPS 199 categorization: Moderate-Moderate-Moderate (Confidentiality, Integrity, Availability). Documented.",p:"Platform Team",e:"Security categorization document"},
+{id:"RA-3",t:"Risk Assessment",s:"planned",d:"Need formal risk assessment with threat sources, vulnerabilities, likelihood, and impact analysis.",p:"Platform Team",e:""},
+{id:"RA-3(1)",t:"Risk Assessment | Supply Chain Risk Assessment",s:"planned",d:"Need SCRM assessment for all platform components. All are open-source (lower risk) but need formal documentation.",p:"Platform Team",e:""},
+{id:"RA-5",t:"Vulnerability Monitoring and Scanning",s:"implemented",d:"Harbor+Trivy: image scan on push. NeuVector: runtime CVE scan. CIS benchmarks: node compliance. Compliance scanner: daily 8-check CronJob.",p:"Platform Team",e:"Trivy reports, NeuVector scans, CIS results, scanner output"},
+{id:"RA-5(2)",t:"Vulnerability Monitoring | Update Vulnerabilities to Be Scanned",s:"implemented",d:"Trivy DB auto-updates every 12 hours. NeuVector CVE database auto-updated. No manual intervention needed.",p:"Platform Team",e:"Trivy DB update logs, NeuVector update status"},
+{id:"RA-5(5)",t:"Vulnerability Monitoring | Privileged Access",s:"implemented",d:"Scanner ServiceAccounts have scoped RBAC for read access to scan targets. No cluster-admin.",p:"Platform Team",e:"Scanner ServiceAccount RoleBindings"},
+{id:"RA-7",t:"Risk Response",s:"planned",d:"Need formal risk response procedures: accept, mitigate, transfer, avoid — with approval workflow.",p:"Platform Team",e:""}
+]},
+"SA":{n:"System and Services Acquisition",c:[
+{id:"SA-1",t:"Policy and Procedures",s:"planned",d:"Need formal system and services acquisition policy.",p:"Org/HR",e:""},
+{id:"SA-2",t:"Allocation of Resources",s:"planned",d:"Need resource allocation plan for security controls implementation and ongoing operations.",p:"Org/HR",e:""},
+{id:"SA-3",t:"System Development Life Cycle",s:"implemented",d:"GitOps SDLC: code review (PR), security scan (Trivy), policy check (Kyverno), deploy (Flux), monitor (Prometheus).",p:"Platform Team",e:"CI/CD pipelines, GitHub Actions, GitLab CI templates"},
+{id:"SA-4",t:"Acquisition Process",s:"implemented",d:"All 16+ components are open-source. Each evaluated via ADR process (docs/decisions.md). No vendor lock-in.",p:"Platform Team",e:"docs/decisions.md (9 ADRs)"},
+{id:"SA-4(1)",t:"Acquisition Process | Functional Properties of Controls",s:"implemented",d:"Each component README documents security properties and NIST control mappings.",p:"Platform Team",e:"Component READMEs, sre.io/nist-controls annotations"},
+{id:"SA-4(2)",t:"Acquisition Process | Design and Implementation Information",s:"implemented",d:"Full architecture at docs/architecture.md. All source code auditable. Design decisions in ADRs.",p:"Platform Team",e:"docs/architecture.md, docs/decisions.md"},
+{id:"SA-4(9)",t:"Acquisition Process | Functions, Ports, Protocols, and Services",s:"implemented",d:"All ports/protocols documented per component. NetworkPolicies enforce allowed-only flows.",p:"Platform Team",e:"NetworkPolicy manifests, architecture docs"},
+{id:"SA-4(10)",t:"Acquisition Process | Use of Approved PIV Products",s:"planned",d:"Keycloak supports PIV/CAC. Need to configure for approved PIV products when required.",p:"Platform Team",e:""},
+{id:"SA-5",t:"System Documentation",s:"implemented",d:"docs/ directory with architecture, operator guide, developer guide, agent docs. README per component.",p:"Platform Team",e:"docs/ directory contents"},
+{id:"SA-8",t:"Security and Privacy Engineering Principles",s:"implemented",d:"Security-by-default: mTLS everywhere, non-root containers, deny-all NetworkPolicies, image signatures, encrypted secrets.",p:"Platform Team",e:"docs/architecture.md security design"},
+{id:"SA-9",t:"External System Services",s:"implemented",d:"External access requires explicit NetworkPolicy. SLA templates for tenant apps. All dependencies documented.",p:"Platform Team",e:"NetworkPolicies, SLA templates"},
+{id:"SA-9(2)",t:"External System Services | Identification of Functions, Ports, Protocols",s:"implemented",d:"External service connections documented and enforced via NetworkPolicy egress rules per namespace.",p:"Platform Team",e:"NetworkPolicy egress rules"},
+{id:"SA-10",t:"Developer Configuration Management",s:"implemented",d:"GitOps: all changes via Git PRs. Flux reconciliation provides deployment audit trail. Conventional commits.",p:"Platform Team",e:"Git history, Flux events"},
+{id:"SA-11",t:"Developer Testing and Evaluation",s:"implemented",d:"Kyverno policy tests (6 suites), Helm chart tests, task lint, task validate, CI security gates.",p:"Platform Team",e:"Test suites, CI pipeline configs"},
+{id:"SA-11(1)",t:"Developer Testing | Static Code Analysis",s:"implemented",d:"YAML lint, HCL fmt, ansible-lint run on all changes via task lint.",p:"Platform Team",e:"Taskfile.yml lint config"},
+{id:"SA-15",t:"Development Process, Standards, and Tools",s:"implemented",d:"CLAUDE.md defines all coding standards, naming conventions, commit format, review requirements.",p:"Platform Team",e:"CLAUDE.md"},
+{id:"SA-17",t:"Developer Security and Privacy Architecture and Design",s:"implemented",d:"Full security architecture documented with threat model considerations and defense-in-depth layers.",p:"Platform Team",e:"docs/architecture.md, docs/decisions.md"}
+]},
+"SC":{n:"System and Communications Protection",c:[
+{id:"SC-1",t:"Policy and Procedures",s:"planned",d:"Need formal system and communications protection policy document.",p:"Platform Team",e:""},
+{id:"SC-2",t:"Separation of User Functionality from System Management",s:"implemented",d:"User workloads in tenant namespaces, platform services in dedicated namespaces. RBAC prevents cross-access.",p:"Platform Team",e:"Namespace architecture, RBAC manifests"},
+{id:"SC-3",t:"Security Function Isolation",s:"implemented",d:"Each platform service (Istio, Kyverno, monitoring, etc.) in its own namespace with dedicated NetworkPolicies.",p:"Platform Team",e:"Namespace layout, per-namespace NetworkPolicies"},
+{id:"SC-4",t:"Information in Shared Resources",s:"implemented",d:"ResourceQuotas prevent resource exhaustion. Memory limits prevent information leakage. Seccomp profiles restrict syscalls.",p:"Platform Team",e:"ResourceQuotas, LimitRanges, seccomp profiles"},
+{id:"SC-5",t:"Denial-of-Service Protection",s:"implemented",d:"Istio rate limiting at gateway. Pod resource limits prevent noisy neighbors. HPA auto-scales. PDB ensures availability during disruptions.",p:"Platform Team",e:"Istio EnvoyFilter, HPA manifests, PDB manifests"},
+{id:"SC-7",t:"Boundary Protection",s:"implemented",d:"Single Istio ingress gateway (192.168.2.200) as sole entry point. Default-deny NetworkPolicies. NeuVector network segmentation.",p:"Platform Team",e:"Istio Gateway, NetworkPolicies, NeuVector network rules"},
+{id:"SC-7(3)",t:"Boundary Protection | Access Points",s:"implemented",d:"Single managed access point: Istio ingress gateway on MetalLB LoadBalancer. No direct pod access from outside cluster.",p:"Platform Team",e:"Istio Gateway on 192.168.2.200, ports 80/443"},
+{id:"SC-7(4)",t:"Boundary Protection | External Telecommunications Services",s:"inherited",d:"Network perimeter controls (firewalls, IDS/IPS) managed by facility/cloud provider.",p:"Facility",e:""},
+{id:"SC-7(5)",t:"Boundary Protection | Deny by Default, Allow by Exception",s:"implemented",d:"Every namespace has default-deny-all NetworkPolicy. Each allowed flow is an explicit NetworkPolicy rule.",p:"Platform Team",e:"NetworkPolicy default-deny manifests in every namespace"},
+{id:"SC-7(7)",t:"Boundary Protection | Split Tunneling for Remote Devices",s:"na",d:"No VPN split tunneling. All access via HTTPS through Istio gateway.",p:"Platform Team",e:""},
+{id:"SC-7(8)",t:"Boundary Protection | Route Traffic to Authenticated Proxy Servers",s:"implemented",d:"All external traffic routed through OAuth2 Proxy (authenticated) via Istio ext-authz before reaching services.",p:"Platform Team",e:"OAuth2 Proxy ext-authz config"},
+{id:"SC-8",t:"Transmission Confidentiality and Integrity",s:"implemented",d:"Istio mTLS STRICT encrypts all in-cluster traffic. TLS 1.2+ with FIPS ciphers at gateway.",p:"Platform Team",e:"PeerAuthentication STRICT, Gateway TLS config"},
+{id:"SC-8(1)",t:"Transmission Confidentiality | Cryptographic Protection",s:"implemented",d:"FIPS-compliant TLS via RKE2 BoringCrypto. Istio uses FIPS-validated crypto for mTLS.",p:"Platform Team",e:"FIPS verification, Istio crypto config"},
+{id:"SC-10",t:"Network Disconnect",s:"implemented",d:"Keycloak idle timeout 30 min. Absolute session 10 hours. OAuth2 Proxy cookie TTL aligned.",p:"Platform Team",e:"Keycloak session settings, OAuth2 Proxy cookie config"},
+{id:"SC-12",t:"Cryptographic Key Establishment and Management",s:"implemented",d:"cert-manager automates certificate lifecycle (issue, renew, revoke). OpenBao manages encryption keys and secrets rotation.",p:"Platform Team",e:"cert-manager Certificates, OpenBao PKI secrets engine"},
+{id:"SC-13",t:"Cryptographic Protection",s:"implemented",d:"RKE2 FIPS 140-2 mode enabled (BoringCrypto). Rocky Linux 9 FIPS crypto policy enforced via Ansible.",p:"Platform Team",e:"fips-mode-setup output, update-crypto-policies output"},
+{id:"SC-15",t:"Collaborative Computing Devices and Applications",s:"na",d:"No collaborative computing devices (cameras, microphones) in platform scope.",p:"Platform Team",e:""},
+{id:"SC-17",t:"Public Key Infrastructure Certificates",s:"implemented",d:"cert-manager manages internal PKI: self-signed root CA, intermediate CA, wildcard cert for *.apps.sre.example.com.",p:"Platform Team",e:"cert-manager ClusterIssuers, Certificate resources"},
+{id:"SC-18",t:"Mobile Code",s:"na",d:"No mobile code technologies (Java applets, ActiveX) in platform infrastructure scope.",p:"Platform Team",e:""},
+{id:"SC-20",t:"Secure Name/Address Resolution (Authoritative Source)",s:"implemented",d:"CoreDNS provides authoritative DNS for cluster.local domain within RKE2 cluster.",p:"Platform Team",e:"CoreDNS configuration"},
+{id:"SC-21",t:"Secure Name/Address Resolution (Recursive or Caching)",s:"implemented",d:"CoreDNS configured with upstream forwarders for secure recursive resolution.",p:"Platform Team",e:"CoreDNS Corefile"},
+{id:"SC-22",t:"Architecture and Provisioning for Name/Address Resolution",s:"implemented",d:"CoreDNS deployed in HA (multiple replicas, anti-affinity) within RKE2.",p:"Platform Team",e:"CoreDNS Deployment spec"},
+{id:"SC-23",t:"Session Authenticity",s:"implemented",d:"All sessions over HTTPS/TLS. OIDC tokens provide session binding. CSRF protection in Keycloak.",p:"Platform Team",e:"TLS config, Keycloak CSRF settings"},
+{id:"SC-28",t:"Protection of Information at Rest",s:"implemented",d:"RKE2 etcd encryption at rest (AES-256). OpenBao encrypted storage (AES-256-GCM). Loki S3 with SSE.",p:"Platform Team",e:"etcd encryption config, OpenBao seal config, S3 SSE"},
+{id:"SC-28(1)",t:"Protection of Information at Rest | Cryptographic Protection",s:"implemented",d:"AES-256 for etcd secrets. AES-256-GCM for OpenBao. S3 SSE for backup and log storage.",p:"Platform Team",e:"Encryption configuration verification"},
+{id:"SC-39",t:"Process Isolation",s:"implemented",d:"Linux namespaces (container isolation), seccomp RuntimeDefault profiles, SELinux enforcing mode, cgroup resource limits.",p:"Platform Team",e:"SecurityContext manifests, SELinux getenforce output"}
+]},
+"SI":{n:"System and Information Integrity",c:[
+{id:"SI-1",t:"Policy and Procedures",s:"planned",d:"Need formal system and information integrity policy document.",p:"Platform Team",e:""},
+{id:"SI-2",t:"Flaw Remediation",s:"implemented",d:"Trivy scanning with remediation SLAs: CRITICAL 7 days, HIGH 21 days, MEDIUM 60 days, LOW 90 days. Alerts on SLA breach.",p:"Platform Team",e:"Trivy reports, remediation SLA documentation"},
+{id:"SI-2(2)",t:"Flaw Remediation | Automated Flaw Remediation Status",s:"implemented",d:"Grafana vulnerability dashboards show counts by severity, age, and remediation status across all Harbor projects.",p:"Platform Team",e:"Grafana vulnerability dashboard"},
+{id:"SI-2(3)",t:"Flaw Remediation | Time to Remediate and Benchmarks",s:"implemented",d:"SLA tracking with automated alerts: 7d/21d/60d/90d by severity. Benchmark data in Grafana.",p:"Platform Team",e:"PrometheusRules for SLA tracking"},
+{id:"SI-3",t:"Malicious Code Protection",s:"implemented",d:"NeuVector runtime protection: process whitelisting, file system integrity monitoring, behavioral anomaly detection.",p:"Platform Team",e:"NeuVector process/file rules, behavioral profiles"},
+{id:"SI-3(1)",t:"Malicious Code Protection | Central Management",s:"implemented",d:"NeuVector controller centrally manages all security policies. Distributed to all nodes via enforcer DaemonSet.",p:"Platform Team",e:"NeuVector console, enforcer DaemonSet"},
+{id:"SI-3(2)",t:"Malicious Code Protection | Automatic Updates",s:"implemented",d:"NeuVector CVE database auto-updates daily. Trivy DB updates every 12 hours.",p:"Platform Team",e:"Update schedules, version logs"},
+{id:"SI-4",t:"System Monitoring",s:"implemented",d:"Five monitoring layers: Prometheus (metrics), Loki (logs), Tempo (traces), NeuVector (runtime), Kyverno (policy). All unified in Grafana.",p:"Platform Team",e:"10 Grafana dashboards, 30+ PrometheusRules"},
+{id:"SI-4(1)",t:"System Monitoring | System-Wide Intrusion Detection",s:"implemented",d:"NeuVector provides cluster-wide IDS with behavioral analysis, network anomaly detection, and process monitoring.",p:"Platform Team",e:"NeuVector IDS events, threat feed"},
+{id:"SI-4(2)",t:"System Monitoring | Automated Tools and Mechanisms for Real-Time Analysis",s:"implemented",d:"Prometheus real-time alerting (sub-minute). NeuVector real-time threat detection. AlertManager immediate notification.",p:"Platform Team",e:"PrometheusRules, AlertManager latency"},
+{id:"SI-4(4)",t:"System Monitoring | Inbound and Outbound Communications Traffic",s:"implemented",d:"Istio access logs capture all inbound/outbound HTTP traffic with full metadata. NeuVector monitors network flows at L3/L4/L7.",p:"Platform Team",e:"Istio telemetry, NeuVector network map"},
+{id:"SI-4(5)",t:"System Monitoring | System-Generated Alerts",s:"implemented",d:"AlertManager routes to: Slack (security channel), PagerDuty (critical), email (summary). 30+ alert rules.",p:"Platform Team",e:"AlertManager receiver config"},
+{id:"SI-5",t:"Security Alerts, Advisories, and Directives",s:"implemented",d:"NeuVector CVE alerts. Trivy scan advisories. Prometheus security event alerts. All routed via AlertManager.",p:"Platform Team",e:"AlertManager config, NeuVector CVE feed"},
+{id:"SI-6",t:"Security and Privacy Function Verification",s:"implemented",d:"NeuVector CIS benchmarks verify node hardening. Kyverno background scanning verifies policy compliance. Daily compliance scanner.",p:"Platform Team",e:"CIS results, PolicyReports, scanner CronJob output"},
+{id:"SI-7",t:"Software, Firmware, and Information Integrity",s:"implemented",d:"Cosign image signatures verified by Kyverno verify-image-signatures policy on every pod admission. SBOMs generated and stored.",p:"Platform Team",e:"Kyverno imageVerify policy, Harbor SBOMs"},
+{id:"SI-7(1)",t:"Software Integrity | Integrity Checks",s:"implemented",d:"Kyverno validates Cosign signatures on every pod creation/update. Failed verification = denied admission.",p:"Platform Team",e:"Kyverno verify-image-signatures (Audit mode)"},
+{id:"SI-7(7)",t:"Software Integrity | Integration of Detection and Response",s:"implemented",d:"Image verification failure triggers: Kyverno deny event, PolicyReport update, Prometheus alert, Slack notification.",p:"Platform Team",e:"Kyverno events, PrometheusRule, AlertManager"},
+{id:"SI-8",t:"Spam Protection",s:"na",d:"No email systems in platform scope.",p:"Platform Team",e:""},
+{id:"SI-10",t:"Information Input Validation",s:"implemented",d:"Kyverno validates all K8s resource specs against policies. Helm values.schema.json validates at install time. API server validates resource schemas.",p:"Platform Team",e:"Kyverno policies, values.schema.json files"},
+{id:"SI-11",t:"Error Handling",s:"implemented",d:"Structured JSON error logging to Loki. No sensitive data (secrets, tokens, PII) in error messages. Generic errors to users.",p:"Platform Team",e:"Application logging standards documentation"},
+{id:"SI-12",t:"Information Management and Retention",s:"implemented",d:"Logs: 90 days (Loki). Images: retention policy per Harbor project. Backups: daily 7d, weekly 4w, monthly 3m (Velero).",p:"Platform Team",e:"Loki retention, Harbor GC, Velero schedules"},
+{id:"SI-16",t:"Memory Protection",s:"implemented",d:"SELinux enforcing mode (container_t). Seccomp RuntimeDefault profile. Read-only root filesystem. No privilege escalation.",p:"Platform Team",e:"SELinux getenforce, SecurityContext manifests"}
+]}
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// State & Persistence
+// ═══════════════════════════════════════════════════════════════════════════════
+const SK="ato-ctrl-v2";
+const SL={implemented:"Implemented",inherited:"Inherited",planned:"Planned",na:"N/A",gap:"Gap"};
+const SO=["implemented","inherited","planned","na","gap"];
+const PO=["Platform Team","App Owner","Org/HR","Facility","Cloud Provider"];
+let st={fam:"AC",flt:"all",q:"",srt:"id",edits:{}};
+
+function load(){try{const s=localStorage.getItem(SK);if(s){const p=JSON.parse(s);if(p.edits)st.edits=p.edits;}}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({edits:st.edits}));}catch(e){}}
+
+function gc(id){
+  const ed=st.edits[id]||{};
+  for(const f of Object.values(D)){
+    for(const c of f.c){
+      if(c.id===id) return{...c,s:ed.s||c.s,d:ed.d!==undefined?ed.d:c.d,p:ed.p||c.p,e:ed.e!==undefined?ed.e:(c.e||"")};
+    }
+  }
+  return null;
+}
+
+function uc(id,field,val){
+  if(!st.edits[id])st.edits[id]={};
+  st.edits[id][field]=val;
+  save();
+  rTop();rSb();
+}
+
+function allC(){const a=[];for(const f of Object.values(D))for(const c of f.c)a.push(gc(c.id));return a;}
+
+function stats(cs){
+  const cn={implemented:0,inherited:0,planned:0,na:0,gap:0};
+  cs.forEach(c=>{cn[c.s]=(cn[c.s]||0)+1;});
+  const t=cs.length,ad=cn.implemented+cn.inherited+cn.na;
+  return{cn,t,ad,pct:t>0?Math.round(ad/t*100):0};
+}
+
+function fStats(k){const f=D[k];if(!f)return{cn:{},t:0,ad:0,pct:0};return stats(f.c.map(c=>gc(c.id)));}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Rendering
+// ═══════════════════════════════════════════════════════════════════════════════
+function esc(s){return s?s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"):""}
+
+function rTop(){
+  const s=stats(allC());
+  document.getElementById("tpct").textContent=s.pct+"%";
+  document.getElementById("tpf").style.width=s.pct+"%";
+  document.getElementById("tst").innerHTML=[
+    {l:"Total",v:s.t,c:"var(--accent)"},{l:"Implemented",v:s.cn.implemented,c:"var(--green)"},
+    {l:"Inherited",v:s.cn.inherited,c:"var(--blue)"},{l:"Planned",v:s.cn.planned,c:"var(--yellow)"},
+    {l:"N/A",v:s.cn.na,c:"var(--gray)"},{l:"Gap",v:s.cn.gap||0,c:"var(--red)"}
+  ].map(x=>`<div class="topbar-stat"><span class="dot" style="background:${x.c}"></span><span class="v">${x.v}</span> ${x.l}</div>`).join("");
+}
+
+function rSb(){
+  let h='<div class="sidebar-hdr">Control Families (20)</div>';
+  Object.keys(D).forEach(k=>{
+    const f=D[k],s=fStats(k),a=st.fam===k?"active":"";
+    h+=`<div class="sb-item ${a}" onclick="selFam('${k}')">
+      <span class="fid">${k}</span><span class="fname">${f.n}</span>
+      <span class="fcnt">${s.t}</span>
+      <div class="sb-mini"><div class="sb-mini-fill" style="width:${s.pct}%"></div></div></div>`;
+  });
+  document.getElementById("sb").innerHTML=h;
+}
+
+function rMn(){
+  const f=D[st.fam];if(!f)return;
+  const s=fStats(st.fam);
+  let cs=f.c.map(c=>gc(c.id));
+  if(st.flt!=="all")cs=cs.filter(c=>c.s===st.flt);
+  if(st.q){const q=st.q.toLowerCase();cs=cs.filter(c=>c.id.toLowerCase().includes(q)||c.t.toLowerCase().includes(q)||c.d.toLowerCase().includes(q));}
+  if(st.srt==="status"){const o={gap:0,planned:1,implemented:2,inherited:3,na:4};cs.sort((a,b)=>(o[a.s]||0)-(o[b.s]||0));}
+
+  // Dashboard cards for this family
+  let h=`<div class="dash-row">
+    <div class="dash-card"><div class="num" style="color:var(--accent)">${s.t}</div><div class="lbl">Total Controls</div></div>
+    <div class="dash-card"><div class="num" style="color:var(--green)">${s.cn.implemented||0}</div><div class="lbl">Implemented</div></div>
+    <div class="dash-card"><div class="num" style="color:var(--blue)">${s.cn.inherited||0}</div><div class="lbl">Inherited</div></div>
+    <div class="dash-card"><div class="num" style="color:var(--yellow)">${s.cn.planned||0}</div><div class="lbl">Planned</div></div>
+    <div class="dash-card"><div class="num" style="color:var(--gray)">${s.cn.na||0}</div><div class="lbl">N/A</div></div>
+    <div class="dash-card"><div class="num" style="color:var(--red)">${s.cn.gap||0}</div><div class="lbl">Gaps</div></div>
+  </div>`;
+
+  h+=`<div class="fam-hdr"><h2><span class="fhi">${st.fam}</span> — ${f.n}</h2>
+    <p>${s.t} controls | ${s.pct}% addressed (implemented + inherited + N/A)</p></div>`;
+
+  h+=`<div class="toolbar">
+    <input class="search-box" type="text" placeholder="Search by ID, title, or keyword..." value="${esc(st.q)}" oninput="st.q=this.value;rMn()">
+    <div class="filter-group">
+      ${["all",...SO].map(x=>`<button class="fbtn ${st.flt===x?'active':''}" onclick="st.flt='${x}';rMn()">${x==='all'?'All':SL[x]}</button>`).join("")}
+    </div>
+    <div class="sort-ctl">Sort:
+      <button class="${st.srt==='id'?'active':''}" onclick="st.srt='id';rMn()">ID</button>
+      <button class="${st.srt==='status'?'active':''}" onclick="st.srt='status';rMn()">Status</button>
+    </div></div>`;
+
+  if(!cs.length){h+='<div class="empty">No controls match your filters.</div>';}
+  else cs.forEach(c=>{
+    const sOpts=SO.map(x=>`<option value="${x}" ${c.s===x?'selected':''}>${SL[x]}</option>`).join("");
+    const pOpts=PO.map(x=>`<option value="${x}" ${c.p===x?'selected':''}>${x}</option>`).join("");
+    h+=`<div class="cc" data-id="${c.id}">
+      <div class="cc-hdr" onclick="this.parentElement.classList.toggle('open')">
+        <span class="cc-id">${c.id}</span><span class="cc-title">${esc(c.t)}</span>
+        <span class="badge s-${c.s}">${SL[c.s]}</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="cc-det"><div class="dg">
+        <div class="df"><label class="dl">Status</label><select class="ds" onchange="uc('${c.id}','s',this.value);rMn()">${sOpts}</select></div>
+        <div class="df"><label class="dl">Responsible Party</label><select class="ds" onchange="uc('${c.id}','p',this.value)">${pOpts}</select></div>
+        <div class="df full"><label class="dl">Implementation Description</label><textarea class="dt" onchange="uc('${c.id}','d',this.value)">${esc(c.d)}</textarea></div>
+        <div class="df full"><label class="dl">Evidence / Artifacts</label><input class="di" type="text" value="${esc(c.e)}" onchange="uc('${c.id}','e',this.value)" placeholder="e.g., compliance/oscal/ssp.json, Grafana dashboard URL"></div>
+      </div></div></div>`;
+  });
+  document.getElementById("mn").innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Interactions
+// ═══════════════════════════════════════════════════════════════════════════════
+function selFam(k){st.fam=k;st.flt="all";st.q="";rSb();rMn();document.getElementById("mn").scrollTop=0;}
+function xAll(){document.querySelectorAll(".cc").forEach(c=>c.classList.add("open"));}
+function cAll(){document.querySelectorAll(".cc").forEach(c=>c.classList.remove("open"));}
+
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);}
+
+function doExport(){
+  const all=allC(),s=stats(all);
+  const out={
+    metadata:{title:"RAISE 2.0 ATO Controls Tracker Export",baseline:"NIST 800-53 Rev 5 Moderate",
+      exportDate:new Date().toISOString(),totalControls:s.t,
+      implemented:s.cn.implemented,inherited:s.cn.inherited,planned:s.cn.planned,na:s.cn.na,gaps:s.cn.gap||0,percentAddressed:s.pct},
+    controlFamilies:{}
+  };
+  Object.keys(D).forEach(k=>{
+    out.controlFamilies[k]={name:D[k].n,controls:D[k].c.map(c=>{
+      const x=gc(c.id);
+      return{id:x.id,title:x.t,status:x.s,implementationDescription:x.d,responsibleParty:x.p,evidence:x.e};
+    })};
+  });
+  const b=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;
+  a.download="ato-controls-"+new Date().toISOString().split("T")[0]+".json";
+  a.click();URL.revokeObjectURL(u);
+  toast("Exported "+s.t+" controls as JSON");
+}
+
+// Keyboard shortcuts
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==="f"){const b=document.querySelector(".search-box");if(b){e.preventDefault();b.focus();}}
+  if(e.key==="Escape"){st.q="";rMn();}
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════════════════════════════
+load();rTop();rSb();rMn();
+</script>
+</body>
+</html>

@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAISE 2.0 — Plan of Action & Milestones</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --green: #22c55e;
+      --red: #ef4444;
+      --orange: #f97316;
+      --yellow: #eab308;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --radius: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--surface-hover); color: var(--text);
+      font-size: 18px; text-decoration: none; transition: all 0.2s;
+      border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      letter-spacing: -1px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title h1 {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .header-title span {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+    .btn-danger:hover { opacity: 0.85; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* Container */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+
+    /* Dashboard Cards */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .card-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .card-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .card-bar-seg {
+      height: 6px;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .severity-counts, .status-counts {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .count-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    .count-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Filters */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toolbar input, .toolbar select {
+      padding: 7px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .toolbar input { min-width: 220px; }
+    .toolbar select { min-width: 140px; }
+
+    .toolbar input:focus, .toolbar select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .view-toggle {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    .view-toggle .btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background: rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+
+    th:hover { color: var(--text); }
+
+    th .sort-arrow {
+      font-size: 10px;
+      margin-left: 4px;
+      opacity: 0.4;
+    }
+
+    th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    tr.overdue td { border-left: 3px solid var(--red); }
+
+    /* Severity & Status pills */
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .pill-critical { background: rgba(239,68,68,0.2); color: var(--red); }
+    .pill-high { background: rgba(249,115,22,0.2); color: var(--orange); }
+    .pill-moderate { background: rgba(234,179,8,0.2); color: var(--yellow); }
+    .pill-low { background: rgba(59,130,246,0.2); color: var(--blue); }
+
+    .status-open { color: var(--red); }
+    .status-in-progress { color: var(--yellow); }
+    .status-completed { color: var(--green); }
+    .status-risk-accepted { color: var(--purple); }
+
+    /* Milestones inline */
+    .milestones-list {
+      list-style: none;
+      font-size: 12px;
+    }
+
+    .milestones-list li {
+      padding: 2px 0;
+      color: var(--text-dim);
+    }
+
+    .milestones-list li::before {
+      content: "\25CB ";
+      color: var(--accent);
+    }
+
+    .milestones-list li.done::before {
+      content: "\25CF ";
+      color: var(--green);
+    }
+
+    /* Actions column */
+    .row-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 720px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 16px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .modal-body .full { grid-column: 1 / -1; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .field textarea { resize: vertical; min-height: 60px; }
+
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* Milestones editor */
+    .milestones-editor {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .milestone-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .milestone-row input[type="text"] { flex: 1; }
+    .milestone-row input[type="date"] { width: 140px; }
+
+    .milestone-row .btn-remove {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+    }
+
+    /* Timeline View */
+    .timeline-view {
+      display: none;
+    }
+
+    .timeline-view.active { display: block; }
+    .table-view.active { display: block; }
+    .table-view { display: none; }
+
+    .timeline-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .timeline-header {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      min-width: 800px;
+    }
+
+    .timeline-header .tl-label {
+      width: 200px;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .timeline-header .tl-months {
+      flex: 1;
+      display: flex;
+    }
+
+    .timeline-header .tl-month {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      min-height: 36px;
+      min-width: 800px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .timeline-row:hover { background: rgba(255,255,255,0.02); }
+
+    .tl-item-label {
+      width: 200px;
+      flex-shrink: 0;
+      font-size: 12px;
+      padding-right: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tl-bar-area {
+      flex: 1;
+      position: relative;
+      height: 24px;
+    }
+
+    .tl-bar {
+      position: absolute;
+      height: 20px;
+      border-radius: 4px;
+      top: 2px;
+      min-width: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 10px;
+      color: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .tl-today {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--red);
+      z-index: 2;
+    }
+
+    .tl-today-label {
+      position: absolute;
+      top: -20px;
+      font-size: 9px;
+      color: var(--red);
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+
+    .empty-state h3 { margin-bottom: 8px; color: var(--text); }
+
+    /* Confirm dialog */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-overlay.open { display: flex; }
+
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .confirm-box p { margin-bottom: 16px; }
+
+    .confirm-box .btn-group {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    /* Print */
+    @media print {
+      body { background: #fff; color: #000; }
+      .header, .toolbar, .view-toggle, .row-actions, .dashboard { display: none !important; }
+      .table-view { display: block !important; }
+      .timeline-view { display: none !important; }
+      .table-wrap { border: 1px solid #ccc; }
+      th { background: #eee; color: #333; }
+      td { border-color: #ddd; }
+      .pill { border: 1px solid currentColor; }
+      tr.overdue td { border-left-color: red; }
+      @page { size: landscape; margin: 0.5in; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .header-actions { width: 100%; flex-wrap: wrap; }
+      .modal-body { grid-template-columns: 1fr; }
+      .dashboard { grid-template-columns: 1fr 1fr; }
+      .toolbar { flex-direction: column; }
+      .toolbar input, .toolbar select { width: 100%; min-width: unset; }
+      .view-toggle { margin-left: 0; }
+    }
+
+    /* Hidden file input */
+    #importInput { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+      <div class="logo">R2</div>
+      <div class="header-title">
+        <h1>RAISE 2.0 &mdash; Plan of Action &amp; Milestones</h1>
+        <span>Secure Runtime Environment (SRE) &bull; DoD Navy DevSecOps Platform &bull; ATO + RPOC Tracker</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openModal()">+ New Finding</button>
+      <button class="btn" onclick="exportCSV()">Export CSV</button>
+      <button class="btn" onclick="exportJSON()">Export JSON</button>
+      <button class="btn" onclick="document.getElementById('importInput').click()">Import JSON</button>
+      <input type="file" id="importInput" accept=".json" onchange="importJSON(event)">
+      <button class="btn" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Search findings..." oninput="renderAll()">
+      <select id="filterSeverity" onchange="renderAll()">
+        <option value="">All Severities</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Low">Low</option>
+      </select>
+      <select id="filterStatus" onchange="renderAll()">
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+        <option value="Risk Accepted">Risk Accepted</option>
+      </select>
+      <select id="filterSource" onchange="renderAll()">
+        <option value="">All Sources</option>
+        <option value="SCA Assessment">SCA Assessment</option>
+        <option value="Self-Assessment">Self-Assessment</option>
+        <option value="Automated Scan">Automated Scan</option>
+        <option value="Penetration Test">Penetration Test</option>
+        <option value="Configuration Review">Configuration Review</option>
+      </select>
+      <div class="view-toggle">
+        <button class="btn btn-sm active" id="btnTable" onclick="switchView('table')">Table</button>
+        <button class="btn btn-sm" id="btnTimeline" onclick="switchView('timeline')">Timeline</button>
+      </div>
+    </div>
+
+    <!-- Table View -->
+    <div class="table-view active" id="tableView">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="id" onclick="sortBy('id')">ID <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="weakness" onclick="sortBy('weakness')">Weakness <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="control" onclick="sortBy('control')">Control <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="source" onclick="sortBy('source')">Source <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="severity" onclick="sortBy('severity')">Severity <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="status" onclick="sortBy('status')">Status <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="responsible" onclick="sortBy('responsible')">Responsible <span class="sort-arrow">&#9650;</span></th>
+              <th data-sort="dueDate" onclick="sortBy('dueDate')">Due Date <span class="sort-arrow">&#9650;</span></th>
+              <th>Milestones</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Timeline View -->
+    <div class="timeline-view" id="timelineView">
+      <div class="timeline-container" id="timelineContainer"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">New Finding</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>POA&amp;M ID</label>
+          <input type="text" id="fId" readonly>
+        </div>
+        <div class="field">
+          <label>Severity</label>
+          <select id="fSeverity">
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Moderate" selected>Moderate</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Weakness / Finding Description</label>
+          <textarea id="fWeakness" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label>NIST 800-53 Control(s)</label>
+          <input type="text" id="fControl" placeholder="e.g. AC-3, SI-7">
+        </div>
+        <div class="field">
+          <label>Source</label>
+          <select id="fSource">
+            <option value="SCA Assessment">SCA Assessment</option>
+            <option value="Self-Assessment">Self-Assessment</option>
+            <option value="Automated Scan">Automated Scan</option>
+            <option value="Penetration Test">Penetration Test</option>
+            <option value="Configuration Review">Configuration Review</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="fStatus">
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Risk Accepted">Risk Accepted</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Responsible Party</label>
+          <input type="text" id="fResponsible" placeholder="e.g. Platform Team">
+        </div>
+        <div class="field">
+          <label>Scheduled Completion Date</label>
+          <input type="date" id="fDueDate">
+        </div>
+        <div class="field">
+          <label>Actual Completion Date</label>
+          <input type="date" id="fCompletedDate">
+        </div>
+        <div class="field">
+          <label>Resources Required (Cost Estimate)</label>
+          <input type="text" id="fResources" placeholder="e.g. $5,000 — 2 FTE weeks">
+        </div>
+        <div class="field full">
+          <label>Comments / Notes</label>
+          <textarea id="fComments" rows="2"></textarea>
+        </div>
+        <div class="field full">
+          <label>Milestones</label>
+          <div class="milestones-editor" id="milestonesEditor"></div>
+          <button class="btn btn-sm" style="margin-top:6px" onclick="addMilestoneRow()">+ Add Milestone</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveItem()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <p id="confirmMsg">Delete this finding?</p>
+      <div class="btn-group">
+        <button class="btn" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-danger" id="confirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ── Data ──
+var STORAGE_KEY = 'raise2-poam-data';
+var SEV_ORDER = { 'Critical': 0, 'High': 1, 'Moderate': 2, 'Low': 3 };
+var STATUS_ORDER = { 'Open': 0, 'In Progress': 1, 'Risk Accepted': 2, 'Completed': 3 };
+var SEV_COLORS = { 'Critical': '#ef4444', 'High': '#f97316', 'Moderate': '#eab308', 'Low': '#3b82f6' };
+var STATUS_CLASSES = { 'Open': 'status-open', 'In Progress': 'status-in-progress', 'Completed': 'status-completed', 'Risk Accepted': 'status-risk-accepted' };
+
+var items = [];
+var sortField = 'severity';
+var sortAsc = true;
+var editingId = null;
+
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function daysFromNow(n) {
+  var d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+
+var DEFAULT_DATA = [
+  { id:'POA&M-001', weakness:'OpenBao manual unseal process — no auto-unseal configured; system requires manual intervention after restart', control:'AC-3', source:'Self-Assessment', severity:'High', status:'Open', responsible:'Platform Team', dueDate: daysFromNow(90), completedDate:'', milestones:[{text:'Evaluate transit seal vs cloud KMS',date:daysFromNow(30),done:false},{text:'Implement auto-unseal mechanism',date:daysFromNow(60),done:false},{text:'Validate failover behavior',date:daysFromNow(80),done:false}], resources:'$2,000 — 1 FTE week', comments:'Current workaround: CronJob checks unseal status every 5 min. Keys stored in K8s secret.' },
+  { id:'POA&M-002', weakness:'Kyverno image signature verification policy in Audit mode — unsigned images can still deploy', control:'SI-7', source:'SCA Assessment', severity:'Moderate', status:'In Progress', responsible:'Platform Team', dueDate: daysFromNow(60), completedDate:'', milestones:[{text:'Distribute Cosign public keys to all teams',date:daysFromNow(20),done:true},{text:'Sign all platform images',date:daysFromNow(40),done:false},{text:'Switch policy to Enforce mode',date:daysFromNow(55),done:false}], resources:'$1,000 — 3 FTE days', comments:'Cosign keypair generated. CI pipeline templates updated.' },
+  { id:'POA&M-003', weakness:'No SIEM integration — log data stays in Loki without enterprise SIEM correlation', control:'AU-6', source:'SCA Assessment', severity:'Moderate', status:'Open', responsible:'Security Team', dueDate: daysFromNow(120), completedDate:'', milestones:[{text:'Identify target SIEM (Splunk/Elastic)',date:daysFromNow(30),done:false},{text:'Configure Alloy SIEM output',date:daysFromNow(75),done:false},{text:'Validate log format compliance',date:daysFromNow(100),done:false}], resources:'$15,000 — SIEM licensing + 2 FTE weeks', comments:'Loki provides interim capability. Navy CSSP requires SIEM feed.' },
+  { id:'POA&M-004', weakness:'Single control plane node — no HA for Kubernetes API server; single point of failure', control:'CP-10', source:'Self-Assessment', severity:'High', status:'Open', responsible:'Infrastructure Team', dueDate: daysFromNow(90), completedDate:'', milestones:[{text:'Provision 2 additional Proxmox VMs',date:daysFromNow(30),done:false},{text:'Join nodes to RKE2 cluster as servers',date:daysFromNow(50),done:false},{text:'Validate etcd quorum and failover',date:daysFromNow(75),done:false}], resources:'$3,000 — hardware + 1 FTE week', comments:'Current lab has 3 nodes but only 1 server. Need 2 more server-role nodes.' },
+  { id:'POA&M-005', weakness:'No CAC/PIV authentication — Keycloak not integrated with DoD PKI for certificate-based auth', control:'IA-2(12)', source:'SCA Assessment', severity:'High', status:'Open', responsible:'Security Team', dueDate: daysFromNow(180), completedDate:'', milestones:[{text:'Obtain DoD PKI CA certificates',date:daysFromNow(45),done:false},{text:'Configure Keycloak X.509 auth flow',date:daysFromNow(90),done:false},{text:'Test with CAC reader and test cert',date:daysFromNow(140),done:false},{text:'Conduct user acceptance testing',date:daysFromNow(170),done:false}], resources:'$5,000 — CAC readers + 3 FTE weeks', comments:'Requires coordination with DISA PKI office. Keycloak supports X.509 natively.' },
+  { id:'POA&M-006', weakness:'Harbor admin using default password — Harbor12345 still set as admin credential', control:'IA-5', source:'Automated Scan', severity:'Moderate', status:'In Progress', responsible:'Platform Team', dueDate: daysFromNow(30), completedDate:'', milestones:[{text:'Generate strong password in OpenBao',date:daysFromNow(10),done:true},{text:'Rotate Harbor admin password',date:daysFromNow(20),done:false},{text:'Update all robot accounts',date:daysFromNow(25),done:false}], resources:'$0 — 2 FTE hours', comments:'Robot accounts used for CI/CD. Admin access rarely needed.' },
+  { id:'POA&M-007', weakness:'Missing DITPR registration — system not registered in DoD IT Portfolio Repository', control:'PM-1', source:'SCA Assessment', severity:'Moderate', status:'Open', responsible:'Program Manager', dueDate: daysFromNow(60), completedDate:'', milestones:[{text:'Complete DITPR registration form',date:daysFromNow(20),done:false},{text:'Submit to Navy CIO',date:daysFromNow(40),done:false},{text:'Obtain DITPR ID',date:daysFromNow(55),done:false}], resources:'$0 — 1 FTE week (admin)', comments:'Required for ATO package submission. Dependency for RPOC designation.' },
+  { id:'POA&M-008', weakness:'No penetration test conducted — independent security assessment not yet performed', control:'CA-8', source:'SCA Assessment', severity:'Moderate', status:'Open', responsible:'Security Team', dueDate: daysFromNow(120), completedDate:'', milestones:[{text:'Identify pentest vendor or DISA team',date:daysFromNow(30),done:false},{text:'Scope and schedule engagement',date:daysFromNow(60),done:false},{text:'Conduct penetration test',date:daysFromNow(90),done:false},{text:'Remediate critical findings',date:daysFromNow(115),done:false}], resources:'$25,000 — vendor pentest engagement', comments:'DISA may provide pentest as part of RPOC evaluation. Budget placeholder for commercial option.' },
+  { id:'POA&M-009', weakness:'Incomplete audit log forwarding — some platform services not sending structured logs to Loki', control:'AU-4', source:'Self-Assessment', severity:'Low', status:'In Progress', responsible:'Platform Team', dueDate: daysFromNow(90), completedDate:'', milestones:[{text:'Audit all services for log output',date:daysFromNow(20),done:true},{text:'Configure remaining Alloy pipelines',date:daysFromNow(50),done:false},{text:'Validate log completeness',date:daysFromNow(80),done:false}], resources:'$0 — 1 FTE week', comments:'Istio, Kyverno, monitoring already forwarding. Need OpenBao audit, Harbor, NeuVector.' },
+  { id:'POA&M-010', weakness:'NeuVector requires privileged DaemonSet — runs with elevated container privileges for runtime monitoring', control:'CM-7', source:'Configuration Review', severity:'Low', status:'In Progress', responsible:'Security Team', dueDate: daysFromNow(30), completedDate:'', milestones:[{text:'Document compensating controls',date:daysFromNow(15),done:true},{text:'Create security exception memo',date:daysFromNow(25),done:false}], resources:'$0 — 2 FTE days', comments:'Industry-standard requirement for runtime security tools. NeuVector, Falco, and similar all require privileged access. Compensating controls: restricted node access, audit logging of privileged operations.' },
+  { id:'POA&M-011', weakness:'No PPSM registration — ports, protocols, and services not registered with DoD PPSM office', control:'SC-7', source:'SCA Assessment', severity:'Moderate', status:'Open', responsible:'Network Team', dueDate: daysFromNow(60), completedDate:'', milestones:[{text:'Document all ports/protocols in use',date:daysFromNow(15),done:false},{text:'Submit PPSM registration',date:daysFromNow(40),done:false},{text:'Obtain PPSM approval',date:daysFromNow(55),done:false}], resources:'$0 — 1 FTE week (admin)', comments:'Istio gateway: 80,443. K8s API: 6443. NodePort range: 30000-32767. Internal service mesh uses mTLS on random high ports.' },
+  { id:'POA&M-012', weakness:'Backup restore not tested — Velero backup schedules active but restore procedure never validated', control:'CP-4', source:'Self-Assessment', severity:'Moderate', status:'Open', responsible:'Platform Team', dueDate: daysFromNow(90), completedDate:'', milestones:[{text:'Create restore test runbook',date:daysFromNow(20),done:false},{text:'Conduct first restore test',date:daysFromNow(50),done:false},{text:'Establish quarterly test schedule',date:daysFromNow(80),done:false}], resources:'$0 — 1 FTE week', comments:'Daily/weekly/monthly backup schedules configured. Need to validate restore to test namespace.' },
+  { id:'POA&M-013', weakness:'Missing Rules of Behavior signatures — not all platform users have signed acceptable use agreement', control:'PL-4', source:'SCA Assessment', severity:'Low', status:'Open', responsible:'Program Manager', dueDate: daysFromNow(45), completedDate:'', milestones:[{text:'Draft Rules of Behavior document',date:daysFromNow(15),done:false},{text:'Route for legal review',date:daysFromNow(30),done:false},{text:'Collect signatures from all users',date:daysFromNow(40),done:false}], resources:'$0 — 3 FTE days (admin)', comments:'Template available from Navy ISSM. Need to customize for SRE platform specifics.' },
+  { id:'POA&M-014', weakness:'No security awareness training tracking — no mechanism to verify annual cybersecurity training completion', control:'AT-2', source:'Self-Assessment', severity:'Low', status:'Open', responsible:'Program Manager', dueDate: daysFromNow(90), completedDate:'', milestones:[{text:'Evaluate tracking in Keycloak custom attributes',date:daysFromNow(30),done:false},{text:'Implement training status check',date:daysFromNow(60),done:false},{text:'Integrate with Kyverno for access enforcement',date:daysFromNow(80),done:false}], resources:'$0 — 1 FTE week', comments:'DoD Cyber Awareness Challenge completion is annual requirement. Could track via Keycloak user attributes.' },
+  { id:'POA&M-015', weakness:'Grafana persistence disabled — dashboard configurations stored in-memory only, lost on pod restart', control:'CP-9', source:'Configuration Review', severity:'Low', status:'Open', responsible:'Platform Team', dueDate: daysFromNow(60), completedDate:'', milestones:[{text:'Provision PVC for Grafana',date:daysFromNow(15),done:false},{text:'Enable persistence in HelmRelease',date:daysFromNow(30),done:false},{text:'Migrate existing dashboards to ConfigMaps',date:daysFromNow(50),done:false}], resources:'$0 — 1 FTE day', comments:'initChownData must be disabled (non-root security context). Dashboards currently provisioned via ConfigMaps but user-created ones are lost.' }
+];
+
+function loadData() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { items = JSON.parse(raw); } catch(e) { items = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+  } else {
+    items = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
+function nextId() {
+  var max = 0;
+  items.forEach(function(i) {
+    var n = parseInt(i.id.replace('POA&M-',''));
+    if (n > max) max = n;
+  });
+  return 'POA&M-' + String(max + 1).padStart(3, '0');
+}
+
+// ── Filtering & Sorting ──
+function getFiltered() {
+  var search = document.getElementById('searchInput').value.toLowerCase();
+  var sev = document.getElementById('filterSeverity').value;
+  var stat = document.getElementById('filterStatus').value;
+  var src = document.getElementById('filterSource').value;
+
+  return items.filter(function(i) {
+    if (sev && i.severity !== sev) return false;
+    if (stat && i.status !== stat) return false;
+    if (src && i.source !== src) return false;
+    if (search) {
+      var blob = (i.id + ' ' + i.weakness + ' ' + i.control + ' ' + i.responsible + ' ' + i.comments).toLowerCase();
+      if (blob.indexOf(search) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function getSorted(data) {
+  return data.slice().sort(function(a, b) {
+    var va, vb;
+    if (sortField === 'severity') {
+      va = SEV_ORDER[a.severity] !== undefined ? SEV_ORDER[a.severity] : 9;
+      vb = SEV_ORDER[b.severity] !== undefined ? SEV_ORDER[b.severity] : 9;
+    } else if (sortField === 'status') {
+      va = STATUS_ORDER[a.status] !== undefined ? STATUS_ORDER[a.status] : 9;
+      vb = STATUS_ORDER[b.status] !== undefined ? STATUS_ORDER[b.status] : 9;
+    } else if (sortField === 'dueDate' || sortField === 'completedDate') {
+      va = a[sortField] || '9999';
+      vb = b[sortField] || '9999';
+    } else {
+      va = (a[sortField] || '').toLowerCase();
+      vb = (b[sortField] || '').toLowerCase();
+    }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+}
+
+function sortBy(field) {
+  if (sortField === field) {
+    sortAsc = !sortAsc;
+  } else {
+    sortField = field;
+    sortAsc = true;
+  }
+  renderAll();
+}
+
+// ── Rendering ──
+function renderDashboard() {
+  var total = items.length;
+  var bySev = { Critical: 0, High: 0, Moderate: 0, Low: 0 };
+  var byStat = { Open: 0, 'In Progress': 0, Completed: 0, 'Risk Accepted': 0 };
+  var overdue = 0;
+  var t = todayStr();
+  items.forEach(function(i) {
+    bySev[i.severity] = (bySev[i.severity] || 0) + 1;
+    byStat[i.status] = (byStat[i.status] || 0) + 1;
+    if (i.status !== 'Completed' && i.status !== 'Risk Accepted' && i.dueDate && i.dueDate < t) overdue++;
+  });
+
+  var sevKeys = ['Critical', 'High', 'Moderate', 'Low'];
+  var sevBar = sevKeys.map(function(k) {
+    var v = bySev[k];
+    return v > 0 ? '<div class="card-bar-seg" style="background:' + SEV_COLORS[k] + ';flex:' + v + '"></div>' : '';
+  }).join('');
+
+  var sevCounts = sevKeys.map(function(k) {
+    return '<div class="count-badge"><span class="count-dot" style="background:' + SEV_COLORS[k] + '"></span>' + k + ': ' + bySev[k] + '</div>';
+  }).join('');
+
+  var statColors = { Open: '#ef4444', 'In Progress': '#eab308', Completed: '#22c55e', 'Risk Accepted': '#a855f7' };
+  var statKeys = ['Open', 'In Progress', 'Completed', 'Risk Accepted'];
+  var statCounts = statKeys.map(function(k) {
+    return '<div class="count-badge"><span class="count-dot" style="background:' + statColors[k] + '"></span>' + k + ': ' + byStat[k] + '</div>';
+  }).join('');
+
+  var completionRate = total > 0 ? Math.round(((byStat.Completed + byStat['Risk Accepted']) / total) * 100) : 0;
+  var resolved = byStat.Completed + byStat['Risk Accepted'];
+  var active = byStat.Open + byStat['In Progress'];
+
+  document.getElementById('dashboard').innerHTML =
+    '<div class="card">' +
+      '<div class="card-label">Total Findings</div>' +
+      '<div class="card-value">' + total + '</div>' +
+      '<div class="card-bar">' + sevBar + '</div>' +
+      '<div class="severity-counts">' + sevCounts + '</div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="card-label">Status Breakdown</div>' +
+      '<div class="card-value">' + active + '</div>' +
+      '<div class="card-label" style="margin-top:2px">Active Items</div>' +
+      '<div class="status-counts">' + statCounts + '</div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="card-label">Overdue</div>' +
+      '<div class="card-value" style="color:' + (overdue > 0 ? 'var(--red)' : 'var(--green)') + '">' + overdue + '</div>' +
+      '<div class="card-label" style="margin-top:2px">' + (overdue > 0 ? 'Require immediate attention' : 'All items on schedule') + '</div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="card-label">Completion Rate</div>' +
+      '<div class="card-value">' + completionRate + '%</div>' +
+      '<div class="card-label" style="margin-top:2px">' + resolved + ' of ' + total + ' resolved</div>' +
+    '</div>';
+}
+
+function renderTable() {
+  var data = getSorted(getFiltered());
+  var tbody = document.getElementById('tableBody');
+  var t = todayStr();
+
+  // Update sort arrows
+  var ths = document.querySelectorAll('th');
+  for (var ti = 0; ti < ths.length; ti++) {
+    var th = ths[ti];
+    var f = th.getAttribute('data-sort');
+    if (!f) continue;
+    if (f === sortField) { th.classList.add('sorted'); } else { th.classList.remove('sorted'); }
+    var arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = (f === sortField && !sortAsc) ? '\u25BC' : '\u25B2';
+  }
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><h3>No findings match your filters</h3><p>Try adjusting your search or filters</p></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(function(i) {
+    var isOverdue = i.status !== 'Completed' && i.status !== 'Risk Accepted' && i.dueDate && i.dueDate < t;
+    var sevClass = 'pill-' + i.severity.toLowerCase();
+    var statClass = STATUS_CLASSES[i.status] || '';
+    var ms = (i.milestones || []).map(function(m) {
+      return '<li class="' + (m.done ? 'done' : '') + '">' + esc(m.text) + ' <span style="opacity:0.5">' + (m.date || '') + '</span></li>';
+    }).join('');
+
+    return '<tr class="' + (isOverdue ? 'overdue' : '') + '">' +
+      '<td><strong>' + esc(i.id) + '</strong></td>' +
+      '<td style="max-width:300px">' + esc(i.weakness) + '</td>' +
+      '<td><code>' + esc(i.control) + '</code></td>' +
+      '<td>' + esc(i.source) + '</td>' +
+      '<td><span class="pill ' + sevClass + '">' + i.severity + '</span></td>' +
+      '<td><span class="' + statClass + '" style="font-weight:600">' + i.status + '</span></td>' +
+      '<td>' + esc(i.responsible) + '</td>' +
+      '<td style="white-space:nowrap">' + (i.dueDate || '\u2014') + (isOverdue ? ' <span style="color:var(--red);font-size:11px">OVERDUE</span>' : '') + '</td>' +
+      '<td><ul class="milestones-list">' + (ms || '<li style="color:var(--text-dim)">None</li>') + '</ul></td>' +
+      '<td><div class="row-actions">' +
+        '<button class="btn btn-sm" onclick="editItem(\'' + i.id + '\')">Edit</button>' +
+        '<button class="btn btn-sm" style="color:var(--red)" onclick="confirmDelete(\'' + i.id + '\')">Del</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderTimeline() {
+  var data = getSorted(getFiltered());
+  var container = document.getElementById('timelineContainer');
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><h3>No findings to display</h3></div>';
+    return;
+  }
+
+  // Determine date range
+  var now = new Date();
+  var startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  var allDates = [now];
+  data.forEach(function(i) {
+    if (i.dueDate) allDates.push(new Date(i.dueDate));
+    (i.milestones || []).forEach(function(m) { if (m.date) allDates.push(new Date(m.date)); });
+  });
+  var maxTs = 0;
+  allDates.forEach(function(d) { if (d.getTime() > maxTs) maxTs = d.getTime(); });
+  var maxDate = new Date(maxTs);
+  var endDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0);
+
+  var totalDays = Math.max(1, (endDate - startDate) / 86400000);
+
+  // Generate month headers
+  var months = [];
+  var cur = new Date(startDate);
+  while (cur <= endDate) {
+    months.push(cur.toLocaleString('default', { month: 'short', year: '2-digit' }));
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+  }
+
+  var todayPct = Math.max(0, Math.min(100, ((now - startDate) / 86400000) / totalDays * 100));
+
+  function pct(dateStr) {
+    if (!dateStr) return null;
+    var d = new Date(dateStr);
+    return Math.max(0, Math.min(100, ((d - startDate) / 86400000) / totalDays * 100));
+  }
+
+  var rows = data.map(function(i) {
+    var right = pct(i.dueDate);
+    var barLeft = pct(todayStr()) || 0;
+    var barRight = right !== null ? right : barLeft + 3;
+    if (barLeft > barRight) { var tmp = barLeft; barLeft = barRight; barRight = tmp; }
+    var barWidth = Math.max(2, barRight - barLeft);
+    var color = SEV_COLORS[i.severity] || '#666';
+
+    var dots = (i.milestones || []).map(function(m) {
+      var p = pct(m.date);
+      if (p === null) return '';
+      return '<div style="position:absolute;left:' + p + '%;top:6px;width:8px;height:8px;border-radius:50%;background:' + (m.done ? '#22c55e' : '#fff') + ';border:2px solid ' + (m.done ? '#22c55e' : color) + ';transform:translateX(-50%);z-index:1" title="' + esc(m.text) + ' (' + (m.date || '') + ')"></div>';
+    }).join('');
+
+    return '<div class="timeline-row">' +
+      '<div class="tl-item-label"><span class="pill pill-' + i.severity.toLowerCase() + '" style="font-size:9px;margin-right:4px">' + i.severity.charAt(0) + '</span>' + esc(i.id) + '</div>' +
+      '<div class="tl-bar-area">' +
+        '<div class="tl-bar" style="left:' + barLeft + '%;width:' + barWidth + '%;background:' + color + ';opacity:0.7" title="' + esc(i.weakness) + '"></div>' +
+        dots +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  container.innerHTML =
+    '<div style="position:relative;min-width:800px">' +
+      '<div class="timeline-header">' +
+        '<div class="tl-label">Finding</div>' +
+        '<div class="tl-months">' + months.map(function(m) { return '<div class="tl-month">' + m + '</div>'; }).join('') + '</div>' +
+      '</div>' +
+      '<div style="position:relative">' +
+        '<div class="tl-today" style="left:calc(200px + (100% - 200px) * ' + (todayPct / 100) + ')">' +
+          '<div class="tl-today-label">Today</div>' +
+        '</div>' +
+        rows +
+      '</div>' +
+    '</div>';
+}
+
+function renderAll() {
+  renderDashboard();
+  renderTable();
+  renderTimeline();
+}
+
+// ── Modal ──
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Finding' : 'New Finding';
+
+  if (id) {
+    var item = null;
+    for (var idx = 0; idx < items.length; idx++) {
+      if (items[idx].id === id) { item = items[idx]; break; }
+    }
+    if (!item) return;
+    document.getElementById('fId').value = item.id;
+    document.getElementById('fWeakness').value = item.weakness;
+    document.getElementById('fControl').value = item.control;
+    document.getElementById('fSource').value = item.source;
+    document.getElementById('fSeverity').value = item.severity;
+    document.getElementById('fStatus').value = item.status;
+    document.getElementById('fResponsible').value = item.responsible;
+    document.getElementById('fDueDate').value = item.dueDate;
+    document.getElementById('fCompletedDate').value = item.completedDate || '';
+    document.getElementById('fResources').value = item.resources || '';
+    document.getElementById('fComments').value = item.comments || '';
+    renderMilestoneEditor(item.milestones || []);
+  } else {
+    document.getElementById('fId').value = nextId();
+    document.getElementById('fWeakness').value = '';
+    document.getElementById('fControl').value = '';
+    document.getElementById('fSource').value = 'Self-Assessment';
+    document.getElementById('fSeverity').value = 'Moderate';
+    document.getElementById('fStatus').value = 'Open';
+    document.getElementById('fResponsible').value = '';
+    document.getElementById('fDueDate').value = daysFromNow(90);
+    document.getElementById('fCompletedDate').value = '';
+    document.getElementById('fResources').value = '';
+    document.getElementById('fComments').value = '';
+    renderMilestoneEditor([]);
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function renderMilestoneEditor(milestones) {
+  var ed = document.getElementById('milestonesEditor');
+  ed.innerHTML = milestones.map(function(m, idx) {
+    return '<div class="milestone-row">' +
+      '<input type="checkbox" ' + (m.done ? 'checked' : '') + ' data-ms-idx="' + idx + '">' +
+      '<input type="text" value="' + esc(m.text) + '" placeholder="Milestone description" data-ms-text="' + idx + '">' +
+      '<input type="date" value="' + (m.date || '') + '" data-ms-date="' + idx + '">' +
+      '<button class="btn-remove" onclick="removeMilestoneRow(' + idx + ')">&times;</button>' +
+    '</div>';
+  }).join('');
+}
+
+function addMilestoneRow() {
+  var ed = document.getElementById('milestonesEditor');
+  var idx = ed.querySelectorAll('.milestone-row').length;
+  var row = document.createElement('div');
+  row.className = 'milestone-row';
+  row.innerHTML =
+    '<input type="checkbox" data-ms-idx="' + idx + '">' +
+    '<input type="text" placeholder="Milestone description" data-ms-text="' + idx + '">' +
+    '<input type="date" data-ms-date="' + idx + '">' +
+    '<button class="btn-remove" onclick="this.parentElement.remove()">&times;</button>';
+  ed.appendChild(row);
+}
+
+function removeMilestoneRow(idx) {
+  var rows = document.getElementById('milestonesEditor').querySelectorAll('.milestone-row');
+  if (rows[idx]) rows[idx].remove();
+}
+
+function collectMilestones() {
+  var rows = document.getElementById('milestonesEditor').querySelectorAll('.milestone-row');
+  var result = [];
+  for (var ri = 0; ri < rows.length; ri++) {
+    var row = rows[ri];
+    var text = row.querySelector('input[type="text"]').value.trim();
+    var date = row.querySelector('input[type="date"]').value;
+    var done = row.querySelector('input[type="checkbox"]').checked;
+    if (text) result.push({ text: text, date: date, done: done });
+  }
+  return result;
+}
+
+function saveItem() {
+  var id = document.getElementById('fId').value;
+  var weakness = document.getElementById('fWeakness').value.trim();
+  var control = document.getElementById('fControl').value.trim();
+  var source = document.getElementById('fSource').value;
+  var severity = document.getElementById('fSeverity').value;
+  var status = document.getElementById('fStatus').value;
+  var responsible = document.getElementById('fResponsible').value.trim();
+  var dueDate = document.getElementById('fDueDate').value;
+  var completedDate = document.getElementById('fCompletedDate').value;
+  var resources = document.getElementById('fResources').value.trim();
+  var comments = document.getElementById('fComments').value.trim();
+  var milestones = collectMilestones();
+
+  if (!weakness) { alert('Weakness description is required.'); return; }
+  if (!control) { alert('NIST control is required.'); return; }
+
+  var item = { id: id, weakness: weakness, control: control, source: source, severity: severity, status: status, responsible: responsible, dueDate: dueDate, completedDate: completedDate, milestones: milestones, resources: resources, comments: comments };
+
+  if (editingId) {
+    for (var idx = 0; idx < items.length; idx++) {
+      if (items[idx].id === editingId) { items[idx] = item; break; }
+    }
+  } else {
+    items.push(item);
+  }
+
+  saveData();
+  closeModal();
+  renderAll();
+}
+
+function editItem(id) { openModal(id); }
+
+// ── Delete ──
+var pendingDeleteId = null;
+
+function confirmDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('confirmMsg').textContent = 'Delete finding ' + id + '? This cannot be undone.';
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmBtn').onclick = function() {
+    items = items.filter(function(i) { return i.id !== pendingDeleteId; });
+    saveData();
+    closeConfirm();
+    renderAll();
+  };
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  pendingDeleteId = null;
+}
+
+// ── View Toggle ──
+function switchView(view) {
+  document.getElementById('tableView').classList.toggle('active', view === 'table');
+  document.getElementById('timelineView').classList.toggle('active', view === 'timeline');
+  document.getElementById('btnTable').classList.toggle('active', view === 'table');
+  document.getElementById('btnTimeline').classList.toggle('active', view === 'timeline');
+  if (view === 'timeline') renderTimeline();
+}
+
+// ── Export CSV ──
+function exportCSV() {
+  var headers = ['POA&M ID','Weakness','NIST Control','Source','Severity','Status','Responsible Party','Scheduled Completion','Actual Completion','Milestones','Resources Required','Comments'];
+  var rows = items.map(function(i) {
+    return [
+      i.id,
+      '"' + (i.weakness || '').replace(/"/g, '""') + '"',
+      i.control,
+      i.source,
+      i.severity,
+      i.status,
+      i.responsible,
+      i.dueDate,
+      i.completedDate || '',
+      '"' + (i.milestones || []).map(function(m) { return (m.done ? '[X]' : '[ ]') + ' ' + m.text + ' (' + (m.date || 'TBD') + ')'; }).join('; ').replace(/"/g, '""') + '"',
+      '"' + (i.resources || '').replace(/"/g, '""') + '"',
+      '"' + (i.comments || '').replace(/"/g, '""') + '"'
+    ];
+  });
+
+  var csv = [headers.join(',')].concat(rows.map(function(r) { return r.join(','); })).join('\n');
+  download('raise2-poam-' + todayStr() + '.csv', csv, 'text/csv');
+}
+
+// ── Export/Import JSON ──
+function exportJSON() {
+  var json = JSON.stringify(items, null, 2);
+  download('raise2-poam-' + todayStr() + '.json', json, 'application/json');
+}
+
+function importJSON(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Expected array');
+      items = data;
+      saveData();
+      renderAll();
+      alert('Imported ' + data.length + ' findings.');
+    } catch(err) {
+      alert('Invalid JSON file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function download(filename, content, type) {
+  var blob = new Blob([content], { type: type });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Utility ──
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('confirmOverlay').classList.contains('open')) closeConfirm();
+    else if (document.getElementById('modalOverlay').classList.contains('open')) closeModal();
+  }
+});
+
+// ── Init ──
+loadData();
+renderAll();
+</script>
+</body>
+</html>

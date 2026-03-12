@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eMASS Registration & RMF Authorization Guide</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* --- Top Bar --- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--surface-hover, #334155); color: var(--text);
+    font-size: 18px; text-decoration: none; transition: all 0.15s;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+  .topbar h1 { font-size: 17px; font-weight: 600; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .topbar-progress {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar-progress .bar-bg {
+    width: 120px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .topbar-progress .bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+  .btn {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { background: var(--border); }
+  .btn-accent { background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600; }
+  .btn-accent:hover { opacity: 0.85; background: var(--accent); }
+
+  /* --- Layout --- */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 53px);
+  }
+
+  /* --- Sidebar --- */
+  .sidebar {
+    width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 12px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    position: sticky;
+    top: 53px;
+    height: calc(100vh - 53px);
+  }
+  .sidebar-label {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .sidebar-item {
+    padding: 9px 16px 9px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+    color: var(--text);
+  }
+  .sidebar-num {
+    background: var(--surface2);
+    color: var(--accent);
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .sidebar-item.active .sidebar-num {
+    background: var(--accent);
+    color: #0f172a;
+  }
+  .sidebar-check {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* --- Main Content --- */
+  .main {
+    flex: 1;
+    padding: 32px 48px 80px 48px;
+    max-width: 960px;
+    overflow-y: auto;
+  }
+
+  /* --- Section --- */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .section-header .collapse-icon {
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    font-size: 14px;
+  }
+  .section-header .collapse-icon.collapsed { transform: rotate(-90deg); }
+  .section-body { transition: max-height 0.3s ease; overflow: hidden; }
+  .section-body.collapsed { display: none; }
+
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 12px 0; color: var(--accent); }
+  h4 { font-size: 15px; font-weight: 600; margin: 16px 0 8px 0; }
+  p { margin-bottom: 12px; color: var(--text-dim); }
+  strong { color: var(--text); }
+
+  /* --- Tables --- */
+  .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  tbody tr:hover { background: rgba(56, 189, 248, 0.04); }
+  td strong { color: var(--text); }
+  td code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* --- Callouts --- */
+  .callout {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .callout-tip { background: rgba(52, 211, 153, 0.1); border-left: 3px solid var(--green); }
+  .callout-warn { background: rgba(251, 191, 36, 0.1); border-left: 3px solid var(--yellow); }
+  .callout-important { background: rgba(248, 113, 113, 0.1); border-left: 3px solid var(--red); }
+  .callout-info { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent); }
+
+  /* --- Copy Block --- */
+  .copy-block {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 56px 16px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--border); color: var(--text); }
+  .copy-btn.copied { background: var(--green); color: #0f172a; border-color: var(--green); }
+
+  /* --- Code Block --- */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* --- RMF Timeline Stepper --- */
+  .rmf-timeline {
+    position: relative;
+    padding: 8px 0;
+  }
+  .rmf-step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 0;
+    position: relative;
+  }
+  .rmf-step-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 40px;
+  }
+  .rmf-step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dim);
+    z-index: 1;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .rmf-step-circle.done {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0f172a;
+  }
+  .rmf-step-circle.partial {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #0f172a;
+  }
+  .rmf-step-circle.todo {
+    background: var(--surface2);
+    border-color: var(--border);
+    color: var(--text-dim);
+  }
+  .rmf-step-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    min-height: 20px;
+  }
+  .rmf-step-line.done { background: var(--green); }
+  .rmf-step-content {
+    flex: 1;
+    padding-bottom: 28px;
+  }
+  .rmf-step-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .rmf-step-tasks {
+    margin-top: 8px;
+  }
+
+  /* --- Checklist --- */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .checklist input[type="checkbox"]:checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .checklist input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid #0f172a;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .checklist li.checked .check-label { color: var(--text-dim); text-decoration: line-through; opacity: 0.6; }
+  .check-label { flex: 1; }
+
+  /* --- Status Badge --- */
+  .status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-done { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .status-partial { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .status-todo { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+  .status-template { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+
+  /* --- Reference Cards --- */
+  .ref-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .ref-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: block;
+  }
+  .ref-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .ref-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .ref-card-desc { font-size: 12px; color: var(--text-dim); }
+  .ref-card-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* --- DO / DON'T lists --- */
+  .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  .do-list, .dont-list {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .do-list { border: 1px solid var(--green); }
+  .dont-list { border: 1px solid var(--red); }
+  .do-list h4 { color: var(--green); margin-top: 0; }
+  .dont-list h4 { color: var(--red); margin-top: 0; }
+  .do-list ul, .dont-list ul { list-style: none; padding: 0; }
+  .do-list li, .dont-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .do-list li::before { content: "\2713"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .dont-list li::before { content: "\2717"; color: var(--red); font-weight: 700; flex-shrink: 0; }
+
+  /* --- Responsive --- */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px 60px 20px; }
+    .do-dont { grid-template-columns: 1fr; }
+    .ref-cards { grid-template-columns: 1fr; }
+  }
+
+  /* --- Toast --- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: #0f172a;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 200;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* --- Scroll highlight --- */
+  .section-header:hover h2 { color: var(--accent); }
+
+  /* -- Fill field -- */
+  .fill-field {
+    display: inline-block;
+    border-bottom: 2px dashed var(--border);
+    padding: 0 4px;
+    min-width: 160px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <h1><span>RAISE 2.0</span> &mdash; eMASS Registration &amp; RMF Guide</h1>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-progress">
+      <span id="progressText">0 / 0</span>
+      <div class="bar-bg"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+    </div>
+    <button class="btn" onclick="exportProgress()">Export Progress</button>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-label">Guide Sections</div>
+  <a class="sidebar-item active" href="#sec-1" data-section="sec-1">
+    <span class="sidebar-num">1</span>
+    <span>Prerequisites</span>
+    <span class="sidebar-check" id="side-check-1"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-2" data-section="sec-2">
+    <span class="sidebar-num">2</span>
+    <span>The 7 RMF Steps</span>
+    <span class="sidebar-check" id="side-check-2"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-3" data-section="sec-3">
+    <span class="sidebar-num">3</span>
+    <span>eMASS Registration</span>
+    <span class="sidebar-check" id="side-check-3"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-4" data-section="sec-4">
+    <span class="sidebar-num">4</span>
+    <span>ATO Package Documents</span>
+    <span class="sidebar-check" id="side-check-4"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-5" data-section="sec-5">
+    <span class="sidebar-num">5</span>
+    <span>Control Inheritance</span>
+    <span class="sidebar-check" id="side-check-5"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-6" data-section="sec-6">
+    <span class="sidebar-num">6</span>
+    <span>eMASS Validation</span>
+    <span class="sidebar-check" id="side-check-6"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-7" data-section="sec-7">
+    <span class="sidebar-num">7</span>
+    <span>Automation (SAF CLI)</span>
+    <span class="sidebar-check" id="side-check-7"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-8" data-section="sec-8">
+    <span class="sidebar-num">8</span>
+    <span>Timeline &amp; Cost</span>
+    <span class="sidebar-check" id="side-check-8"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-9" data-section="sec-9">
+    <span class="sidebar-num">9</span>
+    <span>Practitioner Tips</span>
+    <span class="sidebar-check" id="side-check-9"></span>
+  </a>
+  <a class="sidebar-item" href="#sec-10" data-section="sec-10">
+    <span class="sidebar-num">10</span>
+    <span>References</span>
+    <span class="sidebar-check" id="side-check-10"></span>
+  </a>
+  <div class="sidebar-label" style="margin-top: 20px;">Quick Actions</div>
+  <a class="sidebar-item" href="#sec-checklist" data-section="sec-checklist">
+    <span class="sidebar-num" style="background: var(--green); color: #0f172a;">&#10003;</span>
+    <span>Quick Start Checklist</span>
+  </a>
+</nav>
+
+<!-- Main Content -->
+<main class="main" id="mainContent">
+
+<!-- ====== SECTION 1: PREREQUISITES ====== -->
+<div class="section" id="sec-1">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>1. Prerequisites &mdash; Before You Start</h2>
+  </div>
+  <div class="section-body">
+
+    <h3>eMASS Account Access</h3>
+    <p>Before you can register a system, you need an eMASS account.</p>
+
+    <div class="callout callout-important">
+      <span class="callout-icon">&#9888;</span>
+      <div><strong>IMPORTANT:</strong> Getting eMASS access can take weeks. Start this process immediately.</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Requirement</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td><strong>CAC/PKI</strong></td><td>DoD PKI certificate on ECA medium or Common Access Card (CAC)</td></tr>
+          <tr><td><strong>Training</strong></td><td>Complete the DoD Cyber Awareness Challenge</td></tr>
+          <tr><td><strong>eMASS URL</strong></td><td>NISP: <code>https://emass-nisp.csd.disa.mil/</code> (CAC required)</td></tr>
+          <tr><td><strong>Role</strong></td><td>IAM (Information Assurance Manager) role for system registration</td></tr>
+          <tr><td><strong>CAGE Code</strong></td><td>Your organization must have an assigned CAGE code under DCSA</td></tr>
+          <tr><td><strong>Account Guide</strong></td><td><a href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank" style="color: var(--accent);">NISP eMASS User Account Request Guide v3</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Key Personnel Required</h3>
+    <p>Identify these people before starting &mdash; their names go into eMASS registration.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Role</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><strong>System Owner</strong></td><td>Ultimately responsible for the system's security posture</td></tr>
+          <tr><td><strong>ISSM</strong></td><td>Information Systems Security Manager &mdash; manages the RMF package</td></tr>
+          <tr><td><strong>ISSO</strong></td><td>Information Systems Security Officer &mdash; day-to-day security operations</td></tr>
+          <tr><td><strong>AO</strong></td><td>Authorizing Official &mdash; makes the risk-based ATO decision</td></tr>
+          <tr><td><strong>SCA</strong></td><td>Security Controls Assessor &mdash; independently evaluates controls</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 2: 7 RMF STEPS ====== -->
+<div class="section" id="sec-2">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>2. The 7 RMF Steps (NIST 800-37 Rev 2)</h2>
+  </div>
+  <div class="section-body">
+    <p>The Risk Management Framework is a 7-step process. Click each step's circle to mark it complete.</p>
+
+    <div class="rmf-timeline" id="rmfTimeline">
+
+      <!-- Step 0: PREPARE -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle todo" data-rmf="0" onclick="toggleRmfStep(this)" title="Click to toggle status">0</div>
+          <div class="rmf-step-line"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">PREPARE</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-0-a"><span class="check-label">Establish risk management strategy &mdash; Document in SSP</span></li>
+              <li><input type="checkbox" data-key="rmf-0-b"><span class="check-label">Define authorization boundary &mdash; SRE platform + CI/CD tools</span></li>
+              <li><input type="checkbox" data-key="rmf-0-c"><span class="check-label">Register system in eMASS &mdash; <strong>See Section 3</strong></span></li>
+              <li><input type="checkbox" data-key="rmf-0-d"><span class="check-label">Identify key roles (SO, ISSO, ISSM, AO, SCA) &mdash; Fill in names</span></li>
+              <li><input type="checkbox" data-key="rmf-0-e"><span class="check-label">Identify common controls for inheritance &mdash; See Section 5</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: CATEGORIZE -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle done" data-rmf="1" onclick="toggleRmfStep(this)" title="Click to toggle status">1</div>
+          <div class="rmf-step-line done"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">CATEGORIZE</div>
+          <div class="callout callout-info">
+            <span class="callout-icon">&#9432;</span>
+            <div><strong>SRE Categorization:</strong> SC = {(C, MODERATE), (I, MODERATE), (A, MODERATE)}</div>
+          </div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-1-a" checked><span class="check-label">FIPS 199 classification (C-I-A levels) &mdash; <span class="status status-done">DONE</span> Moderate-Moderate-Moderate</span></li>
+              <li><input type="checkbox" data-key="rmf-1-b" checked><span class="check-label">NIST SP 800-60 information types &mdash; <span class="status status-done">DONE</span></span></li>
+              <li><input type="checkbox" data-key="rmf-1-c" checked><span class="check-label">Document categorization justification &mdash; <span class="status status-done">DONE</span></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: SELECT -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle partial" data-rmf="2" onclick="toggleRmfStep(this)" title="Click to toggle status">2</div>
+          <div class="rmf-step-line"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">SELECT</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-2-a"><span class="check-label">Select NIST 800-53 Rev 5 control baseline &mdash; Moderate (~325 controls)</span></li>
+              <li><input type="checkbox" data-key="rmf-2-b"><span class="check-label">Apply DoD overlays (CNSSI 1253) &mdash; Apply during eMASS registration</span></li>
+              <li><input type="checkbox" data-key="rmf-2-c"><span class="check-label">Tailor controls (scope, compensating) &mdash; During eMASS control management</span></li>
+              <li><input type="checkbox" data-key="rmf-2-d"><span class="check-label">Identify inheritable controls &mdash; ~40-60% can be inherited</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: IMPLEMENT -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle partial" data-rmf="3" onclick="toggleRmfStep(this)" title="Click to toggle status">3</div>
+          <div class="rmf-step-line"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">IMPLEMENT</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-3-a" checked><span class="check-label">Implement selected controls &mdash; <span class="status status-done">DONE</span> 47 controls mapped to platform components</span></li>
+              <li><input type="checkbox" data-key="rmf-3-b"><span class="check-label">Document implementation in SSP &mdash; <span class="status status-partial">PARTIAL</span> OSCAL SSP exists, needs eMASS format</span></li>
+              <li><input type="checkbox" data-key="rmf-3-c" checked><span class="check-label">Map controls to components &mdash; <span class="status status-done">DONE</span></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: ASSESS -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle todo" data-rmf="4" onclick="toggleRmfStep(this)" title="Click to toggle status">4</div>
+          <div class="rmf-step-line"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">ASSESS</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-4-a"><span class="check-label">Independent SCA evaluates controls &mdash; <span class="status status-todo">TO DO</span></span></li>
+              <li><input type="checkbox" data-key="rmf-4-b"><span class="check-label">Each control rated: Compliant / Non-Compliant / N/A</span></li>
+              <li><input type="checkbox" data-key="rmf-4-c"><span class="check-label">Security Assessment Report (SAR) produced by SCA</span></li>
+              <li><input type="checkbox" data-key="rmf-4-d"><span class="check-label">Non-compliant findings entered into POA&amp;M &mdash; <span class="status status-template">TEMPLATE READY</span></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: AUTHORIZE -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle todo" data-rmf="5" onclick="toggleRmfStep(this)" title="Click to toggle status">5</div>
+          <div class="rmf-step-line"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">AUTHORIZE</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-5-a"><span class="check-label">AO reviews SSP + SAR + POA&amp;M</span></li>
+              <li><input type="checkbox" data-key="rmf-5-b"><span class="check-label">AO issues: ATO, DATO, or IATT</span></li>
+              <li><input type="checkbox" data-key="rmf-5-c"><span class="check-label">Authorization document uploaded to eMASS</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: MONITOR -->
+      <div class="rmf-step">
+        <div class="rmf-step-rail">
+          <div class="rmf-step-circle done" data-rmf="6" onclick="toggleRmfStep(this)" title="Click to toggle status">6</div>
+          <div class="rmf-step-line" style="min-height: 0;"></div>
+        </div>
+        <div class="rmf-step-content">
+          <div class="rmf-step-title">MONITOR</div>
+          <div class="rmf-step-tasks">
+            <ul class="checklist">
+              <li><input type="checkbox" data-key="rmf-6-a" checked><span class="check-label">Continuous monitoring per ISCM plan &mdash; <span class="status status-done">DONE</span> Prometheus, Grafana, NeuVector</span></li>
+              <li><input type="checkbox" data-key="rmf-6-b" checked><span class="check-label">Ongoing vulnerability scanning &mdash; <span class="status status-done">DONE</span> Trivy, NeuVector, Kyverno</span></li>
+              <li><input type="checkbox" data-key="rmf-6-c"><span class="check-label">POA&amp;M updates &mdash; <span class="status status-template">TEMPLATE READY</span></span></li>
+              <li><input type="checkbox" data-key="rmf-6-d"><span class="check-label">Quarterly reviews &mdash; <span class="status status-template">TEMPLATES READY</span> QREV 1-7</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /rmf-timeline -->
+  </div>
+</div>
+
+<!-- ====== SECTION 3: eMASS REGISTRATION ====== -->
+<div class="section" id="sec-3">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>3. eMASS Registration &mdash; Step by Step</h2>
+  </div>
+  <div class="section-body">
+    <p>Registration in eMASS has 5 sub-steps. Here is exactly what to enter.</p>
+
+    <h3>Registration Step 1: System Profile</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>What to Enter</th></tr></thead>
+        <tbody>
+          <tr><td><strong>System Name</strong></td><td><code>Secure Runtime Environment Platform</code></td></tr>
+          <tr><td><strong>System Acronym</strong></td><td><code>SRE</code></td></tr>
+          <tr><td><strong>System Type</strong></td><td><code>IS Enclave</code> (required &mdash; DSS-specific types are not available in eMASS)</td></tr>
+          <tr><td><strong>DITPR ID</strong></td><td><span class="fill-field">[Your DITPR registration ID]</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>System Description (copy-paste into eMASS)</h4>
+    <div class="copy-block" id="sysDesc">A Kubernetes-based DevSecOps platform providing a hardened, compliant runtime for deploying containerized applications. Built on RKE2 with FIPS 140-2 compliance, DISA STIG hardening, and all 8 RAISE 2.0 security gates implemented in the CI/CD pipeline. The platform provides inheritable security controls for hosted applications under RAISE RPOC designation.<button class="copy-btn" onclick="copyBlock('sysDesc')">Copy</button></div>
+
+    <h4>Authorization Boundary (copy-paste into eMASS)</h4>
+    <div class="copy-block" id="authBoundary">The SRE platform including: RKE2 Kubernetes cluster, Flux CD GitOps engine, Istio service mesh, Kyverno policy engine, Harbor container registry, CI/CD pipeline tools (Semgrep, Syft, Gitleaks, Trivy, OWASP ZAP, Cosign), monitoring stack (Prometheus, Grafana, Loki, Tempo), secrets management (OpenBao, ESO), runtime security (NeuVector), identity provider (Keycloak), and backup (Velero). Does NOT include the hosted tenant applications themselves &mdash; each application has its own RMF package.<button class="copy-btn" onclick="copyBlock('authBoundary')">Copy</button></div>
+
+    <h3>Registration Step 2a: Security Impact Levels</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Security Objective</th><th>Impact Level</th><th>Justification</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Confidentiality</strong></td><td><span class="status status-partial">MODERATE</span></td><td>Platform hosts CUI. Unauthorized disclosure could have serious adverse effects on organizational operations.</td></tr>
+          <tr><td><strong>Integrity</strong></td><td><span class="status status-partial">MODERATE</span></td><td>Unauthorized modification of platform configuration or application deployments could have serious adverse effects on mission operations.</td></tr>
+          <tr><td><strong>Availability</strong></td><td><span class="status status-partial">MODERATE</span></td><td>Disruption of platform services could have serious adverse effects but would not cause catastrophic mission failure.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <div>eMASS will auto-populate the NIST 800-53 Moderate baseline (~325 controls) based on these selections.</div>
+    </div>
+
+    <h3>Registration Step 2b: Manage Controls</h3>
+    <p>After the baseline is populated, mark each control:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Action</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Applicable</strong></td><td>Control is implemented by the SRE platform</td></tr>
+          <tr><td><strong>Not Applicable</strong></td><td>Control does not apply (document justification)</td></tr>
+          <tr><td><strong>Inherited</strong></td><td>Control is satisfied by infrastructure provider (cloud, physical facility)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">&#128161;</span>
+      <div><strong>TIP:</strong> Start with inherited controls first &mdash; this immediately reduces your workload by 40-60%.</div>
+    </div>
+
+    <p>For each <strong>Applicable</strong> control, you will need to enter:</p>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>Implementation description (how the control is met)</li>
+      <li>Responsible entity (who maintains it)</li>
+      <li>Evidence/artifacts</li>
+    </ul>
+
+    <h3>Registration Step 3: Inheritance</h3>
+    <p>Link to your infrastructure provider's authorization:</p>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>If on AWS GovCloud: Link to AWS FedRAMP authorization</li>
+      <li>If on-premises: Link to the facility's physical security authorization</li>
+      <li>The SRE platform itself becomes a Common Control Provider (CCP) for tenant apps</li>
+    </ul>
+
+    <h3>Registration Step 4: Assign Roles</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Role</th><th>Name</th><th>Email</th></tr></thead>
+        <tbody>
+          <tr><td><strong>System Owner</strong></td><td><span class="fill-field">_________________</span></td><td><span class="fill-field">_________________</span></td></tr>
+          <tr><td><strong>ISSM</strong></td><td><span class="fill-field">_________________</span></td><td><span class="fill-field">_________________</span></td></tr>
+          <tr><td><strong>ISSO</strong></td><td><span class="fill-field">_________________</span></td><td><span class="fill-field">_________________</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Registration Step 5: Review and Submit</h3>
+    <ul class="checklist">
+      <li><input type="checkbox" data-key="emass-5-a"><span class="check-label">Review all entered information</span></li>
+      <li><input type="checkbox" data-key="emass-5-b"><span class="check-label">Verify all required fields (marked with red stars) are complete</span></li>
+      <li><input type="checkbox" data-key="emass-5-c"><span class="check-label">Click "Submit System" to complete registration</span></li>
+      <li><input type="checkbox" data-key="emass-5-d"><span class="check-label">System appears in available systems list</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== SECTION 4: ATO PACKAGE ====== -->
+<div class="section" id="sec-4">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>4. ATO Package &mdash; Required Documents</h2>
+  </div>
+  <div class="section-body">
+
+    <h3>The "Big Three" (Required)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Document</th><th>Description</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>System Security Plan (SSP)</strong></td><td>System description, boundary, architecture, complete control implementation descriptions</td><td><span class="status status-partial">PARTIAL</span></td></tr>
+          <tr><td>2</td><td><strong>Security Assessment Report (SAR)</strong></td><td>Results of independent control assessment by SCA</td><td><span class="status status-todo">TO DO</span></td></tr>
+          <tr><td>3</td><td><strong>Plan of Action &amp; Milestones (POA&amp;M)</strong></td><td>Response to each SAR finding with remediation plan</td><td><span class="status status-template">TEMPLATE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Supporting Documents</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Document</th><th>Description</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>4</td><td><strong>Risk Assessment Report (RAR)</strong></td><td>Identifies risks, likelihood, impact, mitigation</td><td><span class="status status-todo">TO DO</span></td></tr>
+          <tr><td>5</td><td><strong>Authorization Boundary Diagram</strong></td><td>Architecture diagrams (DoDAF OV-1, SV-6 recommended)</td><td><span class="status status-partial">PARTIAL</span></td></tr>
+          <tr><td>6</td><td><strong>Hardware/Software List</strong></td><td>Inventory of all components with versions</td><td><span class="status status-done">DONE</span></td></tr>
+          <tr><td>7</td><td><strong>PPSM Registration</strong></td><td>All ports/protocols registered per DoDI 8551.01</td><td><span class="status status-partial">PARTIAL</span></td></tr>
+          <tr><td>8</td><td><strong>Network Architecture Diagram</strong></td><td>Data flows, interfaces, external connections</td><td><span class="status status-todo">TO DO</span></td></tr>
+          <tr><td>9</td><td><strong>Contingency Plan</strong></td><td>Disaster recovery procedures</td><td><span class="status status-partial">PARTIAL</span></td></tr>
+          <tr><td>10</td><td><strong>Incident Response Plan</strong></td><td>Per DAAPM Appendix Q requirements</td><td><span class="status status-todo">TO DO</span></td></tr>
+          <tr><td>11</td><td><strong>Configuration Management Plan</strong></td><td>How changes are controlled</td><td><span class="status status-done">DONE</span></td></tr>
+          <tr><td>12</td><td><strong>Continuous Monitoring Plan</strong></td><td>ISCM strategy</td><td><span class="status status-done">DONE</span></td></tr>
+          <tr><td>13</td><td><strong>Privacy Impact Assessment (PIA)</strong></td><td>If PII is processed</td><td><span class="status status-done">DONE</span></td></tr>
+          <tr><td>14</td><td><strong>Interconnection Security Agreements</strong></td><td>For external system connections</td><td><span class="status status-partial">IF APPLICABLE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What the SSP Must Contain</h3>
+    <p>The SSP is built IN eMASS (no longer a separate Word document). For each control, enter the following format:</p>
+
+    <div class="copy-block" id="sspExample">Control: AC-2 Account Management
+Implementation Status: Implemented
+Implementation Description:
+  Account management is handled by Keycloak (v24.8.1) as the centralized
+  identity provider. All platform access requires SSO authentication via OIDC.
+  User accounts are organized into groups (sre-admins, sre-viewers, developers)
+  mapped to Kubernetes RBAC ClusterRoles. Account creation requires approval
+  from the platform ISSM. Deprovisioning is automated when users are removed
+  from Keycloak groups.
+Responsible Entity: Platform Team
+Evidence: Keycloak configuration export, RBAC role definitions, account audit log<button class="copy-btn" onclick="copyBlock('sspExample')">Copy</button></div>
+
+  </div>
+</div>
+
+<!-- ====== SECTION 5: CONTROL INHERITANCE ====== -->
+<div class="section" id="sec-5">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>5. Control Inheritance &mdash; Reducing Your Workload</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">&#128161;</span>
+      <div><strong>This is the most important optimization.</strong> A Moderate baseline has ~325 controls. You do NOT implement all of them from scratch.</div>
+    </div>
+
+    <h3>Inheritance Sources</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Source</th><th>Controls Inherited</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Cloud Provider (FedRAMP)</strong></td><td>~100-130 controls</td><td>PE (Physical), some AC, some SC, some MP</td></tr>
+          <tr><td><strong>Facility Security</strong></td><td>~20-30 controls</td><td>PE-1 through PE-20 (physical access, environmental)</td></tr>
+          <tr><td><strong>Existing Network Authorization</strong></td><td>~15-20 controls</td><td>Network-layer SC controls</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Controls SRE Implements Directly</h3>
+    <p>After inheritance, SRE implements ~120-150 controls across these families:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Family</th><th># Controls</th><th>Primary SRE Components</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AC</strong> (Access Control)</td><td>~18</td><td>Keycloak, Kubernetes RBAC, Istio, Kyverno</td></tr>
+          <tr><td><strong>AU</strong> (Audit)</td><td>~12</td><td>Loki, Prometheus, K8s audit log, OpenBao audit</td></tr>
+          <tr><td><strong>CA</strong> (Assessment)</td><td>~8</td><td>Kyverno PolicyReports, NeuVector, compliance scanner</td></tr>
+          <tr><td><strong>CM</strong> (Configuration Mgmt)</td><td>~12</td><td>Flux CD (GitOps), Kyverno, Ansible STIGs</td></tr>
+          <tr><td><strong>IA</strong> (Identification/Auth)</td><td>~10</td><td>Keycloak, Istio mTLS, cert-manager, OpenBao</td></tr>
+          <tr><td><strong>IR</strong> (Incident Response)</td><td>~8</td><td>AlertManager, NeuVector, Grafana alerting</td></tr>
+          <tr><td><strong>RA</strong> (Risk Assessment)</td><td>~6</td><td>Trivy, NeuVector, Kyverno violation reports</td></tr>
+          <tr><td><strong>SA</strong> (System Acquisition)</td><td>~10</td><td>SBOM (Syft), Cosign, Harbor, CI/CD pipeline</td></tr>
+          <tr><td><strong>SC</strong> (System/Comms)</td><td>~15</td><td>Istio mTLS, FIPS crypto, TLS, NetworkPolicies</td></tr>
+          <tr><td><strong>SI</strong> (System Integrity)</td><td>~12</td><td>NeuVector, Cosign signing, Kyverno admission</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>SRE as Common Control Provider (CCP)</h3>
+    <p>Once SRE has an ATO, tenant applications inherit YOUR controls. This is the whole point of RPOC &mdash; apps deploy faster because they inherit your controls.</p>
+
+    <div class="copy-block" id="ccpExample">Tenant App inherits from SRE RPOC:
+  - SC-8 (Transmission Confidentiality) -> Istio mTLS
+  - CM-7 (Least Functionality) -> Kyverno policies
+  - SI-7 (Software Integrity) -> Cosign + Kyverno verification
+  - AU-2 (Audit Events) -> Loki + Prometheus
+  - RA-5 (Vulnerability Scanning) -> Trivy + NeuVector
+  - AC-4 (Information Flow Enforcement) -> NetworkPolicies + Istio
+  ... and ~40 more controls<button class="copy-btn" onclick="copyBlock('ccpExample')">Copy</button></div>
+
+  </div>
+</div>
+
+<!-- ====== SECTION 6: eMASS VALIDATION ====== -->
+<div class="section" id="sec-6">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>6. eMASS Control Validation</h2>
+  </div>
+  <div class="section-body">
+    <p>Validating security controls in eMASS is a 3-step process.</p>
+
+    <h3>Step 1: Test Assessment Procedures</h3>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>All Assessment Procedures (APs/CCIs) assigned to each control must be tested</li>
+      <li>Results recorded per AP: <strong>Satisfied</strong>, <strong>Other Than Satisfied</strong>, <strong>Not Applicable</strong></li>
+    </ul>
+
+    <h3>Step 2: Industry/Organization Review</h3>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>ISSO/ISSM reviews the package</li>
+      <li>Verifies all controls have implementation descriptions</li>
+      <li>Verifies evidence is attached</li>
+      <li>Submits to SCA</li>
+    </ul>
+
+    <h3>Step 3: SCA Validation</h3>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>Independent SCA reviews and validates each control</li>
+      <li>Issues SAR with findings</li>
+      <li>Non-compliant controls go to POA&amp;M</li>
+    </ul>
+
+    <h3>Uploading Evidence</h3>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>Click "Add Artifact" per control/AP association</li>
+      <li>Upload individual files or .zip bundles (use <code>isBulk=true</code> for bulk)</li>
+      <li>Category defaults to "Evidence"</li>
+      <li>eMASS supports bulk export/import of CCI test results via templates</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== SECTION 7: AUTOMATION ====== -->
+<div class="section" id="sec-7">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>7. Automation &mdash; SAF CLI &amp; eMASS API</h2>
+  </div>
+  <div class="section-body">
+    <p>The MITRE Security Automation Framework (SAF) CLI integrates with the eMASS REST API, enabling automated evidence upload from your CI/CD pipeline.</p>
+
+    <h3>SAF CLI (eMASS Integration)</h3>
+    <p>GitHub: <a href="https://github.com/mitre/saf" target="_blank" style="color: var(--accent);">mitre/saf</a> and <a href="https://github.com/mitre/emass_client" target="_blank" style="color: var(--accent);">mitre/emass_client</a></p>
+
+    <p>Available API endpoints:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Endpoint</th><th>Capabilities</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Controls</strong></td><td>View, add, update control implementation descriptions</td></tr>
+          <tr><td><strong>Test Results</strong></td><td>View, add test results for assessment procedures</td></tr>
+          <tr><td><strong>Artifacts</strong></td><td>View, add, update, remove evidence artifacts</td></tr>
+          <tr><td><strong>POA&amp;M</strong></td><td>View, add, update POA&amp;M items</td></tr>
+          <tr><td><strong>System</strong></td><td>View system details</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Automated Evidence Pipeline</h3>
+    <div class="code-block">CI/CD Pipeline produces artifacts
+    |
+    +-- Semgrep SARIF    --> SAF CLI --> eMASS (SA-11 evidence)
+    +-- Trivy SARIF      --> SAF CLI --> eMASS (RA-5 evidence)
+    +-- Gitleaks JSON    --> SAF CLI --> eMASS (IA-5 evidence)
+    +-- SBOM (SPDX)      --> SAF CLI --> eMASS (CM-8 evidence)
+    +-- Cosign verify    --> SAF CLI --> eMASS (SI-7 evidence)
+    +-- Kyverno reports  --> SAF CLI --> eMASS (CM-7 evidence)
+    +-- NeuVector scans  --> SAF CLI --> eMASS (SI-4 evidence)</div>
+
+    <h3>OSCAL Integration</h3>
+    <p>OSCAL (Open Security Controls Assessment Language) is the machine-readable format for compliance:</p>
+    <ul style="margin: 0 0 16px 24px; color: var(--text-dim); font-size: 14px;">
+      <li>FedRAMP will require OSCAL after September 2026</li>
+      <li>DoD is moving in the same direction</li>
+      <li>SRE already has an OSCAL SSP at <code>compliance/oscal/ssp.json</code></li>
+      <li><a href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank" style="color: var(--accent);">FedRAMP OSCAL Resources and Templates</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== SECTION 8: TIMELINE ====== -->
+<div class="section" id="sec-8">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>8. Timeline &amp; Cost Expectations</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Typical</th><th>With DevSecOps / cATO</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Timeline</strong></td><td>12-18 months</td><td>6-9 months</td></tr>
+          <tr><td><strong>Cost</strong></td><td>$1M-$3M+</td><td>Reduced via automation</td></tr>
+          <tr><td><strong>Control burden</strong></td><td>~325 (Moderate)</td><td>~120-150 after inheritance</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Key Milestones</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Milestone</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>Get eMASS access</td><td>Week 1-3</td></tr>
+          <tr><td>Register system</td><td>Week 3-4</td></tr>
+          <tr><td>Complete SSP (control descriptions)</td><td>Week 4-12</td></tr>
+          <tr><td>Submit to SCA (90 days before need)</td><td>Week 12</td></tr>
+          <tr><td>SCA assessment</td><td>Week 12-20</td></tr>
+          <tr><td>Remediate findings, update POA&amp;M</td><td>Week 20-24</td></tr>
+          <tr><td>AO review and decision</td><td>Week 24-28</td></tr>
+          <tr><td>RPOC designation (after ATO)</td><td>Week 28-30</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div><strong>DCSA recommends:</strong> Submit complete security plan at least <strong>90 days before need date</strong>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 9: PRACTITIONER TIPS ====== -->
+<div class="section" id="sec-9">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>9. Practitioner Tips</h2>
+  </div>
+  <div class="section-body">
+    <div class="do-dont">
+      <div class="do-list">
+        <h4>DO</h4>
+        <ul>
+          <li><strong>Start eMASS access NOW</strong> &mdash; account creation takes weeks</li>
+          <li><strong>Define a narrow authorization boundary</strong> &mdash; include only what is essential</li>
+          <li><strong>Maximize control inheritance</strong> &mdash; inherit from cloud provider FedRAMP, facility security, network authorization (40-60% of Moderate controls)</li>
+          <li><strong>Automate evidence collection</strong> &mdash; use SAF CLI, OSCAL, pipeline-generated artifacts</li>
+          <li><strong>Use OSCAL format</strong> &mdash; machine-readable compliance artifacts will be required soon</li>
+          <li><strong>Submit 90+ days early</strong> &mdash; DCSA needs time for thorough review</li>
+          <li><strong>Register in DITPR first</strong> &mdash; you will need the DITPR ID for eMASS registration</li>
+          <li><strong>Register ports in PPSM</strong> &mdash; all ports/protocols must be registered per DoDI 8551.01</li>
+          <li><strong>Pursue cATO</strong> if your system supports it &mdash; your DevSecOps pipeline makes you a strong candidate</li>
+        </ul>
+      </div>
+      <div class="dont-list">
+        <h4>DO NOT</h4>
+        <ul>
+          <li><strong>Attempt all ~325 controls from scratch</strong> &mdash; leverage inheritance aggressively</li>
+          <li><strong>Submit incomplete packages</strong> &mdash; #1 cause of delays and rejections</li>
+          <li><strong>Default to legacy RMF</strong> &mdash; pursue cATO with your DevSecOps pipeline</li>
+          <li><strong>Forget the PPSM registration</strong> &mdash; commonly missed, causes delays</li>
+          <li><strong>Wait until the end to engage the AO</strong> &mdash; keep them informed throughout</li>
+          <li><strong>Ignore the POA&amp;M</strong> &mdash; overdue items are the second biggest cause of ATO denial</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 10: REFERENCES ====== -->
+<div class="section" id="sec-10">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>10. Reference Documents</h2>
+  </div>
+  <div class="section-body">
+
+    <h3>eMASS Guides</h3>
+    <div class="ref-cards">
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/NISP%20eMASS%20Industry%20Operation%20Guide%20Version%201.1.pdf" target="_blank">
+        <div class="ref-card-title">NISP eMASS Industry Operation Guide v1.1</div>
+        <div class="ref-card-desc">Complete eMASS operations guide for NISP industry users</div>
+        <span class="ref-card-tag">DCSA</span>
+      </a>
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/69/documents/io/rmf/NISP-eMASS%20Job%20Aid.pdf" target="_blank">
+        <div class="ref-card-title">NISP eMASS Job Aid</div>
+        <div class="ref-card-desc">Quick-reference job aid for eMASS tasks</div>
+        <span class="ref-card-tag">DCSA</span>
+      </a>
+      <a class="ref-card" href="https://s3.us-gov-west-1.amazonaws.com/sepub-demo-0001-124733793621-us-gov-west-1/s3fs-public/documents/eMASS+STEPbySTEP.pdf" target="_blank">
+        <div class="ref-card-title">eMASS Step-by-Step Instructions</div>
+        <div class="ref-card-desc">Detailed walkthrough of eMASS registration steps</div>
+        <span class="ref-card-tag">DISA</span>
+      </a>
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank">
+        <div class="ref-card-title">NISP eMASS Account Request Guide v3</div>
+        <div class="ref-card-desc">How to request your eMASS user account</div>
+        <span class="ref-card-tag">DCSA</span>
+      </a>
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/DCSA%20Assessment%20and%20Authorization%20Process%20Manual%20Version%202.2.pdf" target="_blank">
+        <div class="ref-card-title">DCSA A&amp;A Process Manual (DAAPM) v2.2</div>
+        <div class="ref-card-desc">The authoritative guide for DCSA assessment and authorization</div>
+        <span class="ref-card-tag">DCSA</span>
+      </a>
+    </div>
+
+    <h3>RMF &amp; NIST Standards</h3>
+    <div class="ref-cards">
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/37/r2/final" target="_blank">
+        <div class="ref-card-title">NIST SP 800-37 Rev 2</div>
+        <div class="ref-card-desc">Risk Management Framework for Information Systems</div>
+        <span class="ref-card-tag">NIST</span>
+      </a>
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final" target="_blank">
+        <div class="ref-card-title">NIST SP 800-53 Rev 5</div>
+        <div class="ref-card-desc">Security and Privacy Controls for Information Systems</div>
+        <span class="ref-card-tag">NIST</span>
+      </a>
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/fips/199/final" target="_blank">
+        <div class="ref-card-title">FIPS 199</div>
+        <div class="ref-card-desc">Standards for Security Categorization</div>
+        <span class="ref-card-tag">NIST</span>
+      </a>
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/60/v1/r1/final" target="_blank">
+        <div class="ref-card-title">NIST SP 800-60</div>
+        <div class="ref-card-desc">Guide for Mapping Types of Information to Security Categories</div>
+        <span class="ref-card-tag">NIST</span>
+      </a>
+    </div>
+
+    <h3>DoD DevSecOps &amp; cATO</h3>
+    <div class="ref-cards">
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DoDCIO-ContinuousAuthorizationImplementationGuide.pdf" target="_blank">
+        <div class="ref-card-title">DoD cATO Implementation Guide</div>
+        <div class="ref-card-desc">Continuous Authorization to Operate guidance</div>
+        <span class="ref-card-tag">DoD CIO</span>
+      </a>
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/cATO-EvaluationCriteria.pdf" target="_blank">
+        <div class="ref-card-title">cATO Evaluation Criteria</div>
+        <div class="ref-card-desc">Criteria for evaluating cATO readiness</div>
+        <span class="ref-card-tag">DoD CIO</span>
+      </a>
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DevSecOpsReferenceDesign.pdf" target="_blank">
+        <div class="ref-card-title">DoD DevSecOps Reference Design v2.0</div>
+        <div class="ref-card-desc">Reference architecture for DoD DevSecOps pipelines</div>
+        <span class="ref-card-tag">DoD CIO</span>
+      </a>
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/(U)%202024-01-02%20DoD%20Cybersecurity%20Reciprocity%20Playbook.pdf" target="_blank">
+        <div class="ref-card-title">DoD Cybersecurity Reciprocity Playbook</div>
+        <div class="ref-card-desc">Guidance on authorization reciprocity across DoD</div>
+        <span class="ref-card-tag">DoD CIO</span>
+      </a>
+    </div>
+
+    <h3>Automation Tools</h3>
+    <div class="ref-cards">
+      <a class="ref-card" href="https://github.com/mitre/saf" target="_blank">
+        <div class="ref-card-title">MITRE SAF CLI</div>
+        <div class="ref-card-desc">Security Automation Framework with eMASS integration</div>
+        <span class="ref-card-tag">GitHub</span>
+      </a>
+      <a class="ref-card" href="https://github.com/mitre/emass_client" target="_blank">
+        <div class="ref-card-title">MITRE eMASS Client API</div>
+        <div class="ref-card-desc">Ruby/Node client library for eMASS REST API</div>
+        <span class="ref-card-tag">GitHub</span>
+      </a>
+      <a class="ref-card" href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank">
+        <div class="ref-card-title">FedRAMP OSCAL Templates</div>
+        <div class="ref-card-desc">Official OSCAL resources and SSP templates</div>
+        <span class="ref-card-tag">FedRAMP</span>
+      </a>
+      <a class="ref-card" href="https://www.cyber.mil/connect/ppsm/" target="_blank">
+        <div class="ref-card-title">DISA PPSM Resources</div>
+        <div class="ref-card-desc">Ports, Protocols, and Services Management</div>
+        <span class="ref-card-tag">Cyber.mil</span>
+      </a>
+    </div>
+
+    <h3>Helpful Articles</h3>
+    <div class="ref-cards">
+      <a class="ref-card" href="https://www.rise8.us/resources/what-is-required-in-an-ato-package" target="_blank">
+        <div class="ref-card-title">What is Required in an ATO Package</div>
+        <div class="ref-card-desc">Practical guide to assembling your ATO documentation</div>
+        <span class="ref-card-tag">Rise8</span>
+      </a>
+      <a class="ref-card" href="https://www.rise8.us/resources/how-long-does-the-ato-process-take" target="_blank">
+        <div class="ref-card-title">How Long Does the ATO Process Take</div>
+        <div class="ref-card-desc">Timeline expectations and how to accelerate</div>
+        <span class="ref-card-tag">Rise8</span>
+      </a>
+      <a class="ref-card" href="https://www.rise8.us/resources/authorization-to-operate-checklist" target="_blank">
+        <div class="ref-card-title">ATO Checklist</div>
+        <div class="ref-card-desc">Step-by-step checklist for ATO readiness</div>
+        <span class="ref-card-tag">Rise8</span>
+      </a>
+      <a class="ref-card" href="https://www.secondfront.com/resources/blog/7-common-and-costly-mistakes-to-avoid-in-your-dod-ato-process/" target="_blank">
+        <div class="ref-card-title">7 Common Mistakes in DoD ATO</div>
+        <div class="ref-card-desc">Costly pitfalls to avoid in the authorization process</div>
+        <span class="ref-card-tag">Second Front</span>
+      </a>
+      <a class="ref-card" href="https://www.secondfront.com/resources/blog/how-to-maximize-control-inheritance-a-guide-to-reducing-your-nist-800-53-workload/" target="_blank">
+        <div class="ref-card-title">Maximize Control Inheritance</div>
+        <div class="ref-card-desc">Guide to reducing your NIST 800-53 workload through inheritance</div>
+        <span class="ref-card-tag">Second Front</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ====== QUICK START CHECKLIST ====== -->
+<div class="section" id="sec-checklist">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="collapse-icon">&#9660;</span>
+    <h2>Quick Start Checklist</h2>
+  </div>
+  <div class="section-body">
+    <p>Track your immediate next steps. Progress is saved automatically in your browser.</p>
+
+    <ul class="checklist" id="quickStartChecklist">
+      <li><input type="checkbox" data-key="qs-1"><span class="check-label"><strong>Get eMASS account</strong> &mdash; Request CAC/PKI access, complete Cyber Awareness training</span></li>
+      <li><input type="checkbox" data-key="qs-2"><span class="check-label"><strong>Identify key personnel</strong> &mdash; System Owner, ISSM, ISSO, AO, SCA</span></li>
+      <li><input type="checkbox" data-key="qs-3"><span class="check-label"><strong>Register in DITPR</strong> &mdash; Get DITPR ID before eMASS registration</span></li>
+      <li><input type="checkbox" data-key="qs-4"><span class="check-label"><strong>Register in eMASS</strong> &mdash; Use the Step 1-5 guide above</span></li>
+      <li><input type="checkbox" data-key="qs-5"><span class="check-label"><strong>Register ports in PPSM</strong> &mdash; Per DoDI 8551.01</span></li>
+      <li><input type="checkbox" data-key="qs-6"><span class="check-label"><strong>Complete control descriptions</strong> &mdash; Map each NIST 800-53 control to SRE components</span></li>
+      <li><input type="checkbox" data-key="qs-7"><span class="check-label"><strong>Identify inherited controls</strong> &mdash; Link to cloud provider / facility authorizations</span></li>
+      <li><input type="checkbox" data-key="qs-8"><span class="check-label"><strong>Create authorization boundary diagram</strong> &mdash; Formal DoDAF diagram</span></li>
+      <li><input type="checkbox" data-key="qs-9"><span class="check-label"><strong>Create incident response plan</strong> &mdash; Per DAAPM Appendix Q</span></li>
+      <li><input type="checkbox" data-key="qs-10"><span class="check-label"><strong>Submit CI/CD Tools Certification</strong> &mdash; To Technical Authority</span></li>
+      <li><input type="checkbox" data-key="qs-11"><span class="check-label"><strong>Schedule SCA assessment</strong> &mdash; 90 days before target ATO date</span></li>
+      <li><input type="checkbox" data-key="qs-12"><span class="check-label"><strong>Engage AO early</strong> &mdash; Brief them on the platform and RPOC intent</span></li>
+    </ul>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'emass-guide-progress';
+
+  // --- Load / Save State ---
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // --- Init Checkboxes ---
+  function initCheckboxes() {
+    const state = loadState();
+    document.querySelectorAll('.checklist input[type="checkbox"]').forEach(cb => {
+      const key = cb.dataset.key;
+      if (key && state[key]) {
+        cb.checked = true;
+        cb.closest('li').classList.add('checked');
+      }
+      cb.addEventListener('change', () => {
+        const s = loadState();
+        s[key] = cb.checked;
+        saveState(s);
+        cb.closest('li').classList.toggle('checked', cb.checked);
+        updateProgress();
+      });
+    });
+  }
+
+  // --- RMF Step Toggle ---
+  function toggleRmfStep(el) {
+    const states = ['todo', 'partial', 'done'];
+    let current = states.find(s => el.classList.contains(s)) || 'todo';
+    let next = states[(states.indexOf(current) + 1) % states.length];
+    el.classList.remove(...states);
+    el.classList.add(next);
+
+    // Update the line below
+    const line = el.parentElement.querySelector('.rmf-step-line');
+    if (line) {
+      line.classList.toggle('done', next === 'done');
+    }
+
+    // Save RMF step state
+    const s = loadState();
+    s['rmf-step-' + el.dataset.rmf] = next;
+    saveState(s);
+    updateProgress();
+  }
+
+  function initRmfSteps() {
+    const state = loadState();
+    document.querySelectorAll('.rmf-step-circle[data-rmf]').forEach(el => {
+      const saved = state['rmf-step-' + el.dataset.rmf];
+      if (saved) {
+        el.classList.remove('todo', 'partial', 'done');
+        el.classList.add(saved);
+        const line = el.parentElement.querySelector('.rmf-step-line');
+        if (line) line.classList.toggle('done', saved === 'done');
+      }
+    });
+  }
+
+  // --- Progress Bar ---
+  function updateProgress() {
+    const allCheckboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+    const checked = [...allCheckboxes].filter(c => c.checked).length;
+    const total = allCheckboxes.length;
+    const pct = total ? Math.round((checked / total) * 100) : 0;
+
+    document.getElementById('progressText').textContent = checked + ' / ' + total;
+    document.getElementById('progressBar').style.width = pct + '%';
+  }
+
+  // --- Section Collapse ---
+  function toggleSection(header) {
+    const body = header.nextElementSibling;
+    const icon = header.querySelector('.collapse-icon');
+    body.classList.toggle('collapsed');
+    icon.classList.toggle('collapsed');
+  }
+
+  // --- Sidebar Active ---
+  function initSidebar() {
+    const items = document.querySelectorAll('.sidebar-item');
+    const sections = [];
+
+    items.forEach(item => {
+      const sectionId = item.dataset.section;
+      if (sectionId) {
+        const el = document.getElementById(sectionId);
+        if (el) sections.push({ item, el });
+      }
+
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(sectionId);
+        if (target) {
+          // Make sure section is expanded
+          const body = target.querySelector('.section-body');
+          const icon = target.querySelector('.collapse-icon');
+          if (body && body.classList.contains('collapsed')) {
+            body.classList.remove('collapsed');
+            if (icon) icon.classList.remove('collapsed');
+          }
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        items.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Scroll spy
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          items.forEach(i => {
+            i.classList.toggle('active', i.dataset.section === id);
+          });
+        }
+      });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+
+    sections.forEach(s => observer.observe(s.el));
+  }
+
+  // --- Copy Block ---
+  function copyBlock(id) {
+    const block = document.getElementById(id);
+    const btn = block.querySelector('.copy-btn');
+    // Get text content excluding the button
+    const text = block.childNodes[0].textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // --- Export Progress ---
+  function exportProgress() {
+    const state = loadState();
+    const data = {
+      exportDate: new Date().toISOString(),
+      guide: 'eMASS Registration & RMF Guide',
+      checkboxes: {},
+      rmfSteps: {}
+    };
+
+    for (const [k, v] of Object.entries(state)) {
+      if (k.startsWith('rmf-step-')) {
+        data.rmfSteps[k] = v;
+      } else {
+        data.checkboxes[k] = v;
+      }
+    }
+
+    const totalCb = document.querySelectorAll('.checklist input[type="checkbox"]').length;
+    const checkedCb = [...document.querySelectorAll('.checklist input[type="checkbox"]')].filter(c => c.checked).length;
+    data.summary = {
+      totalTasks: totalCb,
+      completedTasks: checkedCb,
+      percentComplete: totalCb ? Math.round((checkedCb / totalCb) * 100) : 0
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'emass-guide-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Progress exported successfully');
+  }
+
+  // --- Toast ---
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // --- Init ---
+  document.addEventListener('DOMContentLoaded', () => {
+    initCheckboxes();
+    initRmfSteps();
+    initSidebar();
+    updateProgress();
+  });
+</script>
+</body>
+</html>

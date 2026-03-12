@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 RPOC Guide — Step-by-Step Walkthrough</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --tip-bg: #1a2e44;
+    --tip-border: #38bdf8;
+    --warn-bg: #2d1f0e;
+    --warn-border: #fbbf24;
+    --danger-bg: #2d1118;
+    --danger-border: #f87171;
+    --success-bg: #0f2922;
+    --success-border: #34d399;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* --- Sticky Header --- */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--surface2); color: var(--text);
+    font-size: 18px; text-decoration: none; transition: all 0.15s;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .header h1 span { color: var(--accent); }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+  }
+
+  /* --- Progress Bar --- */
+  .progress-container {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 10px;
+    width: 240px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+  .progress-text {
+    color: var(--text-dim);
+    font-weight: 600;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* --- Main Content --- */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* --- Intro Section --- */
+  .intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 40px;
+  }
+  .intro h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+  .intro p {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+  .intro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .intro-stat {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .intro-stat .number {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .intro-stat .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* --- Phase Timeline --- */
+  .timeline {
+    position: relative;
+    padding-left: 48px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  /* --- Phase Card --- */
+  .phase {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .phase-marker {
+    position: absolute;
+    left: -48px;
+    top: 18px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dim);
+    z-index: 1;
+    transition: all 0.3s;
+  }
+  .phase.completed .phase-marker {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--bg);
+  }
+  .phase.in-progress .phase-marker {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .phase-card:hover {
+    border-color: var(--accent);
+  }
+  .phase.completed .phase-card {
+    border-color: var(--green);
+  }
+
+  .phase-header {
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    user-select: none;
+  }
+  .phase-header:hover {
+    background: rgba(56, 189, 248, 0.04);
+  }
+  .phase-header-info { flex: 1; }
+  .phase-header h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .phase-header .meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .phase-header .meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .phase-progress-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .phase-progress-mini .mini-bar {
+    width: 80px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .phase-progress-mini .mini-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+  .phase-toggle {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 18px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .phase.open .phase-toggle {
+    transform: rotate(180deg);
+  }
+
+  .phase-body {
+    display: none;
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .phase.open .phase-body {
+    display: block;
+  }
+
+  /* --- Phase Body Sections --- */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    margin: 20px 0 10px;
+  }
+  .section-title:first-child {
+    margin-top: 16px;
+  }
+
+  .description {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  /* --- Prerequisites --- */
+  .prereqs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 16px;
+  }
+  .prereq-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* --- Callout Boxes --- */
+  .callout {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-left: 4px solid;
+    font-size: 14px;
+  }
+  .callout-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .callout-header .icon { font-size: 16px; }
+  .callout-header .toggle-icon {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+  }
+  .callout.collapsed .callout-content {
+    display: none;
+  }
+  .callout.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+  }
+
+  .callout.tip {
+    background: var(--tip-bg);
+    border-color: var(--tip-border);
+  }
+  .callout.tip .callout-header { color: var(--accent); }
+
+  .callout.warning {
+    background: var(--warn-bg);
+    border-color: var(--warn-border);
+  }
+  .callout.warning .callout-header { color: var(--yellow); }
+
+  .callout.danger {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+  }
+  .callout.danger .callout-header { color: var(--red); }
+
+  .callout.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+  }
+  .callout.success .callout-header { color: var(--green); }
+
+  .callout-content {
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .callout-content ul {
+    margin: 6px 0 0 16px;
+  }
+  .callout-content li {
+    margin-bottom: 4px;
+  }
+  .callout-content code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+
+  /* --- Checklist --- */
+  .checklist {
+    list-style: none;
+    margin: 8px 0 4px;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .checklist li:hover {
+    background: var(--surface2);
+  }
+  .checklist li.checked {
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+  .checklist li .cb {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+    font-size: 12px;
+    color: transparent;
+  }
+  .checklist li.checked .cb {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--bg);
+  }
+
+  /* --- Step List (non-interactive) --- */
+  .step-list {
+    margin: 8px 0 12px 0;
+    list-style: none;
+    counter-reset: step;
+  }
+  .step-list li {
+    counter-increment: step;
+    padding: 8px 0 8px 36px;
+    position: relative;
+    font-size: 14px;
+    color: var(--text-dim);
+    border-left: 2px solid var(--border);
+    margin-left: 12px;
+  }
+  .step-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: -13px;
+    top: 8px;
+    width: 24px;
+    height: 24px;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+  }
+  .step-list li:last-child {
+    border-left-color: transparent;
+  }
+  .step-list li strong {
+    color: var(--text);
+  }
+
+  /* --- Links / References --- */
+  .ref-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .ref-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .ref-link:hover {
+    border-color: var(--accent);
+  }
+
+  /* --- Gate Cards --- */
+  .gate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  @media (max-width: 700px) {
+    .gate-grid { grid-template-columns: 1fr; }
+  }
+  .gate-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .gate-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gate-card h4 .gate-num {
+    background: var(--accent);
+    color: var(--bg);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .gate-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .gate-card .tool-tag {
+    display: inline-block;
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: 'SF Mono', Consolas, monospace;
+    color: var(--accent);
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* --- Footer --- */
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 40px 32px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* --- Reset Button --- */
+  .btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* --- Inline code --- */
+  code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 700px) {
+    .header { padding: 12px 16px; }
+    .main { padding: 20px 12px 60px; }
+    .intro { padding: 20px; }
+    .intro-grid { grid-template-columns: repeat(2, 1fr); }
+    .progress-container { width: 140px; }
+    .phase-header { padding: 16px; flex-wrap: wrap; }
+    .phase-body { padding: 0 16px 16px; }
+    .timeline { padding-left: 40px; }
+    .timeline::before { left: 15px; }
+    .phase-marker { left: -40px; width: 32px; height: 32px; font-size: 12px; }
+  }
+
+  /* --- Print --- */
+  @media print {
+    .header { position: static; }
+    .phase-body { display: block !important; }
+    .phase-toggle { display: none; }
+    .callout-content { display: block !important; }
+    body { background: #fff; color: #000; }
+  }
+
+  /* --- Scroll to top --- */
+  .scroll-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    z-index: 99;
+    transition: opacity 0.3s;
+  }
+  .scroll-top.visible { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+      <h1><span>RAISE 2.0</span> RPOC Walkthrough Guide</h1>
+    </div>
+    <div class="header-right">
+      <div class="phase-progress-mini">
+        <span class="progress-text" id="progressPct">0%</span>
+        <div class="progress-container">
+          <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="resetProgress()" title="Reset all progress">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Intro -->
+  <div class="intro">
+    <h2>Your Roadmap to RPOC Designation</h2>
+    <p>
+      This guide walks you through every step required to achieve a <strong>RAISE 2.0 Registered Point of Connection (RPOC)</strong> designation, enabling your DevSecOps Software Factory (DSOP) to grant continuous Authority to Operate (cATO) for applications. Follow each phase in order, check off deliverables as you complete them, and your progress saves automatically.
+    </p>
+    <p>
+      RAISE 2.0 (Risk Assessment and Independent Security Evaluation) is the DoD framework for accrediting DevSecOps pipelines. An RPOC is a certified connection point where applications can be onboarded with automated security gates instead of traditional ATO packages.
+    </p>
+    <div class="intro-grid">
+      <div class="intro-stat">
+        <div class="number">10</div>
+        <div class="label">Phases</div>
+      </div>
+      <div class="intro-stat">
+        <div class="number">8</div>
+        <div class="label">Security Gates</div>
+      </div>
+      <div class="intro-stat">
+        <div class="number">24</div>
+        <div class="label">RPOC Requirements</div>
+      </div>
+      <div class="intro-stat">
+        <div class="number" id="totalItems">0</div>
+        <div class="label">Checklist Items</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline" id="timeline">
+
+    <!-- ===== PHASE 1 ===== -->
+    <div class="phase" data-phase="1">
+      <div class="phase-marker">1</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Platform Foundation (Prerequisites)</h3>
+            <div class="meta">
+              <span>&#9202; 4-8 weeks</span>
+              <span>&#9881; Infrastructure + Platform Services</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Build your DevSecOps Platform (DSOP) &mdash; a hardened Kubernetes environment with all the supporting services that the 8 security gates and ongoing operations depend on. This is the foundation everything else runs on. Do not skip ahead; the security gates in Phase 2 depend on these services being operational.
+          </p>
+
+          <div class="section-title">Step-by-Step</div>
+          <ol class="step-list">
+            <li><strong>Provision infrastructure</strong> &mdash; Use OpenTofu (or Terraform) to create VMs/instances. For on-prem, Proxmox VE or vSphere work well. For cloud, AWS GovCloud or Azure Gov.</li>
+            <li><strong>Harden the operating system</strong> &mdash; Apply DISA STIG to Rocky Linux 9 (or RHEL 9) using Ansible. Enable FIPS 140-2 mode, SELinux enforcing, auditd configured.</li>
+            <li><strong>Install RKE2 Kubernetes</strong> &mdash; RKE2 is the only DISA STIG-certified K8s distribution. Install in HA mode (3 server + N agent nodes). Enable the CIS hardening profile.</li>
+            <li><strong>Bootstrap Flux CD</strong> &mdash; Install Flux CD for GitOps-based platform management. All services below are deployed as HelmReleases reconciled from Git.</li>
+            <li><strong>Deploy Istio service mesh</strong> &mdash; STRICT mTLS cluster-wide. Istio gateway for ingress. This satisfies SC-8 (encryption in transit).</li>
+            <li><strong>Deploy cert-manager</strong> &mdash; Automate TLS certificate lifecycle. Internal CA for cluster services, Let's Encrypt or DoD PKI for external.</li>
+            <li><strong>Deploy Kyverno policy engine</strong> &mdash; Pod Security Standards (baseline + restricted), image registry restrictions, label requirements. This becomes your policy enforcement backbone.</li>
+            <li><strong>Deploy monitoring stack</strong> &mdash; kube-prometheus-stack (Prometheus + Grafana + AlertManager). ServiceMonitors for all platform components.</li>
+            <li><strong>Deploy logging stack</strong> &mdash; Loki + Alloy for centralized logging. 90-day retention for audit logs.</li>
+            <li><strong>Deploy secrets management</strong> &mdash; OpenBao (or Vault) + External Secrets Operator. Kubernetes auth method. KV v2 engine for app secrets.</li>
+            <li><strong>Deploy container registry</strong> &mdash; Harbor with Trivy scanning enabled on push. Robot accounts for CI/CD. Cosign signature verification.</li>
+            <li><strong>Deploy runtime security</strong> &mdash; NeuVector for container runtime monitoring, network segmentation, CIS scanning, and admission control.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Start with RKE2 &mdash; it ships FIPS-compliant and CIS-hardened by default, saving weeks of manual hardening work.</li>
+                <li>Use Flux CD instead of ArgoCD for platform-level GitOps. It has no UI to secure and is what DoD Platform One uses.</li>
+                <li>Deploy Kyverno instead of OPA/Gatekeeper &mdash; YAML policies are auditable by compliance officers who do not read Rego.</li>
+                <li>Pin every image version explicitly. The <code>:latest</code> tag will fail your own pipeline gates later.</li>
+                <li>If you are building on SRE Platform, sessions 1-13 of the <code>docs/session-playbook.md</code> cover this entire phase.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> Common Pitfalls
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Do not use vanilla Kubernetes (kubeadm). It has no published DISA STIG and you will spend months hardening it manually.</li>
+                <li>Do not skip FIPS mode. The TA will check, and retrofitting FIPS after deployment is extremely painful.</li>
+                <li>Do not use Docker. RKE2 uses containerd &mdash; Docker adds an unnecessary attack surface.</li>
+                <li>NetworkPolicies must default to deny-all in every namespace. Add explicit allows from there.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">References</div>
+          <div class="ref-links">
+            <a class="ref-link" href="https://docs.rke2.io/security/hardening_guide" target="_blank">&#128279; RKE2 Hardening Guide</a>
+            <a class="ref-link" href="https://public.cyber.mil/stigs/" target="_blank">&#128279; DISA STIG Library</a>
+            <a class="ref-link" href="https://fluxcd.io/flux/" target="_blank">&#128279; Flux CD Docs</a>
+            <a class="ref-link" href="https://kyverno.io/docs/" target="_blank">&#128279; Kyverno Docs</a>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="1">
+            <li data-id="p1-cluster"><span class="cb">&#10003;</span>Kubernetes cluster running (RKE2, HA mode, CIS profile enabled)</li>
+            <li data-id="p1-os"><span class="cb">&#10003;</span>STIG-hardened OS (Rocky Linux 9 / RHEL 9 with FIPS enabled)</li>
+            <li data-id="p1-gitops"><span class="cb">&#10003;</span>GitOps engine operational (Flux CD bootstrapped, reconciling from Git)</li>
+            <li data-id="p1-mesh"><span class="cb">&#10003;</span>Service mesh with mTLS STRICT (Istio deployed and healthy)</li>
+            <li data-id="p1-certs"><span class="cb">&#10003;</span>Certificate management (cert-manager with ClusterIssuers)</li>
+            <li data-id="p1-policy"><span class="cb">&#10003;</span>Policy engine (Kyverno with baseline + restricted policies)</li>
+            <li data-id="p1-monitoring"><span class="cb">&#10003;</span>Monitoring stack (Prometheus + Grafana + AlertManager)</li>
+            <li data-id="p1-logging"><span class="cb">&#10003;</span>Logging stack (Loki + Alloy, 90-day audit retention)</li>
+            <li data-id="p1-secrets"><span class="cb">&#10003;</span>Secrets management (OpenBao/Vault + External Secrets Operator)</li>
+            <li data-id="p1-registry"><span class="cb">&#10003;</span>Container registry (Harbor with Trivy scanning on push)</li>
+            <li data-id="p1-runtime"><span class="cb">&#10003;</span>Runtime security (NeuVector deployed and scanning)</li>
+            <li data-id="p1-netpol"><span class="cb">&#10003;</span>Default-deny NetworkPolicies in all namespaces</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 2 ===== -->
+    <div class="phase" data-phase="2">
+      <div class="phase-marker">2</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Implement the 8 Security Gates</h3>
+            <div class="meta">
+              <span>&#9202; 2-4 weeks</span>
+              <span>&#9881; CI/CD Pipeline Configuration</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Build a CI/CD pipeline that enforces all 8 RAISE 2.0 security gates. Each gate must be automated (except Gate 6: ISSM Review) and must produce machine-readable evidence. The pipeline must <strong>fail</strong> if any gate fails &mdash; this is non-negotiable. The TA will run your pipeline end-to-end during certification.
+          </p>
+
+          <div class="section-title">The 8 Gates</div>
+          <div class="gate-grid">
+            <div class="gate-card">
+              <h4><span class="gate-num">1</span> SAST &mdash; Static Analysis</h4>
+              <p>Scan source code for vulnerabilities before build. Must produce SARIF output for evidence.</p>
+              <div><span class="tool-tag">Semgrep</span><span class="tool-tag">SonarQube</span><span class="tool-tag">CodeQL</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Semgrep with <code>p/owasp-top-ten</code> + <code>p/security-audit</code> rulesets. Free, fast, SARIF output. Fail on High/Critical findings.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">2</span> SBOM &mdash; Software Bill of Materials</h4>
+              <p>Generate an SBOM for every container image. Must support SPDX or CycloneDX format.</p>
+              <div><span class="tool-tag">Syft</span><span class="tool-tag">Trivy</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Syft generates both SPDX and CycloneDX. Attach as Cosign attestation to the image in Harbor. Store alongside the image as an OCI artifact.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">3</span> Secrets Scanning</h4>
+              <p>Scan source code and Git history for leaked secrets, tokens, and credentials.</p>
+              <div><span class="tool-tag">Gitleaks</span><span class="tool-tag">TruffleHog</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Gitleaks with <code>--no-git</code> for source scan + full history scan. Use <code>.gitleaksignore</code> for false positives. Pipeline must fail on any finding.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">4</span> CSS &mdash; Container Security Scan</h4>
+              <p>Scan the built container image for known CVEs. Must fail on CRITICAL severity at minimum.</p>
+              <div><span class="tool-tag">Trivy</span><span class="tool-tag">Grype</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Trivy with <code>--severity CRITICAL,HIGH --exit-code 1</code>. Also runs automatically in Harbor on push. Double coverage.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">5</span> DAST &mdash; Dynamic Analysis</h4>
+              <p>Scan the running application for vulnerabilities. Runs post-deploy against a staging/dev environment.</p>
+              <div><span class="tool-tag">OWASP ZAP</span><span class="tool-tag">Nuclei</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> OWASP ZAP baseline scan (<code>zap-baseline.py</code>). Runs in Docker against the deployed service URL. Produces HTML + JSON reports.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">6</span> ISSM Review &mdash; Manual Gate</h4>
+              <p>Pipeline pauses for Information System Security Manager approval before production deploy.</p>
+              <div><span class="tool-tag">GitHub Environments</span><span class="tool-tag">GitLab Approvals</span></div>
+              <p style="margin-top:8px"><strong>Implementation:</strong> GitHub Environment with required reviewers, or GitLab manual job. This is the <strong>only</strong> manual gate. All evidence from Gates 1-5 is available for ISSM review.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">7</span> Signing &mdash; Image Integrity</h4>
+              <p>Cryptographically sign the container image and attach attestations (SBOM, scan results).</p>
+              <div><span class="tool-tag">Cosign</span><span class="tool-tag">Notation</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Cosign keyless (Fulcio + Rekor) for public, or Cosign keypair for air-gap. Sign image + attach SBOM attestation + attach vulnerability scan attestation.</p>
+            </div>
+            <div class="gate-card">
+              <h4><span class="gate-num">8</span> Storage &mdash; Secure Registry</h4>
+              <p>Push signed image to a secured registry with scanning, RBAC, and audit logging.</p>
+              <div><span class="tool-tag">Harbor</span><span class="tool-tag">Iron Bank</span></div>
+              <p style="margin-top:8px"><strong>Recommended:</strong> Harbor with Trivy auto-scan on push. Robot accounts for CI/CD (least privilege). Kyverno verifies signatures on deploy. Replication policy for air-gap.</p>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Build a <strong>reference pipeline</strong> with a sample app (e.g., simple Go/Node service) that passes all 8 gates. Use this as your demo artifact for the TA.</li>
+                <li>Gates 1-4 and 7-8 run in CI (pre-deploy). Gate 5 runs post-deploy. Gate 6 is between pre-deploy and deploy.</li>
+                <li>Store all gate artifacts (SARIF, SBOM, scan reports) as pipeline artifacts AND attach to the container image via Cosign attestations.</li>
+                <li>Use <code>cosign attest</code> to attach SBOM and vulnerability scan as in-toto attestations. The TA loves this.</li>
+                <li>Your Kyverno <code>verify-image-signatures</code> policy in the cluster should enforce that only signed images from Harbor can run.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> Common Pitfalls
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Do not make any gate optional or "allow failure." The TA will reject the pipeline if any gate can be bypassed.</li>
+                <li>DAST (Gate 5) is the most commonly forgotten. You need a running environment to scan against &mdash; deploy to a staging namespace first.</li>
+                <li>Gitleaks on an old repo with many secrets in history can block your pipeline. Clean up history first or use <code>.gitleaksignore</code> carefully.</li>
+                <li>Cosign signing with a key stored in the pipeline environment (not a KMS) is acceptable for getting started but the TA may recommend KMS-backed keys.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">References</div>
+          <div class="ref-links">
+            <a class="ref-link" href="https://semgrep.dev/docs/getting-started/" target="_blank">&#128279; Semgrep Getting Started</a>
+            <a class="ref-link" href="https://github.com/anchore/syft" target="_blank">&#128279; Syft SBOM Generator</a>
+            <a class="ref-link" href="https://github.com/zricethezav/gitleaks" target="_blank">&#128279; Gitleaks</a>
+            <a class="ref-link" href="https://aquasecurity.github.io/trivy/" target="_blank">&#128279; Trivy Scanner</a>
+            <a class="ref-link" href="https://www.zaproxy.org/" target="_blank">&#128279; OWASP ZAP</a>
+            <a class="ref-link" href="https://docs.sigstore.dev/cosign/overview/" target="_blank">&#128279; Cosign</a>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="2">
+            <li data-id="p2-pipeline"><span class="cb">&#10003;</span>CI/CD pipeline defined (GitHub Actions or GitLab CI YAML)</li>
+            <li data-id="p2-sast"><span class="cb">&#10003;</span>Gate 1: SAST &mdash; Semgrep configured with OWASP + security rulesets, SARIF output</li>
+            <li data-id="p2-sbom"><span class="cb">&#10003;</span>Gate 2: SBOM &mdash; Syft generates SPDX + CycloneDX, attached via Cosign attestation</li>
+            <li data-id="p2-secrets"><span class="cb">&#10003;</span>Gate 3: Secrets &mdash; Gitleaks scans source + history, fails on findings</li>
+            <li data-id="p2-css"><span class="cb">&#10003;</span>Gate 4: CSS &mdash; Trivy scans container image, fails on CRITICAL/HIGH</li>
+            <li data-id="p2-dast"><span class="cb">&#10003;</span>Gate 5: DAST &mdash; OWASP ZAP baseline scan against deployed staging app</li>
+            <li data-id="p2-issm"><span class="cb">&#10003;</span>Gate 6: ISSM Review &mdash; Pipeline pauses for manual approval before prod deploy</li>
+            <li data-id="p2-signing"><span class="cb">&#10003;</span>Gate 7: Signing &mdash; Cosign signs image + attaches attestations</li>
+            <li data-id="p2-storage"><span class="cb">&#10003;</span>Gate 8: Storage &mdash; Image pushed to Harbor, Trivy re-scan on push</li>
+            <li data-id="p2-ref-app"><span class="cb">&#10003;</span>Reference application runs through full pipeline successfully</li>
+            <li data-id="p2-artifacts"><span class="cb">&#10003;</span>All gate artifacts saved (SARIF, SBOM, scan reports, signatures)</li>
+            <li data-id="p2-kyverno"><span class="cb">&#10003;</span>Kyverno enforces image signature verification on deploy</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 3 ===== -->
+    <div class="phase" data-phase="3">
+      <div class="phase-marker">3</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Security Categorization</h3>
+            <div class="meta">
+              <span>&#9202; 1-2 weeks</span>
+              <span>&#9881; Documentation + Analysis</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Categorize your system using FIPS 199 and NIST SP 800-60. This determines the security controls you must implement and directly affects the rigor of assessment. Get this right early &mdash; changing categorization later means re-doing control selection and documentation.
+          </p>
+
+          <div class="section-title">Step-by-Step</div>
+          <ol class="step-list">
+            <li><strong>Identify information types</strong> &mdash; Use NIST SP 800-60 Vol II to determine what types of information your platform processes (e.g., C3.2.8 System Development, C3.4.1 General Information). List each type.</li>
+            <li><strong>Assign impact levels</strong> &mdash; For each information type, assign Confidentiality, Integrity, and Availability impact levels (Low, Moderate, High) per FIPS 199.</li>
+            <li><strong>Determine system high-water mark</strong> &mdash; Your system categorization is the highest impact level across all information types for each dimension (C, I, A).</li>
+            <li><strong>Document rationale</strong> &mdash; Write clear justifications for each impact level. The AO will review these.</li>
+            <li><strong>Select control baseline</strong> &mdash; Based on categorization, select NIST 800-53 control baseline (Low, Moderate, or High). Most DSOPs are Moderate.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Most DevSecOps platforms hosting standard DoD applications land at <strong>Moderate-Moderate-Moderate</strong>. Unless you are processing classified data or critical weapon systems, Moderate is likely correct.</li>
+                <li>If unsure, start with Moderate and let the AO guide you. Going lower is harder to justify than starting at Moderate.</li>
+                <li>The DSOP itself has a categorization. Each application onboarded later has its own categorization that must be at or below the DSOP level.</li>
+                <li>NIST SP 800-60 Vol I has the process. Vol II has the actual information types catalog. You need both.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 1: Platform running</span>
+          </div>
+
+          <div class="section-title">References</div>
+          <div class="ref-links">
+            <a class="ref-link" href="https://csrc.nist.gov/publications/detail/fips/199/final" target="_blank">&#128279; FIPS 199</a>
+            <a class="ref-link" href="https://csrc.nist.gov/publications/detail/sp/800-60/vol-1-rev-1/final" target="_blank">&#128279; NIST 800-60 Vol I</a>
+            <a class="ref-link" href="https://csrc.nist.gov/publications/detail/sp/800-60/vol-2-rev-1/final" target="_blank">&#128279; NIST 800-60 Vol II</a>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="3">
+            <li data-id="p3-infotypes"><span class="cb">&#10003;</span>Information types identified (per NIST 800-60 Vol II)</li>
+            <li data-id="p3-impact"><span class="cb">&#10003;</span>Impact levels assigned (C, I, A) for each information type</li>
+            <li data-id="p3-hwm"><span class="cb">&#10003;</span>System high-water mark determined (e.g., Moderate-Moderate-Moderate)</li>
+            <li data-id="p3-rationale"><span class="cb">&#10003;</span>Rationale documented for each impact level</li>
+            <li data-id="p3-baseline"><span class="cb">&#10003;</span>NIST 800-53 control baseline selected (Low/Moderate/High)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 4 ===== -->
+    <div class="phase" data-phase="4">
+      <div class="phase-marker">4</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Prepare Compliance Documents</h3>
+            <div class="meta">
+              <span>&#9202; 3-5 weeks</span>
+              <span>&#9881; Documentation + Templates</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Prepare the formal compliance documentation required for RPOC designation. This includes the SLA template (RAISE Appendix C), CI/CD Tools Certification (RAISE Appendix D), Plan of Action and Milestones (POA&amp;M), and supporting artifacts. This is the most documentation-heavy phase &mdash; start early and iterate.
+          </p>
+
+          <div class="section-title">Key Documents</div>
+          <ol class="step-list">
+            <li><strong>SLA Template (RAISE Appendix C)</strong> &mdash; This is the Service Level Agreement between the DSOP and application owners. It covers all 21 items including vulnerability remediation timelines, patching cadence, monitoring SLAs, incident response, backup/recovery, and access management. Application owners sign this before onboarding.</li>
+            <li><strong>CI/CD Tools Certification (RAISE Appendix D)</strong> &mdash; A formal document listing every tool in your pipeline, its version, which gate it supports, pass/fail criteria, and evidence format. The TA reviews this to certify your pipeline.</li>
+            <li><strong>System Security Plan (SSP)</strong> &mdash; Describes the system boundary, architecture, and how each NIST 800-53 control is implemented, inherited, or planned. This is the core ATO document.</li>
+            <li><strong>Security Assessment Report (SAR)</strong> &mdash; Results of security testing. In RAISE, your automated pipeline results contribute to this.</li>
+            <li><strong>Plan of Action &amp; Milestones (POA&amp;M)</strong> &mdash; Any known vulnerabilities or gaps that are not yet remediated, with timelines for resolution.</li>
+            <li><strong>STIG Checklists</strong> &mdash; Completed DISA STIG checklists for your OS (Rocky Linux 9 / RHEL 9) and Kubernetes (RKE2). Export from STIG Viewer.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Start the SLA template in Phase 1 and refine as you build. Do not leave it until the end &mdash; the ISSM needs to review and agree to it.</li>
+                <li>The Appendix D is the TA's primary review artifact. Be extremely specific about tool versions, configuration, and fail criteria.</li>
+                <li>Use OSCAL (Open Security Controls Assessment Language) for machine-readable SSP if possible. It enables automated compliance reporting.</li>
+                <li>For the POA&amp;M, any STIG finding that is "Not Applicable" or "Open" needs a justification and timeline.</li>
+                <li>Get your ISSM involved early. Their buy-in on the SLA and pipeline design prevents rework later.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> SLA Template: The 21 Items
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <p>The RAISE Appendix C SLA covers these areas (not exhaustive &mdash; refer to the official template):</p>
+              <ul>
+                <li>Vulnerability remediation timelines (Critical: 15 days, High: 30 days, Medium: 90 days, Low: 180 days)</li>
+                <li>Patching cadence for OS, K8s, and platform components</li>
+                <li>Monitoring and alerting responsibilities</li>
+                <li>Incident response procedures and timelines</li>
+                <li>Backup and disaster recovery SLAs</li>
+                <li>Access management and offboarding</li>
+                <li>Configuration management (who can change what)</li>
+                <li>Audit logging and retention requirements</li>
+                <li>Image scanning and signing requirements</li>
+                <li>Network segmentation and isolation guarantees</li>
+                <li>Encryption in transit and at rest requirements</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 1: Platform running</span>
+            <span class="prereq-tag">Phase 2: Security gates functional</span>
+            <span class="prereq-tag">Phase 3: Categorization complete</span>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="4">
+            <li data-id="p4-sla"><span class="cb">&#10003;</span>SLA template completed (RAISE Appendix C, all 21 items)</li>
+            <li data-id="p4-appd"><span class="cb">&#10003;</span>CI/CD Tools Certification completed (RAISE Appendix D)</li>
+            <li data-id="p4-ssp"><span class="cb">&#10003;</span>System Security Plan (SSP) drafted with control implementations</li>
+            <li data-id="p4-sar"><span class="cb">&#10003;</span>Security Assessment Report (SAR) with pipeline evidence</li>
+            <li data-id="p4-poam"><span class="cb">&#10003;</span>POA&amp;M created for all known open findings</li>
+            <li data-id="p4-stig-os"><span class="cb">&#10003;</span>Rocky Linux 9 / RHEL 9 STIG checklist completed</li>
+            <li data-id="p4-stig-k8s"><span class="cb">&#10003;</span>RKE2 Kubernetes STIG checklist completed</li>
+            <li data-id="p4-issm-review"><span class="cb">&#10003;</span>ISSM reviewed and agreed to SLA and pipeline design</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 5 ===== -->
+    <div class="phase" data-phase="5">
+      <div class="phase-marker">5</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Register in eMASS / MCAST</h3>
+            <div class="meta">
+              <span>&#9202; 2-4 weeks (includes access wait times)</span>
+              <span>&#9881; System Registration</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Register your DSOP system in eMASS (Enterprise Mission Assurance Support Service) or MCAST, upload all compliance artifacts, and configure the control inheritance chain. This is a bureaucratic phase &mdash; start getting access early because it takes weeks.
+          </p>
+
+          <div class="section-title">Step-by-Step</div>
+          <ol class="step-list">
+            <li><strong>Request eMASS access</strong> &mdash; This requires a CAC (Common Access Card) and can take 2-4 weeks to get approved. Start immediately. If you do not have a CAC, work with your ISSM to get one or have the ISSM register the system.</li>
+            <li><strong>Register the system</strong> &mdash; Create a new system entry with the official name, acronym, categorization (from Phase 3), owning organization, and system boundary description.</li>
+            <li><strong>Upload artifacts</strong> &mdash; Upload SSP, SAR, POA&amp;M, STIG checklists, and architecture diagrams. Each artifact has a specific location in eMASS.</li>
+            <li><strong>Map controls</strong> &mdash; For each NIST 800-53 control in your baseline, mark it as Implemented, Planned, Inherited, or Not Applicable. For inherited controls, reference the parent system (e.g., the cloud provider's FedRAMP authorization).</li>
+            <li><strong>Mark inheritable controls</strong> &mdash; Critically, mark which controls your DSOP can provide to applications that onboard. This is what makes your RPOC valuable &mdash; apps inherit security controls from you instead of implementing them individually.</li>
+          </ol>
+
+          <div class="callout danger">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> Critical Warning
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li><strong>Start eMASS access early.</strong> This is the single biggest schedule risk. Access takes 2-4 weeks and you cannot proceed without it.</li>
+                <li>Submit your registration at least <strong>90 days before</strong> you need the ATO. The AO review process has a queue.</li>
+                <li>If you are supporting a specific contract/program, coordinate the system name and acronym with the program office <em>before</em> registering.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>If using AWS GovCloud, your cloud infrastructure inherits many controls from AWS's FedRAMP High authorization. Reference the AWS SSP in your inheritance chain.</li>
+                <li>For on-prem deployments, you may inherit physical security (PE family) and some environmental controls from the facility's existing ATO.</li>
+                <li>Keep a spreadsheet mapping every control to its eMASS status. eMASS's UI is not great for bulk editing.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 3: Categorization complete</span>
+            <span class="prereq-tag">Phase 4: Compliance docs drafted</span>
+            <span class="prereq-tag">CAC card issued</span>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="5">
+            <li data-id="p5-access"><span class="cb">&#10003;</span>eMASS/MCAST access granted</li>
+            <li data-id="p5-register"><span class="cb">&#10003;</span>System registered (name, acronym, categorization, boundary)</li>
+            <li data-id="p5-artifacts"><span class="cb">&#10003;</span>All artifacts uploaded (SSP, SAR, POA&amp;M, STIGs, diagrams)</li>
+            <li data-id="p5-controls"><span class="cb">&#10003;</span>Controls mapped (Implemented/Planned/Inherited/N-A for each)</li>
+            <li data-id="p5-inherit"><span class="cb">&#10003;</span>Inheritable controls marked for application onboarding</li>
+            <li data-id="p5-issm-concur"><span class="cb">&#10003;</span>ISSM concurrence on control status</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 6 ===== -->
+    <div class="phase" data-phase="6">
+      <div class="phase-marker">6</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>CI/CD Tools Certification (TA Review)</h3>
+            <div class="meta">
+              <span>&#9202; 2-3 weeks</span>
+              <span>&#9881; Technical Authority Assessment</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Submit your Appendix D (CI/CD Tools Certification) to the Technical Authority (TA) for review. The TA will evaluate your pipeline, verify all 8 gates are functional, and certify your toolchain. This is the technical gatekeeper &mdash; pass this and you are most of the way to RPOC.
+          </p>
+
+          <div class="section-title">Step-by-Step</div>
+          <ol class="step-list">
+            <li><strong>Submit Appendix D</strong> &mdash; Send the completed CI/CD Tools Certification to the TA. Include tool names, exact versions, gate mapping, pass/fail criteria, and evidence format for each gate.</li>
+            <li><strong>Prepare the demo</strong> &mdash; Set up your reference application (from Phase 2) with a clean Git history. The TA will likely want to see a live pipeline run.</li>
+            <li><strong>Run a demo pipeline</strong> &mdash; Execute the full pipeline in front of (or recorded for) the TA. Show each gate running, producing evidence, and the pipeline failing when a gate fails.</li>
+            <li><strong>Show gate failure behavior</strong> &mdash; Intentionally trigger each gate failure (introduce a vulnerability, add a leaked secret, etc.) to prove the pipeline stops.</li>
+            <li><strong>Present evidence artifacts</strong> &mdash; Show stored SARIF reports, SBOMs, scan results, signed images, and attestations in Harbor.</li>
+            <li><strong>Address TA feedback</strong> &mdash; The TA may request configuration changes or additional gates. Iterate until they certify.</li>
+          </ol>
+
+          <div class="callout success">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#10004;</span> What the TA Looks For
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li><strong>All 8 gates are automated</strong> (except Gate 6 ISSM, which must be a manual approval step).</li>
+                <li><strong>Pipeline fails fast</strong> &mdash; if any gate fails, nothing deploys.</li>
+                <li><strong>Evidence is machine-readable</strong> &mdash; SARIF for SAST, SPDX/CycloneDX for SBOM, JSON for scans.</li>
+                <li><strong>Image signatures are verified at deploy time</strong> &mdash; not just at build time.</li>
+                <li><strong>Tools are current versions</strong> &mdash; no end-of-life or deprecated tools.</li>
+                <li><strong>ISSM review gate is enforceable</strong> &mdash; no way to skip it.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Schedule the TA review meeting early. TAs have queues and you may wait 2-3 weeks for a slot.</li>
+                <li>Record the demo pipeline run as a video. If the TA cannot attend live, a recording with narration works.</li>
+                <li>Prepare a one-page pipeline diagram showing the flow through all 8 gates. Visual aids help.</li>
+                <li>If the TA suggests a tool replacement (e.g., switching from Trivy to Twistlock), you will need to re-certify only that gate, not the full pipeline.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 2: All 8 gates functional</span>
+            <span class="prereq-tag">Phase 4: Appendix D completed</span>
+            <span class="prereq-tag">Reference app pipeline passing</span>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="6">
+            <li data-id="p6-submit"><span class="cb">&#10003;</span>Appendix D submitted to Technical Authority</li>
+            <li data-id="p6-demo"><span class="cb">&#10003;</span>Demo pipeline run completed (live or recorded)</li>
+            <li data-id="p6-failures"><span class="cb">&#10003;</span>Gate failure behavior demonstrated for each gate</li>
+            <li data-id="p6-artifacts"><span class="cb">&#10003;</span>Evidence artifacts presented (SARIF, SBOM, scans, signatures)</li>
+            <li data-id="p6-feedback"><span class="cb">&#10003;</span>TA feedback addressed and changes implemented</li>
+            <li data-id="p6-certified"><span class="cb">&#10003;</span>TA certifies CI/CD toolchain</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 7 ===== -->
+    <div class="phase" data-phase="7">
+      <div class="phase-marker">7</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>RPOC Designation (AO Approval)</h3>
+            <div class="meta">
+              <span>&#9202; 2-4 weeks</span>
+              <span>&#9881; Authorizing Official Decision</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Present your complete RPOC package to the Authorizing Official (AO). The AO reviews all evidence, confirms the platform meets the 24 RPOC requirements, reviews inheritable controls, and formally designates the system as an RPOC. This is the finish line for platform accreditation.
+          </p>
+
+          <div class="section-title">Step-by-Step</div>
+          <ol class="step-list">
+            <li><strong>Compile the RPOC package</strong> &mdash; Gather all artifacts: SSP, SAR, POA&amp;M, STIG checklists, Appendix C (SLA), Appendix D (certified by TA), eMASS registration, and architecture diagrams.</li>
+            <li><strong>Verify the 24 requirements</strong> &mdash; Cross-reference RAISE 2.0's 24 RPOC requirements against your implementation. Each must have documented evidence.</li>
+            <li><strong>ISSM recommendation</strong> &mdash; Your ISSM must formally recommend the system for RPOC designation. This is typically a signed memo.</li>
+            <li><strong>Present to AO</strong> &mdash; Brief the AO on the platform architecture, security controls, inheritable controls, risk posture (POA&amp;M), and the certified CI/CD pipeline.</li>
+            <li><strong>AO reviews and signs</strong> &mdash; The AO signs the RPOC designation letter. This authorizes your platform to onboard applications.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Schedule the AO meeting as early as possible. AO calendars fill up fast, especially at quarter-end.</li>
+                <li>Prepare a 30-minute executive brief covering: what the platform does, what controls it provides, what risks remain (POA&amp;M), and how applications will be onboarded.</li>
+                <li>The AO is not deeply technical. Focus on risk posture, not technical implementation details.</li>
+                <li>Bring your ISSM and TA to the AO meeting. Having their verbal support is powerful.</li>
+                <li>If the AO has concerns, they typically result in additional POA&amp;M items with timelines, not outright rejection.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout success">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#10004;</span> The 24 RPOC Requirements (Summary)
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <p>The 24 requirements span these categories (refer to RAISE 2.0 official document for exact wording):</p>
+              <ul>
+                <li><strong>Pipeline Security (1-8):</strong> All 8 security gates implemented and certified by TA</li>
+                <li><strong>Platform Security (9-16):</strong> Hardened OS, mTLS, RBAC, network segmentation, runtime monitoring, secrets management, audit logging, backup/recovery</li>
+                <li><strong>Governance (17-20):</strong> SLA signed, ISSM designated, continuous monitoring plan, vulnerability management process</li>
+                <li><strong>Documentation (21-24):</strong> SSP, SAR, POA&amp;M, STIG checklists uploaded to eMASS</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 5: eMASS registration complete</span>
+            <span class="prereq-tag">Phase 6: TA certification received</span>
+            <span class="prereq-tag">ISSM recommendation signed</span>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="7">
+            <li data-id="p7-package"><span class="cb">&#10003;</span>Complete RPOC package compiled (all artifacts)</li>
+            <li data-id="p7-24req"><span class="cb">&#10003;</span>All 24 RPOC requirements verified with evidence</li>
+            <li data-id="p7-issm-rec"><span class="cb">&#10003;</span>ISSM signed recommendation memo</li>
+            <li data-id="p7-ao-brief"><span class="cb">&#10003;</span>AO briefing delivered</li>
+            <li data-id="p7-rpoc-signed"><span class="cb">&#10003;</span>AO signed RPOC designation letter</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 8 ===== -->
+    <div class="phase" data-phase="8">
+      <div class="phase-marker">8</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Onboard Applications</h3>
+            <div class="meta">
+              <span>&#9202; Ongoing</span>
+              <span>&#9881; Application Deployment + Compliance</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            With RPOC designation in hand, you can now onboard applications. Each application follows a standardized process: the Application Owner signs the SLA, registers in DADMS/DITPRDON, and the application passes through your certified CI/CD pipeline. The beauty of RPOC is that app teams inherit your platform's security controls instead of building their own ATO packages.
+          </p>
+
+          <div class="section-title">Onboarding Process Per Application</div>
+          <ol class="step-list">
+            <li><strong>Application Owner signs SLA</strong> &mdash; The SLA (Appendix C) defines responsibilities, SLAs, and security requirements. Both parties sign.</li>
+            <li><strong>Register in DADMS/DITPRDON</strong> &mdash; The Application Owner registers the application in the DoD IT portfolio management system.</li>
+            <li><strong>Create tenant namespace</strong> &mdash; Use the onboarding script to create namespace, RBAC, NetworkPolicies, ResourceQuotas, Harbor project, and OpenBao path.</li>
+            <li><strong>Application passes CI/CD pipeline</strong> &mdash; All 8 security gates must pass for the application.</li>
+            <li><strong>ISSM reviews first deploy</strong> &mdash; Gate 6 (ISSM review) for the first production deploy of each new application.</li>
+            <li><strong>Application receives cATO</strong> &mdash; Continuous Authority to Operate via the RPOC. No separate ATO package needed.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Create a <strong>reference application</strong> first (e.g., simple web service). Use it as the template for all future onboardings.</li>
+                <li>Automate tenant onboarding with a script. SRE Platform includes <code>scripts/onboard-tenant.sh</code> that creates namespace, RBAC, Harbor project, and OpenBao paths.</li>
+                <li>Provide app teams with a Helm chart template (<code>sre-web-app</code>, <code>sre-worker</code>) that bakes in all security contexts, NetworkPolicies, and ServiceMonitors.</li>
+                <li>The first few onboardings will be slow. Document every issue and improve the process. By app 5-10, it should be routine.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Prerequisites</div>
+          <div class="prereqs">
+            <span class="prereq-tag">Phase 7: RPOC designation received</span>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="8">
+            <li data-id="p8-ref-app"><span class="cb">&#10003;</span>Reference application created and deployed through full pipeline</li>
+            <li data-id="p8-onboard-script"><span class="cb">&#10003;</span>Tenant onboarding script tested and documented</li>
+            <li data-id="p8-helm-templates"><span class="cb">&#10003;</span>Helm chart templates available for app teams (web-app, worker, cronjob)</li>
+            <li data-id="p8-dev-guide"><span class="cb">&#10003;</span>Developer onboarding guide published</li>
+            <li data-id="p8-first-app"><span class="cb">&#10003;</span>First real application onboarded and deployed</li>
+            <li data-id="p8-cato"><span class="cb">&#10003;</span>cATO granted for first application</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 9 ===== -->
+    <div class="phase" data-phase="9">
+      <div class="phase-marker">9</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Quarterly Reviews (QREV)</h3>
+            <div class="meta">
+              <span>&#9202; Every 90 days, ongoing</span>
+              <span>&#9881; Continuous Compliance</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            Maintaining RPOC designation requires quarterly reviews with updated artifacts. Each QREV (1 through 7, then repeating) has specific deliverables. Prepare artifacts 14 days before each review. After 7 quarters (21 months), the cycle repeats from QREV 1.
+          </p>
+
+          <div class="section-title">QREV Cycle</div>
+          <ol class="step-list">
+            <li><strong>QREV 1: Baseline validation</strong> &mdash; Confirm all controls are still implemented. Update SSP if architecture changed. Run full STIG scan.</li>
+            <li><strong>QREV 2: Vulnerability focus</strong> &mdash; Review all CVEs from the quarter. Confirm remediation timelines met per SLA. Update POA&amp;M.</li>
+            <li><strong>QREV 3: Pipeline re-certification</strong> &mdash; Verify all 8 gates still pass with current tool versions. Update Appendix D if tools changed.</li>
+            <li><strong>QREV 4: Incident review</strong> &mdash; Review any security incidents from the quarter. Document lessons learned. Update IR plan if needed.</li>
+            <li><strong>QREV 5: Access control audit</strong> &mdash; Review all user/service accounts. Remove stale access. Verify RBAC policies.</li>
+            <li><strong>QREV 6: Backup/recovery test</strong> &mdash; Execute a disaster recovery drill. Restore from backup. Document results and RTO/RPO metrics.</li>
+            <li><strong>QREV 7: Annual review</strong> &mdash; Comprehensive review of all controls. Recategorization if needed. Full SSP update.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Automate as much reporting as possible. A weekly compliance CronJob that generates metrics drastically reduces QREV prep time.</li>
+                <li>SRE Platform includes <code>scripts/validate-compliance.sh</code> and a compliance-scanner CronJob for automated evidence collection.</li>
+                <li>Keep a running QREV document throughout the quarter. Do not try to compile everything in the 14-day window.</li>
+                <li>The 14-day rule is firm. Late artifacts = failed QREV = potential RPOC revocation.</li>
+                <li>If a tool changes mid-quarter, update Appendix D immediately, do not wait for QREV 3.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> QREV Failures
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>A failed QREV triggers a 30-day remediation window. If not resolved, the AO can suspend RPOC designation.</li>
+                <li>Suspended RPOC = no new application onboarding until remediation.</li>
+                <li>Two consecutive failed QREVs may result in RPOC revocation and full re-assessment.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="9">
+            <li data-id="p9-calendar"><span class="cb">&#10003;</span>QREV calendar established (dates for all 7 QREVs)</li>
+            <li data-id="p9-automation"><span class="cb">&#10003;</span>Compliance reporting automated (CronJob / scripts)</li>
+            <li data-id="p9-template"><span class="cb">&#10003;</span>QREV evidence templates created for each review type</li>
+            <li data-id="p9-running-doc"><span class="cb">&#10003;</span>Running QREV document started (updated continuously)</li>
+            <li data-id="p9-first-qrev"><span class="cb">&#10003;</span>First QREV completed successfully</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 10 ===== -->
+    <div class="phase" data-phase="10">
+      <div class="phase-marker">10</div>
+      <div class="phase-card">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <div class="phase-header-info">
+            <h3>Ongoing Operations</h3>
+            <div class="meta">
+              <span>&#9202; Continuous</span>
+              <span>&#9881; Day-2 Operations + Maintenance</span>
+            </div>
+          </div>
+          <div class="phase-progress-mini">
+            <span class="mini-pct">0%</span>
+            <div class="mini-bar"><div class="mini-fill" style="width:0%"></div></div>
+          </div>
+          <div class="phase-toggle">&#9660;</div>
+        </div>
+        <div class="phase-body">
+          <div class="section-title">What You Need To Do</div>
+          <p class="description">
+            RPOC designation is not the end &mdash; it is the beginning of continuous operations. Your platform must maintain its security posture through continuous monitoring, vulnerability remediation, tool updates, and operational excellence. This is the steady-state that keeps your cATO valid.
+          </p>
+
+          <div class="section-title">Ongoing Responsibilities</div>
+          <ol class="step-list">
+            <li><strong>Continuous monitoring</strong> &mdash; Prometheus + Grafana dashboards reviewed daily. AlertManager alerts triaged within SLA timelines. NeuVector runtime alerts investigated.</li>
+            <li><strong>Vulnerability remediation</strong> &mdash; Trivy scans in Harbor catch new CVEs on existing images. Remediation per SLA: Critical (15 days), High (30 days), Medium (90 days), Low (180 days).</li>
+            <li><strong>Platform updates</strong> &mdash; RKE2 minor versions quarterly, patch versions monthly. Platform component updates via Flux (bump HelmRelease versions). OS patches via Ansible.</li>
+            <li><strong>Certificate rotation</strong> &mdash; cert-manager handles automated rotation. Monitor expiration alerts in Grafana. RKE2 internal certs rotate automatically.</li>
+            <li><strong>Secret rotation</strong> &mdash; OpenBao dynamic secrets rotate automatically. Static secrets (API keys, etc.) rotate per policy schedule.</li>
+            <li><strong>Backup verification</strong> &mdash; Velero backups run daily/weekly/monthly. Test restore quarterly (QREV 6). Monitor backup success in Grafana.</li>
+            <li><strong>Tool updates</strong> &mdash; When updating a CI/CD pipeline tool (e.g., new Trivy version), coordinate with the TA. Minor version bumps may not require re-certification; major version or tool replacements do.</li>
+            <li><strong>Incident response</strong> &mdash; Follow documented IR procedures. NeuVector + AlertManager trigger alerts. Grafana dashboards for investigation. Document all incidents for QREV 4.</li>
+          </ol>
+
+          <div class="callout tip">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#128161;</span> Pro Tips
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li>Treat your platform like a product. Version it, maintain release notes, and communicate changes to app teams.</li>
+                <li>Set up a Slack/Teams channel for platform status. App teams need to know about maintenance windows, upgrades, and incidents.</li>
+                <li>Automate everything possible: patching, certificate rotation, backup verification, compliance reporting. Manual processes do not scale.</li>
+                <li>Keep your pipeline tools within one major version of latest. Falling too far behind creates upgrade cliffs.</li>
+                <li>Build runbooks for every common operational task. When you are on vacation, someone else needs to handle incidents.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <div class="callout-header" onclick="toggleCallout(this)">
+              <span class="icon">&#9888;&#65039;</span> Vulnerability SLA Timelines
+              <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="callout-content">
+              <ul>
+                <li><strong>Critical:</strong> 15 calendar days from discovery to remediation</li>
+                <li><strong>High:</strong> 30 calendar days</li>
+                <li><strong>Medium:</strong> 90 calendar days</li>
+                <li><strong>Low:</strong> 180 calendar days</li>
+                <li>If you cannot remediate within the timeline, add to POA&amp;M with a justification and extended timeline approved by the ISSM.</li>
+                <li>Missing SLA timelines repeatedly will be flagged in QREVs and can lead to RPOC suspension.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section-title">Deliverables Checklist</div>
+          <ul class="checklist" data-phase="10">
+            <li data-id="p10-dashboards"><span class="cb">&#10003;</span>Monitoring dashboards reviewed and actionable (daily rotation)</li>
+            <li data-id="p10-alerts"><span class="cb">&#10003;</span>AlertManager routing tested (Slack/PagerDuty/email working)</li>
+            <li data-id="p10-vuln-process"><span class="cb">&#10003;</span>Vulnerability triage and remediation process documented</li>
+            <li data-id="p10-patch-cadence"><span class="cb">&#10003;</span>Patch cadence established (OS monthly, K8s quarterly, components as needed)</li>
+            <li data-id="p10-runbooks"><span class="cb">&#10003;</span>Operational runbooks written (upgrades, DR, cert rotation, incident response)</li>
+            <li data-id="p10-backup-tested"><span class="cb">&#10003;</span>Backup and restore tested successfully</li>
+            <li data-id="p10-ir-plan"><span class="cb">&#10003;</span>Incident response plan documented and team trained</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <!-- Share Section -->
+  <div class="intro" style="margin-top: 48px; text-align: center;">
+    <h2 style="font-size: 18px; margin-bottom: 8px;">Share This Guide</h2>
+    <p style="max-width: 600px; margin: 0 auto 16px;">
+      This guide was built for the SRE Platform project. Share the HTML file directly &mdash; it is fully self-contained with no external dependencies. All progress is saved in the browser's localStorage.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn" onclick="copyPageLink()">Copy File Path</button>
+      <button class="btn" onclick="exportProgress()">Export Progress (JSON)</button>
+      <button class="btn" onclick="importProgress()">Import Progress (JSON)</button>
+    </div>
+    <p style="font-size: 12px; color: var(--text-dim); margin-top: 16px;">
+      Generated for the Secure Runtime Environment (SRE) &mdash; an open-source, government-compliant Kubernetes platform.
+    </p>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Footer -->
+<div class="footer">
+  <p>RAISE 2.0 RPOC Walkthrough Guide &mdash; SRE Platform</p>
+  <p style="margin-top: 4px;">
+    Reference: <a href="https://public.cyber.mil/" target="_blank">DISA Cyber</a> |
+    <a href="https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final" target="_blank">NIST 800-53</a> |
+    <a href="https://dodcio.defense.gov/Portals/0/Documents/Library/RAISE2.0.pdf" target="_blank">RAISE 2.0</a>
+  </p>
+</div>
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'raise-guide-progress';
+
+  // --- LocalStorage ---
+  function loadProgress() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+
+  function saveProgress(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  let progress = loadProgress();
+
+  // --- Initialize Checklists ---
+  const allItems = document.querySelectorAll('.checklist li[data-id]');
+  let totalItems = allItems.length;
+  document.getElementById('totalItems').textContent = totalItems;
+
+  allItems.forEach(li => {
+    const id = li.dataset.id;
+    if (progress[id]) li.classList.add('checked');
+
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      progress[id] = li.classList.contains('checked');
+      saveProgress(progress);
+      updateAllProgress();
+    });
+  });
+
+  // --- Progress Calculation ---
+  function updateAllProgress() {
+    let totalChecked = 0;
+    allItems.forEach(li => { if (li.classList.contains('checked')) totalChecked++; });
+
+    const pct = totalItems > 0 ? Math.round((totalChecked / totalItems) * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+
+    // Per-phase progress
+    document.querySelectorAll('.phase').forEach(phase => {
+      const items = phase.querySelectorAll('.checklist li[data-id]');
+      let checked = 0;
+      items.forEach(li => { if (li.classList.contains('checked')) checked++; });
+      const phasePct = items.length > 0 ? Math.round((checked / items.length) * 100) : 0;
+
+      const miniPct = phase.querySelector('.mini-pct');
+      const miniFill = phase.querySelector('.mini-fill');
+      if (miniPct) miniPct.textContent = phasePct + '%';
+      if (miniFill) miniFill.style.width = phasePct + '%';
+
+      // Phase marker state
+      phase.classList.remove('completed', 'in-progress');
+      if (phasePct === 100) {
+        phase.classList.add('completed');
+      } else if (phasePct > 0) {
+        phase.classList.add('in-progress');
+      }
+    });
+  }
+
+  updateAllProgress();
+
+  // --- Phase Toggle ---
+  window.togglePhase = function(header) {
+    const phase = header.closest('.phase');
+    phase.classList.toggle('open');
+  };
+
+  // --- Callout Toggle ---
+  window.toggleCallout = function(header) {
+    const callout = header.closest('.callout');
+    callout.classList.toggle('collapsed');
+  };
+
+  // --- Reset ---
+  window.resetProgress = function() {
+    if (confirm('Reset all progress? This cannot be undone.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      progress = {};
+      allItems.forEach(li => li.classList.remove('checked'));
+      updateAllProgress();
+    }
+  };
+
+  // --- Copy path ---
+  window.copyPageLink = function() {
+    const path = window.location.href || 'raise-guide.html';
+    navigator.clipboard.writeText(path).then(() => {
+      alert('Path copied to clipboard.');
+    }).catch(() => {
+      prompt('Copy this path:', path);
+    });
+  };
+
+  // --- Export/Import ---
+  window.exportProgress = function() {
+    const data = JSON.stringify(progress, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'raise-guide-progress.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  window.importProgress = function() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          progress = imported;
+          saveProgress(progress);
+          allItems.forEach(li => {
+            const id = li.dataset.id;
+            if (progress[id]) li.classList.add('checked');
+            else li.classList.remove('checked');
+          });
+          updateAllProgress();
+          alert('Progress imported successfully.');
+        } catch {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // --- Scroll to top button ---
+  const scrollBtn = document.getElementById('scrollTop');
+  window.addEventListener('scroll', () => {
+    scrollBtn.classList.toggle('visible', window.scrollY > 400);
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — CI/CD Tools Certification Package</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --phase1: #38bdf8;
+    --phase2: #fbbf24;
+    --phase3: #34d399;
+    --phase4: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* --- Top Bar --- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--surface-hover, #334155); color: var(--text);
+    font-size: 18px; text-decoration: none; transition: all 0.15s;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+  .topbar h1 { font-size: 17px; font-weight: 600; white-space: nowrap; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right { display: flex; align-items: center; gap: 20px; }
+  .progress-ring-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); }
+  .progress-ring { width: 32px; height: 32px; }
+  .progress-ring circle { fill: none; stroke-width: 3; }
+  .progress-ring .bg { stroke: var(--surface2); }
+  .progress-ring .fg { stroke: var(--green); stroke-linecap: round; transition: stroke-dashoffset 0.4s; transform: rotate(-90deg); transform-origin: center; }
+  .btn-print {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-print:hover { opacity: 0.9; }
+
+  /* --- Layout --- */
+  .layout { display: flex; min-height: calc(100vh - 57px); }
+
+  /* --- Sidebar --- */
+  .sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 12px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    position: sticky;
+    top: 57px;
+    height: calc(100vh - 57px);
+  }
+  .sidebar-label {
+    padding: 8px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .sidebar-item {
+    padding: 8px 16px 8px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    color: var(--text-dim);
+  }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active { background: var(--surface2); border-left-color: var(--accent); color: var(--text); }
+  .sidebar-item .ico { font-size: 14px; width: 18px; text-align: center; }
+
+  /* --- Main --- */
+  .main {
+    flex: 1;
+    padding: 32px 48px 80px;
+    max-width: 1000px;
+    overflow-y: auto;
+  }
+
+  /* --- Sections --- */
+  .section { margin-bottom: 48px; scroll-margin-top: 80px; }
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .num {
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 700;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: var(--accent);
+  }
+  .memo-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .memo-block p { margin-bottom: 8px; font-size: 14px; }
+  .memo-block .ref { color: var(--text-dim); font-size: 13px; margin-left: 16px; }
+
+  /* --- Editable fields --- */
+  .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .field input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+
+  /* --- Tables --- */
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+  .styled-table th {
+    background: var(--surface2);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+  }
+  .styled-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .styled-table tbody tr:hover { background: rgba(56,189,248,0.04); }
+  .styled-table code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .gate-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .nist-tag {
+    display: inline-block;
+    background: rgba(167,139,250,0.15);
+    color: var(--purple);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px 2px;
+  }
+
+  /* --- Security Gate Cards --- */
+  .gate-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .gate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .gate-card:hover { border-color: var(--accent); }
+  .gate-card.expanded { grid-column: 1 / -1; }
+  .gate-card-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .gate-card-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .gate-card-info { flex: 1; }
+  .gate-card-info h3 { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .gate-card-info .tool { font-size: 12px; color: var(--text-dim); }
+  .gate-card-chevron { color: var(--text-dim); font-size: 18px; transition: transform 0.2s; }
+  .gate-card.expanded .gate-card-chevron { transform: rotate(180deg); }
+  .gate-card-details {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 13px;
+  }
+  .gate-card.expanded .gate-card-details { display: block; }
+  .gate-card-details table { width: 100%; margin-top: 8px; }
+  .gate-card-details td { padding: 4px 0; vertical-align: top; }
+  .gate-card-details td:first-child { color: var(--text-dim); width: 120px; font-size: 12px; }
+  .detail-sep { border-top: 1px solid var(--border); margin: 10px 0; }
+
+  /* --- Pipeline Diagram --- */
+  .pipeline-diagram { margin: 24px 0; }
+  .phase-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .phase-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phase-header .phase-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--bg);
+  }
+  .phase-header .phase-type {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+  }
+  .phase-body { padding: 0 16px 16px; }
+  .phase-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    position: relative;
+  }
+  .phase-step::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    bottom: -8px;
+    width: 2px;
+    background: var(--border);
+  }
+  .phase-step:last-child::before { display: none; }
+  .step-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-content { flex: 1; }
+  .step-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .step-content p { font-size: 12px; color: var(--text-dim); }
+  .step-output { font-size: 11px; color: var(--text-dim); font-family: 'SF Mono', 'Fira Code', monospace; margin-top: 2px; }
+  .phase-arrow {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0;
+    color: var(--text-dim);
+    font-size: 18px;
+  }
+
+  /* --- Checklist --- */
+  .checklist { margin: 12px 0; }
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .checklist-item:hover { border-color: var(--accent); }
+  .checklist-item.checked { border-color: var(--green); }
+  .checklist-item.checked .cl-label { color: var(--text-dim); }
+  .cl-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+  }
+  .checklist-item.checked .cl-box {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .cl-check { display: none; color: var(--bg); font-size: 12px; font-weight: 700; }
+  .checklist-item.checked .cl-check { display: block; }
+  .cl-label { font-size: 13px; flex: 1; }
+  .encl-title { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: var(--text); }
+
+  /* --- Code blocks with copy --- */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .code-header {
+    background: var(--surface2);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .btn-copy {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-copy:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-copy.copied { color: var(--green); border-color: var(--green); }
+  .code-body {
+    padding: 14px 16px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text);
+    white-space: pre;
+  }
+  .code-body .comment { color: var(--text-dim); }
+  .code-body .cmd { color: var(--accent); }
+
+  /* --- Signature blocks --- */
+  .sig-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .sig-block h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .sig-line {
+    border-bottom: 1px solid var(--border);
+    margin: 24px 0 4px;
+    padding-top: 8px;
+  }
+  .sig-label { font-size: 12px; color: var(--text-dim); }
+
+  /* --- TA Disposition --- */
+  .disposition-options { margin: 16px 0; }
+  .disposition-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .disposition-opt .radio {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* --- Appendix header --- */
+  .appendix-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--purple);
+    color: var(--purple);
+  }
+
+  /* --- Paragraph text --- */
+  .body-text { font-size: 14px; color: var(--text); margin: 8px 0; line-height: 1.7; }
+  .body-text strong { color: var(--accent); }
+
+  /* --- PRINT STYLES --- */
+  @media print {
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text-dim: #475569;
+      --accent: #0369a1;
+      --green: #059669;
+      --yellow: #b45309;
+      --red: #dc2626;
+      --orange: #c2410c;
+      --purple: #6d28d9;
+      --phase1: #0369a1;
+      --phase2: #b45309;
+      --phase3: #059669;
+      --phase4: #6d28d9;
+    }
+    body { font-size: 11pt; line-height: 1.4; }
+    .topbar, .sidebar, .btn-print, .btn-copy, .code-header { display: none !important; }
+    .layout { display: block; }
+    .main { padding: 0.5in 0.75in; max-width: 100%; }
+    .section { page-break-inside: avoid; margin-bottom: 24px; }
+    .section-title { font-size: 14pt; border-bottom-color: #0f172a; }
+    .gate-cards { display: block; }
+    .gate-card { margin-bottom: 8px; break-inside: avoid; border: 1px solid #cbd5e1; }
+    .gate-card-details { display: block !important; }
+    .gate-card-chevron { display: none; }
+    .pipeline-diagram { break-inside: avoid; }
+    .checklist-item { border: 1px solid #cbd5e1; }
+    .code-block { border: 1px solid #cbd5e1; }
+    .code-body { font-size: 9pt; }
+    .field input { border: none; border-bottom: 1px solid #0f172a; padding: 2px 0; background: none; }
+    .sig-block { break-inside: avoid; }
+    .nist-tag { border: 1px solid #6d28d9; }
+    .gate-badge { border: 1px solid currentColor; }
+    .styled-table { font-size: 10pt; }
+    .styled-table th { background: #f1f5f9; }
+    a { color: var(--text); text-decoration: none; }
+
+    /* Print header */
+    .print-header { display: block !important; text-align: center; margin-bottom: 24px; font-size: 12pt; }
+    .print-header h1 { font-size: 14pt; text-transform: uppercase; }
+    .print-header p { font-size: 10pt; color: #475569; }
+  }
+  .print-header { display: none; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 16px 80px; }
+    .gate-cards { grid-template-columns: 1fr; }
+    .field-group { grid-template-columns: 1fr; }
+    .topbar { padding: 12px 16px; }
+    .topbar h1 { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <h1><span>RAISE 2.0</span> &mdash; CI/CD Tools Certification Package</h1>
+  </div>
+  <div class="topbar-right">
+    <div class="progress-ring-wrap">
+      <svg class="progress-ring" viewBox="0 0 36 36">
+        <circle class="bg" cx="18" cy="18" r="15.5"/>
+        <circle class="fg" id="progressArc" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="97.4"/>
+      </svg>
+      <span id="progressLabel">0% Complete</span>
+    </div>
+    <button class="btn-print" onclick="window.print()">&#9113; Print / PDF</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-label">Document</div>
+  <a class="sidebar-item active" data-target="sec-memo"><span class="ico">&#9993;</span> Memorandum</a>
+  <a class="sidebar-item" data-target="sec-id"><span class="ico">&#9881;</span> RPOC Identification</a>
+  <a class="sidebar-item" data-target="sec-components"><span class="ico">&#9638;</span> RPOC Components</a>
+  <a class="sidebar-item" data-target="sec-gates"><span class="ico">&#9888;</span> Security Gates</a>
+  <a class="sidebar-item" data-target="sec-infra"><span class="ico">&#9881;</span> Supporting Infra</a>
+  <a class="sidebar-item" data-target="sec-pipeline"><span class="ico">&#9654;</span> Pipeline Architecture</a>
+  <a class="sidebar-item" data-target="sec-admission"><span class="ico">&#9872;</span> Admission Control</a>
+  <a class="sidebar-item" data-target="sec-artifacts"><span class="ico">&#128196;</span> Artifacts</a>
+  <a class="sidebar-item" data-target="sec-fail"><span class="ico">&#10007;</span> Fail Criteria</a>
+  <div class="sidebar-label">Evidence</div>
+  <a class="sidebar-item" data-target="sec-evidence"><span class="ico">&#9745;</span> Evidence Checklist</a>
+  <a class="sidebar-item" data-target="sec-poc"><span class="ico">&#9742;</span> Points of Contact</a>
+  <a class="sidebar-item" data-target="sec-cert"><span class="ico">&#9998;</span> Certification</a>
+  <div class="sidebar-label">Appendices</div>
+  <a class="sidebar-item" data-target="sec-appendix-a"><span class="ico">&#9658;</span> Generate Evidence</a>
+  <a class="sidebar-item" data-target="sec-appendix-b"><span class="ico">&#8635;</span> Tool Updates</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="mainContent">
+
+<!-- Print-only header -->
+<div class="print-header">
+  <h1>CI/CD Pipeline Tools Certification Submission Package</h1>
+  <p>RAISE 2.0 &mdash; Appendix D Certification Request</p>
+</div>
+
+<!-- SECTION: MEMORANDUM -->
+<section class="section" id="sec-memo">
+  <div class="section-title"><span class="num">&#9993;</span> Memorandum</div>
+  <div class="memo-block">
+    <div class="field-group">
+      <div class="field">
+        <label>From (RPOC System Owner / Organization)</label>
+        <input type="text" data-save="field-from" placeholder="Organization / System Owner Name">
+      </div>
+      <div class="field">
+        <label>To (Technical Authority)</label>
+        <input type="text" data-save="field-to" placeholder="Technical Authority Name">
+      </div>
+      <div class="field">
+        <label>Via (Authorizing Official)</label>
+        <input type="text" data-save="field-via" placeholder="Authorizing Official Name">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" data-save="field-date">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label>eMASS ID</label>
+      <input type="text" data-save="field-emass" placeholder="e.g. SRE-12345" style="max-width:300px;">
+    </div>
+    <p><strong>Subj:</strong> REQUEST FOR CI/CD PIPELINE TOOLS CERTIFICATION &mdash; SECURE RUNTIME ENVIRONMENT (SRE)</p>
+    <p style="margin-top:12px;"><strong>Ref:</strong></p>
+    <p class="ref">(a) Rapid Assess and Incorporate for Software Engineering (RAISE) Implementation Guide, 1 November 2022</p>
+    <p class="ref">(b) Navy Risk Management Framework (RMF) Process Guide</p>
+    <p class="ref">(c) DoD Enterprise DevSecOps Fundamentals, Version 2.5, 16 October 2024</p>
+    <p class="ref">(d) NIST SP 800-53 Rev 5, Security and Privacy Controls</p>
+    <p class="ref">(e) DISA STIG for Kubernetes, Version 2 Release 2</p>
+    <p style="margin-top:12px;"><strong>Encl:</strong></p>
+    <p class="ref">(1) CI/CD Pipeline Architecture Diagram</p>
+    <p class="ref">(2) Security Gate Evidence Package</p>
+    <p class="ref">(3) Tool Configuration and Version Inventory</p>
+    <p class="ref">(4) Sample Pipeline Run &mdash; Full Artifact Set</p>
+    <p class="ref">(5) Kyverno Admission Control Policy Configuration</p>
+  </div>
+</section>
+
+<!-- SECTION: PURPOSE + RPOC ID -->
+<section class="section" id="sec-id">
+  <div class="section-title"><span class="num">1</span> Purpose &amp; RPOC Identification</div>
+  <p class="body-text">In accordance with reference (a), Appendix D, this memorandum requests certification of the Secure Runtime Environment (SRE) CI/CD pipeline tools for usability and functional capability. Upon certification, SRE will meet the requirements for designation as a <strong>RAISE Platform of Choice (RPOC)</strong>.</p>
+
+  <div class="section-subtitle">RPOC Identification</div>
+  <div class="memo-block">
+    <div class="field-group">
+      <div class="field">
+        <label>System Name</label>
+        <input type="text" value="Secure Runtime Environment (SRE)" data-save="field-sysname">
+      </div>
+      <div class="field">
+        <label>eMASS / MCAST ID</label>
+        <input type="text" data-save="field-emass2" placeholder="e.g. SRE-12345">
+      </div>
+      <div class="field">
+        <label>Security Category</label>
+        <input type="text" value="Moderate-Moderate-Moderate (FIPS 199)" data-save="field-seccat">
+      </div>
+      <div class="field">
+        <label>Classification</label>
+        <input type="text" value="Unclassified / CUI" data-save="field-class">
+      </div>
+      <div class="field">
+        <label>System Owner</label>
+        <input type="text" data-save="field-owner" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>ISSM</label>
+        <input type="text" data-save="field-issm" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>ISSO</label>
+        <input type="text" data-save="field-isso" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>Authorizing Official (AO)</label>
+        <input type="text" data-save="field-ao" placeholder="Name">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: RPOC COMPONENTS -->
+<section class="section" id="sec-components">
+  <div class="section-title"><span class="num">3</span> RPOC Components</div>
+  <table class="styled-table">
+    <thead>
+      <tr><th>#</th><th>Component</th><th>eMASS ID</th><th>Environment</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>SRE Production</td><td><input type="text" data-save="comp-emass-1" style="width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td><td>Production</td><td>RKE2 Kubernetes cluster hosting tenant applications</td></tr>
+      <tr><td>2</td><td>SRE Staging</td><td><input type="text" data-save="comp-emass-2" style="width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td><td>Staging</td><td>Pre-production validation environment</td></tr>
+      <tr><td>3</td><td>SRE Development</td><td><input type="text" data-save="comp-emass-3" style="width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td><td>Development</td><td>Development and testing environment</td></tr>
+      <tr><td>4</td><td>SRE CI/CD Tools</td><td><input type="text" data-save="comp-emass-4" style="width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td><td>Shared</td><td>Pipeline tools, artifact storage, signing infrastructure</td></tr>
+    </tbody>
+  </table>
+  <div class="memo-block" style="margin-top:16px;">
+    <p><strong>Kubernetes Distribution:</strong> RKE2 v1.34.4 (DISA STIG-certified, FIPS 140-2 compliant)</p>
+    <p><strong>Operating System:</strong> Rocky Linux 9.7 (DISA STIG-hardened, SELinux enforcing, FIPS enabled)</p>
+    <p><strong>GitOps Engine:</strong> Flux CD v2.8.1</p>
+  </div>
+</section>
+
+<!-- SECTION: SECURITY GATES -->
+<section class="section" id="sec-gates">
+  <div class="section-title"><span class="num">4</span> CI/CD Pipeline Tools &mdash; Security Gates</div>
+  <p class="body-text">Per reference (a), Section 3.2, the following tools implement the <strong>8 required RAISE security gates</strong>. Click any card to expand details.</p>
+
+  <div class="gate-cards" id="gateCards">
+    <!-- Gate 1 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase1);color:var(--bg);">1</div>
+        <div class="gate-card-info">
+          <h3>SAST &mdash; Static Analysis</h3>
+          <div class="tool">Semgrep OSS v1.102.0</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>LGPL-2.1</td></tr>
+          <tr><td>Source</td><td>github.com/semgrep/semgrep</td></tr>
+          <tr><td>Rulesets</td><td><code>p/owasp-top-ten</code>, <code>p/security-audit</code></td></tr>
+          <tr><td>Output</td><td>SARIF JSON &rarr; GitHub Security tab</td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">ERROR-level findings &rarr; pipeline stops</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">SA-11</span> <span class="nist-tag">SA-15</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 2 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase1);color:var(--bg);">2</div>
+        <div class="gate-card-info">
+          <h3>SBOM &mdash; Software Bill of Materials</h3>
+          <div class="tool">Syft v1.18.1</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>Apache-2.0</td></tr>
+          <tr><td>Source</td><td>github.com/anchore/syft</td></tr>
+          <tr><td>Formats</td><td>SPDX 2.3 JSON + CycloneDX 1.5 JSON</td></tr>
+          <tr><td>Output</td><td><code>sbom-spdx.json</code> + <code>sbom-cyclonedx.json</code></td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">Generation failure &rarr; pipeline stops</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">CM-2</span> <span class="nist-tag">CM-8</span> <span class="nist-tag">SA-17</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 3 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase1);color:var(--bg);">3</div>
+        <div class="gate-card-info">
+          <h3>Secrets Detection</h3>
+          <div class="tool">Gitleaks v8.21.2</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>MIT</td></tr>
+          <tr><td>Source</td><td>github.com/gitleaks/gitleaks</td></tr>
+          <tr><td>Scope</td><td>Full git history + working directory</td></tr>
+          <tr><td>Output</td><td><code>secrets-report.json</code></td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">Any secret detected &rarr; pipeline stops, credential rotation required</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">IA-5</span> <span class="nist-tag">SC-28</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 4 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase1);color:var(--bg);">4</div>
+        <div class="gate-card-info">
+          <h3>Container Security Scan</h3>
+          <div class="tool">Trivy v0.58.2</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>Apache-2.0</td></tr>
+          <tr><td>Source</td><td>github.com/aquasecurity/trivy</td></tr>
+          <tr><td>Scan Scope</td><td>OS packages, language deps, misconfigurations</td></tr>
+          <tr><td>Output</td><td>SARIF JSON &rarr; GitHub Security tab + Harbor</td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">CRITICAL CVE findings &rarr; pipeline stops</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">RA-5</span> <span class="nist-tag">SI-2</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 5 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase4);color:var(--bg);">5</div>
+        <div class="gate-card-info">
+          <h3>DAST &mdash; Dynamic Analysis</h3>
+          <div class="tool">OWASP ZAP v2.15.0</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>Apache-2.0</td></tr>
+          <tr><td>Source</td><td>github.com/zaproxy/zaproxy</td></tr>
+          <tr><td>Scan Type</td><td>Baseline scan against running application</td></tr>
+          <tr><td>Output</td><td><code>zap-report.html</code> + <code>zap-report.json</code></td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--orange);">HIGH-risk alerts flagged for remediation per SLA</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">SA-11</span> <span class="nist-tag">SI-10</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 6 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase2);color:var(--bg);">6</div>
+        <div class="gate-card-info">
+          <h3>ISSM Review &mdash; Human Approval</h3>
+          <div class="tool">GitHub Environments</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>Type</td><td>Manual gate (human-in-the-loop)</td></tr>
+          <tr><td>Environment</td><td><code>issm-review</code> (GitHub Environment)</td></tr>
+          <tr><td>Reviewers</td><td>ISSM + Security Team (required)</td></tr>
+          <tr><td>Reviews</td><td>All Phase 1 scan artifacts</td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">ISSM rejects &rarr; pipeline stops</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">CA-2</span> <span class="nist-tag">CA-7</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 7 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase3);color:var(--bg);">7</div>
+        <div class="gate-card-info">
+          <h3>Image Signing</h3>
+          <div class="tool">Cosign (Sigstore) v2.4.1</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>Apache-2.0</td></tr>
+          <tr><td>Source</td><td>github.com/sigstore/cosign</td></tr>
+          <tr><td>Signing</td><td>Private key (stored in GitHub Secrets)</td></tr>
+          <tr><td>Attestations</td><td>SBOM (in-toto), SLSA provenance (v0.2)</td></tr>
+          <tr><td>Verification</td><td>Kyverno admission policy verifies at deploy time</td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">Signing failure &rarr; image not deployable (Kyverno blocks)</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">SI-7</span> <span class="nist-tag">SA-10</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gate 8 -->
+    <div class="gate-card" onclick="toggleCard(this)">
+      <div class="gate-card-header">
+        <div class="gate-card-num" style="background:var(--phase3);color:var(--bg);">8</div>
+        <div class="gate-card-info">
+          <h3>Artifact Repository</h3>
+          <div class="tool">Harbor v1.16.3</div>
+        </div>
+        <div class="gate-card-chevron">&#9660;</div>
+      </div>
+      <div class="gate-card-details">
+        <div class="detail-sep"></div>
+        <table>
+          <tr><td>License</td><td>Apache-2.0</td></tr>
+          <tr><td>Source</td><td>github.com/goharbor/harbor</td></tr>
+          <tr><td>Features</td><td>OCI registry, Trivy re-scan on push, signature storage</td></tr>
+          <tr><td>Stores</td><td>Images, SBOM artifacts, Cosign signatures, SLSA provenance</td></tr>
+          <tr><td>Fail Criteria</td><td style="color:var(--red);">Push failure &rarr; image not available for deployment</td></tr>
+          <tr><td>NIST Controls</td><td><span class="nist-tag">CM-8</span> <span class="nist-tag">SI-7</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: SUPPORTING INFRASTRUCTURE -->
+<section class="section" id="sec-infra">
+  <div class="section-title"><span class="num">4b</span> Supporting Infrastructure</div>
+  <table class="styled-table">
+    <thead>
+      <tr><th>Tool</th><th>Version</th><th>Purpose</th><th>NIST Controls</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>GitHub Actions</td><td>SaaS</td><td>CI/CD pipeline orchestration (primary)</td><td><span class="nist-tag">SA-10</span> <span class="nist-tag">AU-2</span></td></tr>
+      <tr><td>GitLab CI</td><td>SaaS</td><td>CI/CD pipeline orchestration (alternative)</td><td><span class="nist-tag">SA-10</span> <span class="nist-tag">AU-2</span></td></tr>
+      <tr><td>Flux CD</td><td>2.8.1</td><td>GitOps continuous deployment engine</td><td><span class="nist-tag">CM-2</span> <span class="nist-tag">CM-3</span> <span class="nist-tag">SA-10</span></td></tr>
+      <tr><td>Kyverno</td><td>3.x</td><td>Kubernetes admission control &mdash; signature verification</td><td><span class="nist-tag">SI-7</span> <span class="nist-tag">CM-7</span></td></tr>
+      <tr><td>NeuVector</td><td>5.x</td><td>Runtime container security monitoring</td><td><span class="nist-tag">SI-3</span> <span class="nist-tag">SI-4</span> <span class="nist-tag">IR-4</span></td></tr>
+      <tr><td>Docker Buildx</td><td>0.18.x</td><td>Multi-platform container image builds</td><td><span class="nist-tag">SA-10</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION: PIPELINE ARCHITECTURE -->
+<section class="section" id="sec-pipeline">
+  <div class="section-title"><span class="num">5</span> Pipeline Architecture</div>
+  <p class="body-text">The CI/CD pipeline implements all 8 RAISE security gates in four phases:</p>
+
+  <div class="pipeline-diagram">
+    <!-- Phase 1 -->
+    <div class="phase-block" style="border-left: 4px solid var(--phase1);">
+      <div class="phase-header">
+        <div class="phase-num" style="background:var(--phase1);">1</div>
+        Build &amp; Scan
+        <span class="phase-type" style="background:rgba(56,189,248,0.15);color:var(--phase1);">Automated &mdash; CI Runner</span>
+      </div>
+      <div class="phase-body">
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(56,189,248,0.2);color:var(--phase1);">G3</div>
+          <div class="step-content">
+            <h4>Gitleaks &mdash; Secrets Detection</h4>
+            <p>Scan full git history + working directory</p>
+            <div class="step-output">&#8627; secrets-report.json</div>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(56,189,248,0.2);color:var(--phase1);">G1</div>
+          <div class="step-content">
+            <h4>Semgrep &mdash; SAST Scan</h4>
+            <p>Rulesets: p/owasp-top-ten, p/security-audit</p>
+            <div class="step-output">&#8627; semgrep.sarif &rarr; GitHub Security tab</div>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(56,189,248,0.2);color:var(--phase1);">&#9881;</div>
+          <div class="step-content">
+            <h4>Docker Buildx &mdash; Build Container Image</h4>
+            <p>Multi-platform OCI image build</p>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(56,189,248,0.2);color:var(--phase1);">G4</div>
+          <div class="step-content">
+            <h4>Trivy &mdash; Container Vulnerability Scan</h4>
+            <p>OS packages, language deps, misconfigurations</p>
+            <div class="step-output">&#8627; trivy.sarif &rarr; GitHub Security tab</div>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(56,189,248,0.2);color:var(--phase1);">G2</div>
+          <div class="step-content">
+            <h4>Syft &mdash; Generate SBOM</h4>
+            <p>SPDX 2.3 + CycloneDX 1.5 formats</p>
+            <div class="step-output">&#8627; sbom-spdx.json + sbom-cyclonedx.json</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-arrow">&#9660;</div>
+
+    <!-- Phase 2 -->
+    <div class="phase-block" style="border-left: 4px solid var(--phase2);">
+      <div class="phase-header">
+        <div class="phase-num" style="background:var(--phase2);">2</div>
+        ISSM Review
+        <span class="phase-type" style="background:rgba(251,191,36,0.15);color:var(--phase2);">Manual &mdash; Human Approval</span>
+      </div>
+      <div class="phase-body">
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(251,191,36,0.2);color:var(--phase2);">G6</div>
+          <div class="step-content">
+            <h4>ISSM Reviews All Phase 1 Artifacts</h4>
+            <p>GitHub Environment: <code>issm-review</code> &mdash; Required reviewers: ISSM + Security Team</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-arrow">&#9660;</div>
+
+    <!-- Phase 3 -->
+    <div class="phase-block" style="border-left: 4px solid var(--phase3);">
+      <div class="phase-header">
+        <div class="phase-num" style="background:var(--phase3);">3</div>
+        Sign &amp; Push
+        <span class="phase-type" style="background:rgba(52,211,153,0.15);color:var(--phase3);">Automated &mdash; Post-Approval</span>
+      </div>
+      <div class="phase-body">
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(52,211,153,0.2);color:var(--phase3);">G8</div>
+          <div class="step-content">
+            <h4>Harbor &mdash; Push Image to OCI Registry</h4>
+            <p>Trivy re-scan on push (Harbor-side verification)</p>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(52,211,153,0.2);color:var(--phase3);">G7</div>
+          <div class="step-content">
+            <h4>Cosign &mdash; Sign Image + Attach Attestations</h4>
+            <p>SBOM attestation (in-toto) + SLSA provenance</p>
+          </div>
+        </div>
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(52,211,153,0.2);color:var(--phase3);">&#8635;</div>
+          <div class="step-content">
+            <h4>Flux CD &mdash; Update GitOps Repo</h4>
+            <p>Auto-deploy &mdash; Kyverno verifies Cosign signature at admission</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-arrow">&#9660;</div>
+
+    <!-- Phase 4 -->
+    <div class="phase-block" style="border-left: 4px solid var(--phase4);">
+      <div class="phase-header">
+        <div class="phase-num" style="background:var(--phase4);">4</div>
+        Post-Deploy
+        <span class="phase-type" style="background:rgba(167,139,250,0.15);color:var(--phase4);">Automated &mdash; Against Running App</span>
+      </div>
+      <div class="phase-body">
+        <div class="phase-step">
+          <div class="step-dot" style="background:rgba(167,139,250,0.2);color:var(--phase4);">G5</div>
+          <div class="step-content">
+            <h4>OWASP ZAP &mdash; DAST Baseline Scan</h4>
+            <p>Dynamic testing against running application</p>
+            <div class="step-output">&#8627; zap-report.html + zap-report.json</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: ADMISSION CONTROL -->
+<section class="section" id="sec-admission">
+  <div class="section-title"><span class="num">6</span> Admission Control &mdash; Supply Chain Verification</div>
+  <p class="body-text">After the CI/CD pipeline produces a signed image, the Kubernetes cluster enforces supply chain integrity at admission:</p>
+  <div style="margin:16px 0;">
+    <div class="memo-block" style="border-left:3px solid var(--green);margin-bottom:8px;">
+      <p><strong>1. Kyverno <code>verify-image-signatures</code></strong> &mdash; Verifies every pod's image has a valid Cosign signature from the pipeline's signing key before allowing creation</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--accent);margin-bottom:8px;">
+      <p><strong>2. Kyverno <code>restrict-image-registries</code></strong> &mdash; Only images from <code>harbor.sre.internal</code> are permitted</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--yellow);margin-bottom:8px;">
+      <p><strong>3. Kyverno <code>disallow-latest-tag</code></strong> &mdash; All images must use pinned version tags</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--purple);margin-bottom:0;">
+      <p><strong>4. Harbor Trivy scan</strong> &mdash; Images are re-scanned on push as a second layer of verification</p>
+    </div>
+  </div>
+  <p class="body-text">This ensures that <strong>only images that passed all 8 security gates can run on the platform</strong>.</p>
+</section>
+
+<!-- SECTION: ARTIFACTS -->
+<section class="section" id="sec-artifacts">
+  <div class="section-title"><span class="num">7</span> Artifacts Produced Per Release</div>
+  <table class="styled-table">
+    <thead>
+      <tr><th>Artifact</th><th>Format</th><th>Storage Location</th><th>Retention</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>SAST Report</td><td>SARIF JSON</td><td>GitHub Security tab</td><td>90 days</td></tr>
+      <tr><td>Secrets Scan</td><td>JSON</td><td>CI/CD artifacts</td><td>90 days</td></tr>
+      <tr><td>Container Scan</td><td>SARIF JSON</td><td>GitHub Security + Harbor</td><td>90 days</td></tr>
+      <tr><td>SBOM (SPDX)</td><td>SPDX 2.3 JSON</td><td>Harbor OCI artifact</td><td>Image lifetime</td></tr>
+      <tr><td>SBOM (CycloneDX)</td><td>CycloneDX 1.5 JSON</td><td>Harbor OCI artifact</td><td>Image lifetime</td></tr>
+      <tr><td>DAST Report</td><td>HTML + JSON</td><td>CI/CD artifacts</td><td>90 days</td></tr>
+      <tr><td>Image Signature</td><td>Cosign OCI signature</td><td>Harbor OCI artifact</td><td>Image lifetime</td></tr>
+      <tr><td>SBOM Attestation</td><td>In-toto / Cosign attestation</td><td>Harbor OCI artifact</td><td>Image lifetime</td></tr>
+      <tr><td>SLSA Provenance</td><td>SLSA v0.2 / In-toto v0.1</td><td>Harbor OCI artifact</td><td>Image lifetime</td></tr>
+      <tr><td>ISSM Approval Record</td><td>GitHub Environment log</td><td>GitHub audit log</td><td>Indefinite</td></tr>
+      <tr><td>Pipeline Run Log</td><td>GitHub Actions log</td><td>GitHub</td><td>90 days</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION: FAIL CRITERIA -->
+<section class="section" id="sec-fail">
+  <div class="section-title"><span class="num">8</span> Fail Criteria &amp; Enforcement</div>
+  <table class="styled-table">
+    <thead>
+      <tr><th>Gate</th><th>Fail Condition</th><th>Enforcement</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="gate-badge" style="background:rgba(56,189,248,0.15);color:var(--phase1);">GATE 1</span></td><td>Semgrep ERROR findings</td><td style="color:var(--red);">Pipeline aborts, no image built</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(56,189,248,0.15);color:var(--phase1);">GATE 2</span></td><td>SBOM generation fails</td><td style="color:var(--red);">Pipeline aborts, no image pushed</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(56,189,248,0.15);color:var(--phase1);">GATE 3</span></td><td>Any secret detected</td><td style="color:var(--red);">Pipeline aborts, credential rotation required</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(56,189,248,0.15);color:var(--phase1);">GATE 4</span></td><td>CRITICAL CVE in image</td><td style="color:var(--red);">Pipeline aborts, base image update required</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(167,139,250,0.15);color:var(--phase4);">GATE 5</span></td><td>HIGH-risk DAST alerts</td><td style="color:var(--orange);">Finding tracked, remediation required per SLA</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(251,191,36,0.15);color:var(--phase2);">GATE 6</span></td><td>ISSM rejects</td><td style="color:var(--red);">Pipeline aborts, developer fixes and resubmits</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(52,211,153,0.15);color:var(--phase3);">GATE 7</span></td><td>Signing failure</td><td style="color:var(--red);">Image not deployable (Kyverno blocks unsigned)</td></tr>
+      <tr><td><span class="gate-badge" style="background:rgba(52,211,153,0.15);color:var(--phase3);">GATE 8</span></td><td>Push failure</td><td style="color:var(--red);">Image not available for deployment</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION: EVIDENCE CHECKLIST -->
+<section class="section" id="sec-evidence">
+  <div class="section-title"><span class="num">9</span> Evidence Package (Enclosures)</div>
+
+  <div class="encl-title">Enclosure (1): Pipeline Architecture</div>
+  <div class="checklist">
+    <div class="checklist-item" data-check="enc1-workflow" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Pipeline workflow files: <code>ci/github-actions/build-scan-deploy.yaml</code></div>
+    </div>
+    <div class="checklist-item" data-check="enc1-gitlab" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">GitLab CI equivalent: <code>ci/gitlab-ci/build-scan-deploy.gitlab-ci.yml</code></div>
+    </div>
+    <div class="checklist-item" data-check="enc1-dast" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">DAST workflow: <code>ci/github-actions/dast-scan.yaml</code></div>
+    </div>
+    <div class="checklist-item" data-check="enc1-gitops" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">GitOps update workflow: <code>ci/github-actions/update-gitops.yaml</code></div>
+    </div>
+  </div>
+
+  <div class="encl-title">Enclosure (2): Security Gate Evidence</div>
+  <div class="checklist">
+    <div class="checklist-item" data-check="enc2-sast" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample SAST report (Semgrep SARIF output)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-secrets" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample secrets scan report (Gitleaks JSON output)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-container" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample container scan report (Trivy SARIF output)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-sbom" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample SBOM (SPDX JSON + CycloneDX JSON)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-dast" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample DAST report (OWASP ZAP HTML output)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-issm" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample ISSM approval log (GitHub Environment deployment log)</div>
+    </div>
+    <div class="checklist-item" data-check="enc2-cosign" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Sample signed image verification (<code>cosign verify</code> output)</div>
+    </div>
+  </div>
+
+  <div class="encl-title">Enclosure (3): Tool Inventory</div>
+  <div class="checklist">
+    <div class="checklist-item" data-check="enc3-tools" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Complete tool listing with versions, licenses, and download sources (Section 4)</div>
+    </div>
+    <div class="checklist-item" data-check="enc3-patch" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Tool update and patching process documentation</div>
+    </div>
+  </div>
+
+  <div class="encl-title">Enclosure (4): Sample Pipeline Run</div>
+  <div class="checklist">
+    <div class="checklist-item" data-check="enc4-log" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Complete CI/CD run log showing all 8 gates passing</div>
+    </div>
+    <div class="checklist-item" data-check="enc4-artifacts" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Artifact download links for all outputs</div>
+    </div>
+    <div class="checklist-item" data-check="enc4-timeline" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Timeline showing gate execution sequence</div>
+    </div>
+  </div>
+
+  <div class="encl-title">Enclosure (5): Admission Control Configuration</div>
+  <div class="checklist">
+    <div class="checklist-item" data-check="enc5-verify" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Kyverno <code>verify-image-signatures</code> policy YAML</div>
+    </div>
+    <div class="checklist-item" data-check="enc5-restrict" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Kyverno <code>restrict-image-registries</code> policy YAML</div>
+    </div>
+    <div class="checklist-item" data-check="enc5-harbor" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label">Harbor project configuration with Trivy scanning enabled</div>
+    </div>
+    <div class="checklist-item" data-check="enc5-cosign" onclick="toggleCheck(this)">
+      <div class="cl-box"><span class="cl-check">&#10003;</span></div>
+      <div class="cl-label"><code>cosign verify</code> command demonstrating signature validation</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: POINTS OF CONTACT -->
+<section class="section" id="sec-poc">
+  <div class="section-title"><span class="num">10</span> Points of Contact</div>
+  <table class="styled-table">
+    <thead>
+      <tr><th>Role</th><th>Name</th><th>Email</th><th>Phone</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>System Owner</td>
+        <td><input type="text" data-save="poc-owner-name" style="width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-owner-email" style="width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-owner-phone" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+      </tr>
+      <tr>
+        <td>ISSM</td>
+        <td><input type="text" data-save="poc-issm-name" style="width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-issm-email" style="width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-issm-phone" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+      </tr>
+      <tr>
+        <td>ISSO</td>
+        <td><input type="text" data-save="poc-isso-name" style="width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-isso-email" style="width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-isso-phone" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+      </tr>
+      <tr>
+        <td>Lead Engineer</td>
+        <td><input type="text" data-save="poc-eng-name" style="width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-eng-email" style="width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+        <td><input type="text" data-save="poc-eng-phone" style="width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;"></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION: CERTIFICATION -->
+<section class="section" id="sec-cert">
+  <div class="section-title"><span class="num">11</span> Certification Request</div>
+  <p class="body-text">I certify that the CI/CD pipeline tools listed in Section 4 have been configured, tested, and validated to implement all 8 RAISE security gates as defined in reference (a). The pipeline enforces automated security scanning, manual ISSM review, cryptographic image signing, and admission control verification for all container images deployed to the SRE platform.</p>
+  <p class="body-text">I request the Technical Authority review and certify these tools for use in the SRE RPOC.</p>
+
+  <div class="sig-block">
+    <h3>RPOC System Owner / ISSM</h3>
+    <div class="sig-line"></div><div class="sig-label">Signature</div>
+    <div class="sig-line"></div><div class="sig-label">Printed Name</div>
+    <div class="sig-line"></div><div class="sig-label">Title</div>
+    <div class="sig-line"></div><div class="sig-label">Date</div>
+    <div class="sig-line"></div><div class="sig-label">Organization</div>
+  </div>
+
+  <div class="sig-block">
+    <h3>Technical Authority Disposition</h3>
+    <div class="disposition-options">
+      <div class="disposition-opt"><div class="radio"></div> <strong>CERTIFIED</strong> &mdash; CI/CD pipeline tools meet RAISE requirements</div>
+      <div class="disposition-opt"><div class="radio"></div> <strong>CERTIFIED WITH CONDITIONS</strong> &mdash; See comments below</div>
+      <div class="disposition-opt"><div class="radio"></div> <strong>NOT CERTIFIED</strong> &mdash; See deficiencies below</div>
+    </div>
+    <div class="sig-line"></div><div class="sig-label">Comments</div>
+    <div class="sig-line"></div><div class="sig-label">Signature</div>
+    <div class="sig-line"></div><div class="sig-label">Printed Name</div>
+    <div class="sig-line"></div><div class="sig-label">Title</div>
+    <div class="sig-line"></div><div class="sig-label">Date</div>
+  </div>
+</section>
+
+<!-- APPENDIX A -->
+<section class="section" id="sec-appendix-a">
+  <div class="appendix-title">Appendix A: How to Generate Evidence</div>
+  <p class="body-text">Run these commands to collect evidence artifacts for the submission package:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 1 &mdash; Trigger a certification pipeline run</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="comment"># Run a complete pipeline (triggers all 8 gates)</span>
+<span class="cmd">git tag v1.0.0-cert && git push origin v1.0.0-cert</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 2 &mdash; Download artifacts from GitHub Actions run</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="comment"># After pipeline completes, download artifacts from GitHub Actions run</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 3 &mdash; Verify image signature</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">cosign verify --key cosign.pub harbor.sre.internal/team-alpha/demo-app:v1.0.0-cert</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 4 &mdash; Verify SBOM attestation</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">cosign verify-attestation --key cosign.pub \
+  --type spdxjson harbor.sre.internal/team-alpha/demo-app:v1.0.0-cert</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 5 &mdash; Verify SLSA provenance</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">cosign verify-attestation --key cosign.pub \
+  --type slsaprovenance harbor.sre.internal/team-alpha/demo-app:v1.0.0-cert</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 6 &mdash; Export Kyverno admission policy</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">kubectl get clusterpolicy verify-image-signatures -o yaml</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 7 &mdash; Export image registry restriction policy</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">kubectl get clusterpolicy restrict-image-registries -o yaml</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 8 &mdash; Export Harbor scan results</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="comment"># Harbor UI > Project > Repository > Artifacts > View scan results</span></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span>Step 9 &mdash; Export Kyverno policy reports</span><button class="btn-copy" onclick="copyCode(this)">Copy</button></div>
+    <div class="code-body"><span class="cmd">kubectl get policyreport -A -o yaml > kyverno-policy-reports.yaml</span>
+<span class="cmd">kubectl get clusterpolicyreport -o yaml > kyverno-cluster-policy-reports.yaml</span></div>
+  </div>
+</section>
+
+<!-- APPENDIX B -->
+<section class="section" id="sec-appendix-b">
+  <div class="appendix-title">Appendix B: Tool Update Process</div>
+  <p class="body-text">When a CI/CD tool requires a version update:</p>
+  <div style="margin:16px 0;">
+    <div class="memo-block" style="border-left:3px solid var(--accent);margin-bottom:8px;">
+      <p><strong>1.</strong> Test updated tool in the development environment pipeline</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--accent);margin-bottom:8px;">
+      <p><strong>2.</strong> Verify all 8 gates still function correctly with the new version</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--accent);margin-bottom:8px;">
+      <p><strong>3.</strong> Update version pin in pipeline workflow files</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--accent);margin-bottom:8px;">
+      <p><strong>4.</strong> Document the change in the CHANGELOG</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--yellow);margin-bottom:8px;">
+      <p><strong>5.</strong> Notify the ISSM of the tool version change</p>
+    </div>
+    <div class="memo-block" style="border-left:3px solid var(--red);margin-bottom:0;">
+      <p><strong>6.</strong> If a tool is being <strong>replaced</strong> (not just updated), coordinate with the SCA and AO per SLA Section 16</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'sre-cicd-cert';
+
+  // --- Load saved state ---
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  const state = loadState();
+
+  // --- Restore editable fields ---
+  document.querySelectorAll('input[data-save]').forEach(function(input) {
+    const key = input.getAttribute('data-save');
+    if (state[key]) input.value = state[key];
+    input.addEventListener('input', function() {
+      state[key] = this.value;
+      saveState(state);
+      updateProgress();
+    });
+  });
+
+  // --- Restore checklist ---
+  document.querySelectorAll('.checklist-item[data-check]').forEach(function(item) {
+    const key = item.getAttribute('data-check');
+    if (state[key]) item.classList.add('checked');
+  });
+
+  // --- Toggle checklist ---
+  window.toggleCheck = function(el) {
+    el.classList.toggle('checked');
+    const key = el.getAttribute('data-check');
+    state[key] = el.classList.contains('checked');
+    saveState(state);
+    updateProgress();
+  };
+
+  // --- Toggle gate cards ---
+  window.toggleCard = function(el) {
+    var wasExpanded = el.classList.contains('expanded');
+    // Close all first
+    document.querySelectorAll('.gate-card.expanded').forEach(function(c) {
+      c.classList.remove('expanded');
+    });
+    if (!wasExpanded) el.classList.add('expanded');
+  };
+
+  // --- Copy code ---
+  window.copyCode = function(btn) {
+    var code = btn.closest('.code-block').querySelector('.code-body').textContent;
+    navigator.clipboard.writeText(code.trim()).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  };
+
+  // --- Sidebar navigation ---
+  document.querySelectorAll('.sidebar-item[data-target]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = this.getAttribute('data-target');
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        document.querySelectorAll('.sidebar-item').forEach(function(s) { s.classList.remove('active'); });
+        this.classList.add('active');
+      }
+    });
+  });
+
+  // --- Scroll spy for sidebar ---
+  var sections = [];
+  document.querySelectorAll('.sidebar-item[data-target]').forEach(function(item) {
+    var targetId = item.getAttribute('data-target');
+    var el = document.getElementById(targetId);
+    if (el) sections.push({ el: el, nav: item });
+  });
+
+  var mainEl = document.getElementById('mainContent');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY + 100;
+    var current = null;
+    for (var i = sections.length - 1; i >= 0; i--) {
+      if (sections[i].el.offsetTop <= scrollTop) {
+        current = sections[i];
+        break;
+      }
+    }
+    if (current) {
+      document.querySelectorAll('.sidebar-item').forEach(function(s) { s.classList.remove('active'); });
+      current.nav.classList.add('active');
+    }
+  }, { passive: true });
+
+  // --- Progress calculation ---
+  function updateProgress() {
+    var totalChecks = document.querySelectorAll('.checklist-item[data-check]').length;
+    var checkedCount = document.querySelectorAll('.checklist-item.checked').length;
+
+    // Count key fields that are filled
+    var keyFields = ['field-from', 'field-to', 'field-date', 'field-emass', 'field-owner', 'field-issm', 'field-isso', 'field-ao'];
+    var filledFields = 0;
+    keyFields.forEach(function(k) {
+      if (state[k] && state[k].trim().length > 0) filledFields++;
+    });
+
+    var totalItems = totalChecks + keyFields.length;
+    var completedItems = checkedCount + filledFields;
+    var pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
+    // Update progress ring
+    var arc = document.getElementById('progressArc');
+    var circumference = 2 * Math.PI * 15.5; // ~97.4
+    var offset = circumference - (pct / 100) * circumference;
+    arc.style.strokeDashoffset = offset;
+
+    // Color
+    if (pct >= 80) arc.style.stroke = 'var(--green)';
+    else if (pct >= 40) arc.style.stroke = 'var(--yellow)';
+    else arc.style.stroke = 'var(--accent)';
+
+    document.getElementById('progressLabel').textContent = pct + '% Complete';
+  }
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

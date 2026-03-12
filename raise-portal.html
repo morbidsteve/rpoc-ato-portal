@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — ATO & RPOC Command Center</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1e293b;
+    --surface3: #334155;
+    --border: #374151;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.1);
+    --yellow: #fbbf24;
+    --yellow-bg: rgba(251,191,36,0.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.1);
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Top Bar */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-left { display:flex; align-items:center; gap:14px; }
+  .topbar-logo {
+    width:40px; height:40px; border-radius:10px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; color:#fff; letter-spacing:-0.5px;
+  }
+  .topbar h1 { font-size:18px; font-weight:700; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right { display:flex; gap:12px; align-items:center; }
+  .topbar-btn {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #fff; border: none; border-radius: 8px;
+    padding: 8px 18px; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar-btn:hover { transform:translateY(-1px); box-shadow: 0 4px 15px rgba(56,189,248,0.3); }
+  .topbar-date { font-size:13px; color:var(--text-dim); }
+
+  /* Main */
+  .main { max-width:1200px; margin:0 auto; padding:32px 24px; }
+
+  /* Hero */
+  .hero { text-align:center; padding: 48px 24px 40px; }
+  .hero h2 {
+    font-size:32px; font-weight:800; margin-bottom:12px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { color:var(--text-dim); font-size:16px; max-width:600px; margin:0 auto 32px; line-height:1.6; }
+
+  /* Progress Overview */
+  .progress-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .progress-card:hover { border-color: var(--accent); transform:translateY(-2px); }
+  .progress-num { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .progress-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim);
+  }
+  .progress-bar-wrap {
+    width: 100%; height: 6px; background: var(--surface3);
+    border-radius: 3px; margin-top: 10px; overflow: hidden;
+  }
+  .progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+  /* Section headers */
+  .section-header {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text-muted);
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Tool Cards Grid */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--accent));
+  }
+  .tool-card:hover {
+    border-color: var(--card-accent, var(--accent));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .tool-card-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+  .tool-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+  }
+  .tool-info { flex: 1; }
+  .tool-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .tool-badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tool-badge.interactive { background: rgba(56,189,248,0.15); color: var(--accent); }
+  .tool-badge.document { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .tool-badge.template { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tool-badge.core { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tool-desc { font-size: 14px; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tool-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--surface2); color: var(--text-muted);
+  }
+
+  /* Workflow Steps */
+  .workflow {
+    display: flex; gap: 0; overflow-x: auto;
+    padding: 8px 0 16px; margin-bottom: 24px;
+  }
+  .workflow-step {
+    flex: 1; min-width: 180px; text-align: center; position: relative; padding: 0 8px;
+  }
+  .workflow-step::after {
+    content: ''; position: absolute; top: 24px; right: -8px;
+    width: 16px; height: 2px; background: var(--border);
+  }
+  .workflow-step:last-child::after { display: none; }
+  .step-num {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800;
+    margin: 0 auto 8px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .workflow-step.done .step-num { background: var(--green); border-color: var(--green); color: #000; }
+  .workflow-step.active .step-num {
+    background: var(--accent); border-color: var(--accent); color: #000;
+    box-shadow: 0 0 20px rgba(56,189,248,0.3);
+  }
+  .workflow-step.pending .step-num { border-color: var(--surface3); color: var(--text-muted); }
+  .step-label { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .step-sub { font-size: 11px; color: var(--text-muted); }
+
+  /* Document list */
+  .doc-list { display: flex; flex-direction: column; gap: 6px; }
+  .doc-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.15s;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .doc-item:hover { border-color: var(--accent); background: var(--surface2); }
+  .doc-item[href] { cursor: pointer; }
+  .doc-status {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .doc-status.ready { background: var(--green-bg); color: var(--green); }
+  .doc-status.human { background: var(--yellow-bg); color: var(--yellow); }
+  .doc-status.gap { background: var(--red-bg); color: var(--red); }
+  .doc-name { flex: 1; font-weight: 500; }
+  .doc-meta { font-size: 12px; color: var(--text-muted); }
+  .doc-print-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); font-size: 11px; padding: 3px 10px;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .doc-print-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* Human Action Banner */
+  .human-banner {
+    background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(248,113,113,0.08));
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .human-banner h3 { font-size: 16px; font-weight: 700; color: var(--yellow); margin-bottom: 12px; }
+  .human-list { list-style: none; }
+  .human-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(251,191,36,0.1);
+    font-size: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .human-list li:last-child { border-bottom: none; }
+  .human-list .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .human-list strong { color: var(--yellow); }
+
+  /* Export Section */
+  .export-section {
+    background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(167,139,250,0.06));
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .export-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .export-header h3 { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .export-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .export-btn {
+    border: none; border-radius: 10px;
+    padding: 12px 24px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .export-btn:hover { transform: translateY(-2px); }
+  .export-btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(56,189,248,0.2);
+  }
+  .export-btn.primary:hover { box-shadow: 0 6px 25px rgba(56,189,248,0.35); }
+  .export-btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .export-btn.secondary:hover { border-color: var(--accent); }
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .export-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 13px;
+  }
+  .export-item:hover { border-color: var(--accent); background: var(--surface2); }
+  .export-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+  .export-item label { cursor: pointer; flex: 1; }
+
+  /* Export Tabs */
+  .export-tab {
+    background: var(--surface2); color: var(--text-dim);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .export-tab:hover { border-color: var(--accent); color: var(--text); }
+  .export-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    color: #fff; border-color: transparent;
+  }
+  .export-tab-content { display: none; }
+  .export-tab-content.active { display: block; }
+  .exp-dl {
+    background: var(--surface3); color: var(--accent);
+    border: 1px solid var(--border); border-radius: 6px;
+    width: 32px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; transition: all 0.15s; flex-shrink: 0;
+  }
+  .exp-dl:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 900px; width: 95%;
+    max-height: 85vh; overflow-y: auto;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; color: var(--text-dim);
+    font-size: 24px; cursor: pointer;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--accent); }
+  .modal p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .tools-grid { grid-template-columns: 1fr; }
+    .progress-row { grid-template-columns: repeat(2, 1fr); }
+    .hero h2 { font-size: 24px; }
+    .workflow { flex-direction: column; align-items: center; }
+    .workflow-step::after { display: none; }
+    .export-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:4px; }
+
+  /* Print Styles */
+  @media print {
+    :root {
+      --bg: #fff; --surface: #fff; --surface2: #f8f9fa; --surface3: #e9ecef;
+      --border: #dee2e6; --text: #212529; --text-dim: #495057; --text-muted: #6c757d;
+    }
+    body { background: #fff; color: #212529; font-size: 11pt; }
+    .topbar { position: static; border-bottom: 2px solid #000; padding: 12px 0; }
+    .topbar-logo { background: #000 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .topbar h1 span { color: #000 !important; -webkit-text-fill-color: #000 !important; }
+    .topbar-btn, .topbar-date { display: none; }
+    .hero h2 { color: #000 !important; -webkit-text-fill-color: #000 !important; background: none !important; }
+    .hero p { color: #333; }
+    .progress-card { border: 1px solid #ccc; page-break-inside: avoid; }
+    .progress-num { color: #000 !important; }
+    .progress-bar-wrap { display: none; }
+    .tool-card { border: 1px solid #ccc; page-break-inside: avoid; box-shadow: none !important; transform: none !important; }
+    .tool-card::before { background: #333 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .tool-badge { border: 1px solid #999; background: #f0f0f0 !important; color: #333 !important; }
+    .doc-item { border: 1px solid #ddd; }
+    .doc-status { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .doc-print-btn { display: none; }
+    .human-banner { border: 2px solid #f0ad4e; background: #fff8e1 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .human-banner h3 { color: #856404 !important; }
+    .export-section { display: none; }
+    .modal-overlay { display: none !important; }
+    .workflow-step .step-num { border: 2px solid #333; }
+    .workflow-step.done .step-num { background: #28a745 !important; color: #fff !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .workflow-step.active .step-num { background: #007bff !important; color: #fff !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .footer { border-top: 1px solid #ddd; color: #999; }
+    a { color: inherit; text-decoration: none; }
+    .section-header { color: #333; border-bottom: 2px solid #333; }
+    h3 { color: #000 !important; }
+
+    /* Print cover page info */
+    .print-header { display: block !important; text-align: center; margin-bottom: 24px; padding: 24px; border: 2px solid #000; }
+    .print-header h1 { font-size: 24pt; margin-bottom: 8px; }
+    .print-header p { font-size: 12pt; color: #333; }
+  }
+  .print-header { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">R2</div>
+    <h1><span>RAISE 2.0</span> Command Center</h1>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-btn" onclick="openExportModal()">&#128196; Export Package</button>
+    <span class="topbar-date" id="dateDisplay"></span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="print-header">
+    <h1>RAISE 2.0 — ATO & RPOC Submission Package</h1>
+    <p>Secure Runtime Environment (SRE) DSOP<br>
+    FIPS 199: Moderate-Moderate-Moderate | eMASS ID: _[PENDING]_</p>
+    <p id="printDate"></p>
+  </div>
+
+  <div class="hero">
+    <h2>ATO & RPOC Submission Package</h2>
+    <p>Everything you need to get your DSOP authorized and designated as a RAISE Platform of Choice. Start with the workflow below, use the interactive tools, and track your progress.</p>
+  </div>
+
+  <!-- Progress Overview -->
+  <div class="progress-row">
+    <div class="progress-card">
+      <div class="progress-num" style="color:var(--green)">30+</div>
+      <div class="progress-label">Total Documents</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-num" style="color:var(--accent)">10</div>
+      <div class="progress-label">Interactive Tools</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%;background:var(--accent)"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-num" style="color:var(--purple)">~325</div>
+      <div class="progress-label">NIST Controls</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:77%;background:var(--purple)"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-num" style="color:var(--cyan)">8</div>
+      <div class="progress-label">RAISE Gates</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-num" style="color:var(--yellow)">6</div>
+      <div class="progress-label">Human Actions</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%;background:var(--yellow)"></div></div>
+    </div>
+  </div>
+
+  <!-- Export Package Section -->
+  <div class="export-section">
+    <div class="export-header">
+      <div>
+        <h3>&#128230; Export ATO Package</h3>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:4px;">Generate a print-ready PDF of your entire submission package, or export individual documents.</p>
+      </div>
+      <div class="export-actions">
+        <button class="export-btn primary" onclick="openExportModal()">&#128196; Full Package PDF</button>
+        <button class="export-btn secondary" onclick="exportAllJSON()">&#128190; Export All Data (JSON)</button>
+        <button class="export-btn secondary" onclick="window.print()">&#128424; Print This Page</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submission Workflow -->
+  <div class="section-header">Submission Workflow</div>
+  <div class="workflow">
+    <div class="workflow-step done">
+      <div class="step-num">1</div>
+      <div class="step-label">Build Platform</div>
+      <div class="step-sub">DSOP ready</div>
+    </div>
+    <div class="workflow-step done">
+      <div class="step-num">2</div>
+      <div class="step-label">8 Security Gates</div>
+      <div class="step-sub">All implemented</div>
+    </div>
+    <div class="workflow-step done">
+      <div class="step-num">3</div>
+      <div class="step-label">Write Documents</div>
+      <div class="step-sub">30+ docs ready</div>
+    </div>
+    <div class="workflow-step active">
+      <div class="step-num">4</div>
+      <div class="step-label">Fill & Sign</div>
+      <div class="step-sub">Org details + sigs</div>
+    </div>
+    <div class="workflow-step pending">
+      <div class="step-num">5</div>
+      <div class="step-label">eMASS + DITPR</div>
+      <div class="step-sub">System registration</div>
+    </div>
+    <div class="workflow-step pending">
+      <div class="step-num">6</div>
+      <div class="step-label">TA Certification</div>
+      <div class="step-sub">CI/CD tools review</div>
+    </div>
+    <div class="workflow-step pending">
+      <div class="step-num">7</div>
+      <div class="step-label">SCA Assessment</div>
+      <div class="step-sub">Independent review</div>
+    </div>
+    <div class="workflow-step pending">
+      <div class="step-num">8</div>
+      <div class="step-label">AO Signs ATO</div>
+      <div class="step-sub">Authorization</div>
+    </div>
+    <div class="workflow-step pending">
+      <div class="step-num">9</div>
+      <div class="step-label">RPOC Designation</div>
+      <div class="step-sub">Apps can deploy</div>
+    </div>
+  </div>
+
+  <!-- Human Actions Required -->
+  <div class="human-banner">
+    <h3>&#9888; Actions That Require a Human</h3>
+    <ul class="human-list">
+      <li><span class="icon">&#9997;</span><div><strong>Fill in placeholders</strong> — Every document has _[PLACEHOLDER]_ fields for org name, ISSM, dates. Search and replace across all docs.</div></li>
+      <li><span class="icon">&#128187;</span><div><strong>Register in eMASS</strong> — CAC required. Use the eMASS Guide (below) — all fields are pre-filled, just copy-paste into eMASS.</div></li>
+      <li><span class="icon">&#128187;</span><div><strong>Register in DITPR + PPSM</strong> — System tracking + ports/protocols registration. Data is in the Authorization Boundary doc.</div></li>
+      <li><span class="icon">&#128221;</span><div><strong>Sign documents</strong> — CI/CD Certification (TA), SLAs (App Owners), Rules of Behavior (each user), ATO letter (AO).</div></li>
+      <li><span class="icon">&#128101;</span><div><strong>Engage SCA</strong> — Independent assessor must evaluate controls and produce the SAR. Allow 8-12 weeks.</div></li>
+      <li><span class="icon">&#127919;</span><div><strong>Brief the AO</strong> — Present the package (SSP + SAR + POA&M). AO makes the risk-based ATO decision.</div></li>
+    </ul>
+  </div>
+
+  <!-- Interactive Tools -->
+  <div class="section-header">Interactive Tools</div>
+  <div class="tools-grid">
+
+    <!-- Core ATO Documents (Big Three) -->
+    <a class="tool-card" href="ssp.html" style="--card-accent: var(--red)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128203;</div>
+        <div class="tool-info">
+          <div class="tool-name">System Security Plan (SSP)</div>
+          <span class="tool-badge core">Core ATO</span>
+        </div>
+      </div>
+      <div class="tool-desc">Interactive SSP with all ~325 NIST 800-53 Moderate controls. Pre-filled implementation descriptions, editable personnel fields, progress dashboard. Export for eMASS upload.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">20 families</span>
+        <span class="tool-tag">~325 controls</span>
+        <span class="tool-tag">Editable</span>
+        <span class="tool-tag">JSON export</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="poam.html" style="--card-accent: var(--orange)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128221;</div>
+        <div class="tool-info">
+          <div class="tool-name">Plan of Action & Milestones (POA&M)</div>
+          <span class="tool-badge core">Core ATO</span>
+        </div>
+      </div>
+      <div class="tool-desc">Track all findings and remediation milestones. 15 pre-populated items from self-assessment. Add/edit findings, sort by severity, export CSV/JSON for eMASS.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">15 findings</span>
+        <span class="tool-tag">Severity tracking</span>
+        <span class="tool-tag">CSV export</span>
+        <span class="tool-tag">Timeline view</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="sar.html" style="--card-accent: var(--red)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128270;</div>
+        <div class="tool-info">
+          <div class="tool-name">Security Assessment Report (SAR)</div>
+          <span class="tool-badge core">Core ATO &middot; DRAFT</span>
+        </div>
+      </div>
+      <div class="tool-desc">DRAFT SAR pre-filled with self-assessment data. Must be validated by independent SCA. ~280 Satisfied, ~30 Other Than Satisfied, 15 findings mapped to POA&M.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">DRAFT</span>
+        <span class="tool-tag">SCA required</span>
+        <span class="tool-tag">15 findings</span>
+        <span class="tool-tag">Printable</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="raise-guide.html" style="--card-accent: var(--cyan)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128736;</div>
+        <div class="tool-info">
+          <div class="tool-name">RAISE 2.0 Walkthrough Guide</div>
+          <span class="tool-badge interactive">Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">Step-by-step guide through the entire DSOP to RPOC journey. 10 phases with checklists, tips, and warnings. <strong>Start here if you're new to RAISE.</strong></div>
+      <div class="tool-tags">
+        <span class="tool-tag">10 phases</span>
+        <span class="tool-tag">Checkboxes</span>
+        <span class="tool-tag">localStorage</span>
+        <span class="tool-tag">Shareable</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="raise-tracker.html" style="--card-accent: var(--accent)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128203;</div>
+        <div class="tool-info">
+          <div class="tool-name">RAISE Requirements Tracker</div>
+          <span class="tool-badge interactive">Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">Track all 51 RAISE 2.0 requirements: 24 RPOC requirements, 8 security gates, 19 application owner requirements.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">24 RPOC reqs</span>
+        <span class="tool-tag">8 Gates</span>
+        <span class="tool-tag">19 App Owner reqs</span>
+        <span class="tool-tag">Filters</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="ato-controls-tracker.html" style="--card-accent: var(--purple)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#127919;</div>
+        <div class="tool-info">
+          <div class="tool-name">ATO Controls Tracker</div>
+          <span class="tool-badge interactive">Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">All ~252 NIST 800-53 Rev 5 Moderate baseline controls with pre-filled status. Edit descriptions, responsible party, evidence. Export JSON for eMASS.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">20 families</span>
+        <span class="tool-tag">~252 controls</span>
+        <span class="tool-tag">Editable</span>
+        <span class="tool-tag">JSON export</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="pipeline-dashboard.html" style="--card-accent: var(--green)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128640;</div>
+        <div class="tool-info">
+          <div class="tool-name">Pipeline Dashboard</div>
+          <span class="tool-badge interactive">Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">Visual CI/CD security gate pipeline. Click gates for details, view scan output, findings, signatures, SBOM. Simulate a full pipeline run.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">8 RAISE gates</span>
+        <span class="tool-tag">4 scenarios</span>
+        <span class="tool-tag">Simulation</span>
+        <span class="tool-tag">Drill-down</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="emass-guide.html" style="--card-accent: var(--orange)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128451;</div>
+        <div class="tool-info">
+          <div class="tool-name">eMASS Registration Guide</div>
+          <span class="tool-badge interactive">Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">Interactive walkthrough for eMASS registration. Pre-filled fields with copy buttons, RMF step timeline, checklist with progress tracking.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">7 RMF steps</span>
+        <span class="tool-tag">Copy-paste fields</span>
+        <span class="tool-tag">25+ references</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="cicd-certification.html" style="--card-accent: var(--yellow)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128220;</div>
+        <div class="tool-info">
+          <div class="tool-name">CI/CD Tools Certification</div>
+          <span class="tool-badge interactive">Interactive + Print</span>
+        </div>
+      </div>
+      <div class="tool-desc">TA submission package with visual pipeline flow, editable org fields, evidence checklist. Print stylesheet formats it as a formal memo.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">RAISE Appendix D</span>
+        <span class="tool-tag">Editable</span>
+        <span class="tool-tag">Printable</span>
+        <span class="tool-tag">Evidence checklist</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="pentest-report.html" style="--card-accent: var(--red)">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128737;</div>
+        <div class="tool-info">
+          <div class="tool-name">Penetration Test Report</div>
+          <span class="tool-badge interactive">Automated + Interactive</span>
+        </div>
+      </div>
+      <div class="tool-desc">Automated security assessment results: API server, network, pod security, secrets, supply chain, auth, crypto, and monitoring. Import scan JSON or paste results.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">8 categories</span>
+        <span class="tool-tag">NIST CA-8</span>
+        <span class="tool-tag">JSON import</span>
+        <span class="tool-tag">PDF export</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Automated Scans -->
+  <div class="section-header">Automated Security Scans</div>
+  <div class="tools-grid">
+
+    <div class="tool-card" style="--card-accent: var(--green); cursor:default;">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128270;</div>
+        <div class="tool-info">
+          <div class="tool-name">Penetration Test Scanner</div>
+          <span class="tool-badge template">Script</span>
+        </div>
+      </div>
+      <div class="tool-desc">Automated pen test: API auth, RBAC, network segmentation, pod security, secrets, supply chain, identity, and crypto. Run against live cluster.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">scripts/security-pentest.sh</span>
+        <span class="tool-tag">--json for report</span>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-family:monospace;font-size:12px;color:var(--cyan);cursor:text;user-select:all;">./scripts/security-pentest.sh --json &gt; pentest.json</div>
+    </div>
+
+    <div class="tool-card" style="--card-accent: var(--purple); cursor:default;">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128203;</div>
+        <div class="tool-info">
+          <div class="tool-name">Quarterly STIG Scan</div>
+          <span class="tool-badge template">Script</span>
+        </div>
+      </div>
+      <div class="tool-desc">DISA STIG compliance scan: CIS Kubernetes Benchmark (kube-bench), Istio STIG, Rocky Linux 9 STIG, container image vulnerabilities (Trivy).</div>
+      <div class="tool-tags">
+        <span class="tool-tag">scripts/quarterly-stig-scan.sh</span>
+        <span class="tool-tag">QREV-6</span>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-family:monospace;font-size:12px;color:var(--cyan);cursor:text;user-select:all;">./scripts/quarterly-stig-scan.sh --json &gt; stig.json</div>
+    </div>
+
+    <div class="tool-card" style="--card-accent: var(--accent); cursor:default;">
+      <div class="tool-card-header">
+        <div class="tool-icon">&#128202;</div>
+        <div class="tool-info">
+          <div class="tool-name">Compliance Report</div>
+          <span class="tool-badge template">Script</span>
+        </div>
+      </div>
+      <div class="tool-desc">NIST 800-53 compliance check against live cluster. Verifies 34+ controls across 10 families with evidence collection.</div>
+      <div class="tool-tags">
+        <span class="tool-tag">scripts/compliance-report.sh</span>
+        <span class="tool-tag">34+ NIST controls</span>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-family:monospace;font-size:12px;color:var(--cyan);cursor:text;user-select:all;">./scripts/compliance-report.sh --json &gt; compliance.json</div>
+    </div>
+
+  </div>
+
+  <!-- ATO Package Documents -->
+  <div class="section-header">ATO Package Documents</div>
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);">Core Documents (The "Big Three")</h3>
+  <div class="doc-list" style="margin-bottom:24px;">
+    <a class="doc-item" href="ssp.html">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">System Security Plan (SSP)</div>
+      <div class="doc-meta">Interactive HTML + eMASS export</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();printDoc('ssp.html')">&#128424; Print</button>
+    </a>
+    <a class="doc-item" href="sar.html">
+      <div class="doc-status human">&#9997;</div>
+      <div class="doc-name">Security Assessment Report (SAR)</div>
+      <div class="doc-meta">DRAFT — SCA must validate</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();printDoc('sar.html')">&#128424; Print</button>
+    </a>
+    <a class="doc-item" href="poam.html">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Plan of Action & Milestones (POA&M)</div>
+      <div class="doc-meta">15 findings, CSV/JSON export</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();printDoc('poam.html')">&#128424; Print</button>
+    </a>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);">Supporting Documents</h3>
+  <div class="doc-list" style="margin-bottom:24px;">
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/risk-assessment-report.md&title=Risk%20Assessment%20Report">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Risk Assessment Report (RAR)</div>
+      <div class="doc-meta">18 risks, NIST 800-30</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/authorization-boundary.md&title=Authorization%20Boundary">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Authorization Boundary</div>
+      <div class="doc-meta">Diagrams, data flows, PPSM</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/security-categorization.md&title=Security%20Categorization">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Security Categorization</div>
+      <div class="doc-meta">FIPS 199 M-M-M</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/incident-response-plan.md&title=Incident%20Response%20Plan">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Incident Response Plan</div>
+      <div class="doc-meta">5 playbooks, NIST 800-61</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/contingency-plan.md&title=Contingency%20Plan">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Contingency Plan</div>
+      <div class="doc-meta">RTO 4h, RPO 1h, NIST 800-34</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/configuration-management-plan.md&title=Configuration%20Management%20Plan">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Configuration Management Plan</div>
+      <div class="doc-meta">GitOps CM, NIST 800-128</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/continuous-monitoring-plan.md&title=Continuous%20Monitoring%20Plan">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Continuous Monitoring Plan</div>
+      <div class="doc-meta">ISCM, NIST 800-137</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-3-privacy-impact-assessment.md&title=Privacy%20Impact%20Assessment">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Privacy Impact Assessment</div>
+      <div class="doc-meta">QREV-3 — platform-level PIA</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/rules-of-behavior.md&title=Rules%20of%20Behavior">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Rules of Behavior</div>
+      <div class="doc-meta">User acknowledgment form</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-1-security-plan.md&title=Hardware%2FSoftware%20Inventory">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Hardware/Software Inventory</div>
+      <div class="doc-meta">QREV-1 — all 16 components with versions</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);">RAISE 2.0 RPOC Documents</h3>
+  <div class="doc-list" style="margin-bottom:24px;">
+    <a class="doc-item" href="cicd-certification.html">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">CI/CD Tools Certification</div>
+      <div class="doc-meta">Formal TA memo — interactive + printable</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();printDoc('cicd-certification.html')">&#128424; Print</button>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/sla-template.md&title=Service%20Level%20Agreement%20Template">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">Service Level Agreement Template</div>
+      <div class="doc-meta">One per tenant app</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+    <a class="doc-item" href="emass-guide.html">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">eMASS Registration Guide</div>
+      <div class="doc-meta">Interactive walkthrough with pre-filled fields</div>
+    </a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/README.md&title=RAISE%20Compliance%20Overview">
+      <div class="doc-status ready">&#10003;</div>
+      <div class="doc-name">RAISE Compliance Overview</div>
+      <div class="doc-meta">Directory overview and process map</div>
+      <button class="doc-print-btn" onclick="event.preventDefault();window.open(this.closest('a').href,'_blank')">&#128196; View</button>
+    </a>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);">Quarterly Review Templates (QREV 1-7)</h3>
+  <div class="doc-list" style="margin-bottom:24px;">
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-1-security-plan.md&title=QREV-1%3A%20Security%20Plan"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-1: Security Plan</div><div class="doc-meta">Software list, CI/CD tools, PPSM</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-2-security-assessment-plan.md&title=QREV-2%3A%20Security%20Assessment%20Plan"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-2: Security Assessment Plan</div><div class="doc-meta">Assessment scope and schedule</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-3-privacy-impact-assessment.md&title=QREV-3%3A%20Privacy%20Impact%20Assessment"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-3: Privacy Impact Assessment</div><div class="doc-meta">Platform-level PIA</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-4-poam.md&title=QREV-4%3A%20POA%26M%20Summary"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-4: POA&M Summary</div><div class="doc-meta">Quarterly findings summary</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-5-application-report.md&title=QREV-5%3A%20Application%20Report"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-5: Application Report</div><div class="doc-meta">App onboarding/offboarding</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-6-vulnerability-report.md&title=QREV-6%3A%20Vulnerability%20Report"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-6: Vulnerability Report</div><div class="doc-meta">Consolidated vuln report</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/quarterly-review/QREV-7-deployment-artifacts.md&title=QREV-7%3A%20Deployment%20Artifacts"><div class="doc-status ready">&#10003;</div><div class="doc-name">QREV-7: Deployment Artifacts</div><div class="doc-meta">Per-app artifact checklist</div></a>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;color:var(--accent);">App Owner Package (Templates for Tenants)</h3>
+  <div class="doc-list">
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/app-owner-package/vulnerability-management-plan-template.md&title=Vulnerability%20Management%20Plan"><div class="doc-status ready">&#10003;</div><div class="doc-name">Vulnerability Management Plan</div><div class="doc-meta">Template for app owners</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/app-owner-package/mitigation-statement-template.md&title=Mitigation%20Statement%20Template"><div class="doc-status ready">&#10003;</div><div class="doc-name">Mitigation Statement Template</div><div class="doc-meta">For findings that need exceptions</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/app-owner-package/app-stig-checklist-template.md&title=App%20STIG%20Checklist"><div class="doc-status ready">&#10003;</div><div class="doc-name">App STIG Checklist</div><div class="doc-meta">34-item checklist, 7 categories</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/app-owner-package/changelog-template.md&title=Changelog%20Template"><div class="doc-status ready">&#10003;</div><div class="doc-name">Changelog Template</div><div class="doc-meta">Release history tracking</div></a>
+    <a class="doc-item" href="doc-viewer.html?doc=compliance/raise/app-owner-package/application-architecture-template.md&title=Application%20Architecture%20Template"><div class="doc-status ready">&#10003;</div><div class="doc-name">Application Architecture Template</div><div class="doc-meta">Component and data flow diagram</div></a>
+  </div>
+
+  <div class="footer">
+    RAISE 2.0 ATO &amp; RPOC Command Center &mdash; Generated for DSOP authorization package preparation<br>
+    All documents viewable in browser &mdash; Use Export to generate PDF package
+  </div>
+
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal" style="max-width:1000px;">
+    <button class="modal-close" onclick="closeExportModal()">&times;</button>
+    <h2>&#128230; Export ATO Package</h2>
+    <p>Choose how you want to export: individual PDFs, a combined package, or raw data.</p>
+
+    <!-- Export Mode Tabs -->
+    <div style="display:flex;gap:8px;margin:20px 0 16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+      <button class="export-tab active" onclick="switchExportTab('individual',this)">Individual PDFs</button>
+      <button class="export-tab" onclick="switchExportTab('combined',this)">Combined Package</button>
+      <button class="export-tab" onclick="switchExportTab('data',this)">Data Export</button>
+    </div>
+
+    <!-- Tab: Individual PDFs -->
+    <div id="export-individual" class="export-tab-content active">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Select documents, then click the PDF button next to each one to save it. Each opens in a print-optimized view — press <kbd style="background:var(--surface3);padding:2px 6px;border-radius:3px;font-size:11px;">Ctrl+P</kbd> and choose "Save as PDF".</p>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;">
+          <input type="checkbox" id="selectAll" onchange="toggleAll()" checked> Select All
+        </label>
+      </div>
+
+      <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Core ATO Documents</h4>
+      <div class="export-grid" style="margin-bottom:16px;">
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="ssp.html" data-name="01-SSP" checked><label>SSP</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="poam.html" data-name="02-POAM" checked><label>POA&M</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="sar.html" data-name="03-SAR" checked><label>SAR (Draft)</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+      </div>
+
+      <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Interactive Tools</h4>
+      <div class="export-grid" style="margin-bottom:16px;">
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="ato-controls-tracker.html" data-name="04-Controls" checked><label>Controls Tracker</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="pipeline-dashboard.html" data-name="05-Pipeline" checked><label>Pipeline Dashboard</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="cicd-certification.html" data-name="06-CICD-Cert" checked><label>CI/CD Cert</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="raise-tracker.html" data-name="07-RAISE-Tracker" checked><label>RAISE Tracker</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="pentest-report.html" data-name="08-Pentest" checked><label>Pentest Report</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="raise-guide.html" data-name="09-Guide"><label>Walkthrough Guide</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="emass-guide.html" data-name="10-eMASS"><label>eMASS Guide</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+      </div>
+
+      <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Supporting Documents</h4>
+      <div class="export-grid" style="margin-bottom:16px;">
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/risk-assessment-report.md&title=RAR" data-name="11-RAR"><label>Risk Assessment</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/authorization-boundary.md&title=Auth-Boundary" data-name="12-Auth-Boundary"><label>Auth Boundary</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/security-categorization.md&title=Security-Cat" data-name="13-Security-Cat"><label>Security Cat</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/incident-response-plan.md&title=IRP" data-name="14-IRP"><label>Incident Response</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/contingency-plan.md&title=CP" data-name="15-Contingency"><label>Contingency Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/configuration-management-plan.md&title=CMP" data-name="16-CMP"><label>Config Mgmt Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+        <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/continuous-monitoring-plan.md&title=ConMon" data-name="17-ConMon"><label>ConMon Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button class="export-btn primary" onclick="exportAllSelected()" style="flex:1;justify-content:center;">
+          &#128196; Open All Selected (save each as PDF)
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab: Combined Package -->
+    <div id="export-combined" class="export-tab-content">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Generate a single combined document containing all selected sections. Opens in a print-ready view — save as one PDF.</p>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;">
+          <input type="checkbox" id="combineAll" checked onchange="document.querySelectorAll('.comb-cb').forEach(c=>c.checked=this.checked)"> Include All
+        </label>
+      </div>
+
+      <div class="export-grid" style="margin-bottom:16px;">
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/risk-assessment-report.md" checked><label>Risk Assessment</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/authorization-boundary.md" checked><label>Auth Boundary</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/security-categorization.md" checked><label>Security Cat</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/incident-response-plan.md" checked><label>Incident Response</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/contingency-plan.md" checked><label>Contingency Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/configuration-management-plan.md" checked><label>Config Mgmt Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/continuous-monitoring-plan.md" checked><label>ConMon Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/rules-of-behavior.md" checked><label>Rules of Behavior</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/sla-template.md" checked><label>SLA Template</label></div>
+      </div>
+
+      <button class="export-btn primary" onclick="exportCombinedPDF()" style="width:100%;justify-content:center;">
+        &#128195; Generate Combined PDF (one document, one Ctrl+P)
+      </button>
+
+      <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text-muted);">
+        This fetches each markdown document, renders it into a single printable page with page breaks between sections, then opens it for PDF save. One print action = one PDF with all selected documents.
+      </div>
+    </div>
+
+    <!-- Tab: Data Export -->
+    <div id="export-data" class="export-tab-content">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Export raw data from all interactive tools (SSP controls, POA&M findings, tracker progress, scan results) as JSON.</p>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="export-btn primary" onclick="exportAllJSON()" style="justify-content:center;">
+          &#128190; Export All Tool Data (JSON)
+        </button>
+        <button class="export-btn secondary" onclick="exportPortalPDF()" style="justify-content:center;">
+          &#128424; Print This Portal Page
+        </button>
+      </div>
+
+      <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text-dim);line-height:1.6;">
+        <strong style="color:var(--accent);">JSON export includes:</strong>
+        <ul style="margin:8px 0 0 16px;">
+          <li>SSP control statuses and implementation descriptions</li>
+          <li>POA&M findings, milestones, and remediation status</li>
+          <li>RAISE tracker progress and requirement status</li>
+          <li>ATO controls tracker data</li>
+          <li>Pentest/STIG scan results (if imported)</li>
+          <li>All localStorage data from interactive tools</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  document.getElementById('printDate').textContent = 'Generated: ' + new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  function openExportModal() {
+    document.getElementById('exportModal').classList.add('active');
+  }
+  function closeExportModal() {
+    document.getElementById('exportModal').classList.remove('active');
+  }
+  document.getElementById('exportModal').addEventListener('click', function(e) {
+    if (e.target === this) closeExportModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeExportModal();
+  });
+
+  /* --- Export Tab Switching --- */
+  function switchExportTab(tabId, btn) {
+    document.querySelectorAll('.export-tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.export-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('export-' + tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  /* --- Select All toggle --- */
+  function toggleAll() {
+    const checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('.exp-cb').forEach(cb => cb.checked = checked);
+  }
+
+  /* --- Export single document as print-ready PDF --- */
+  function exportOne(btn) {
+    const item = btn.closest('.export-item');
+    const cb = item.querySelector('.exp-cb');
+    const file = cb.dataset.file;
+    const name = cb.dataset.name;
+    const w = window.open(file, '_blank');
+    if (w) {
+      // Give the page time to render, then trigger print
+      w.addEventListener('load', function() {
+        setTimeout(function() { w.print(); }, 600);
+      });
+    }
+  }
+
+  /* --- Export all selected as individual PDFs --- */
+  function exportAllSelected() {
+    const checked = document.querySelectorAll('.exp-cb:checked');
+    if (checked.length === 0) {
+      alert('Select at least one document to export.');
+      return;
+    }
+    // Open each with a stagger to avoid popup blocking
+    let delay = 0;
+    checked.forEach(cb => {
+      setTimeout(() => {
+        const w = window.open(cb.dataset.file, '_blank');
+        if (w) {
+          w.addEventListener('load', function() {
+            setTimeout(function() { w.print(); }, 600);
+          });
+        }
+      }, delay);
+      delay += 800;
+    });
+    closeExportModal();
+  }
+
+  /* --- Print inline doc (from portal doc cards) --- */
+  function printDoc(file) {
+    const w = window.open(file, '_blank');
+    if (w) {
+      w.addEventListener('load', function() {
+        setTimeout(function() { w.print(); }, 600);
+      });
+    }
+  }
+
+  /* --- Minimal markdown to HTML (for combined PDF) --- */
+  function mdToHtml(md) {
+    let html = md
+      .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code style="background:#1e293b;padding:2px 6px;border-radius:3px;font-size:13px;">$1</code>')
+      .replace(/^\- (.+)$/gm, '<li>$1</li>')
+      .replace(/^\* (.+)$/gm, '<li>$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+      .replace(/\n{2,}/g, '</p><p>')
+      .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #374151;margin:16px 0;">')
+      // wrap adjacent <li> in <ul>
+      .replace(/(<li>.*<\/li>\n?)+/g, function(m) { return '<ul style="margin:8px 0 8px 20px;">' + m + '</ul>'; });
+    // Wrap in <p> tags
+    html = '<p>' + html + '</p>';
+    // Clean up empty paragraphs
+    html = html.replace(/<p>\s*<\/p>/g, '').replace(/<p>\s*(<h[1-4]>)/g, '$1').replace(/(<\/h[1-4]>)\s*<\/p>/g, '$1');
+    // Simple table support
+    html = html.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g, function(match, header, body) {
+      const ths = header.split('|').filter(c=>c.trim()).map(c => '<th style="border:1px solid #374151;padding:8px;background:#1e293b;">'+c.trim()+'</th>').join('');
+      const rows = body.trim().split('\n').map(r => {
+        const tds = r.split('|').filter(c=>c.trim()).map(c => '<td style="border:1px solid #374151;padding:8px;">'+c.trim()+'</td>').join('');
+        return '<tr>' + tds + '</tr>';
+      }).join('');
+      return '<table style="border-collapse:collapse;width:100%;margin:16px 0;font-size:13px;"><thead><tr>' + ths + '</tr></thead><tbody>' + rows + '</tbody></table>';
+    });
+    return html;
+  }
+
+  /* --- Combined PDF: fetch all selected md files, render into one printable page --- */
+  async function exportCombinedPDF() {
+    const checked = document.querySelectorAll('.comb-cb:checked');
+    if (checked.length === 0) {
+      alert('Select at least one document to include.');
+      return;
+    }
+
+    const btn = event.target;
+    const origText = btn.innerHTML;
+    btn.innerHTML = '&#9203; Loading documents...';
+    btn.disabled = true;
+
+    const sections = [];
+    for (const cb of checked) {
+      const docPath = cb.dataset.doc;
+      const label = cb.closest('.export-item').querySelector('label').textContent;
+      try {
+        const resp = await fetch(docPath);
+        if (resp.ok) {
+          const md = await resp.text();
+          sections.push({ title: label, html: mdToHtml(md) });
+        } else {
+          sections.push({ title: label, html: '<p style="color:#f87171;">Failed to load: ' + docPath + '</p>' });
+        }
+      } catch (e) {
+        sections.push({ title: label, html: '<p style="color:#f87171;">Error loading: ' + e.message + '</p>' });
+      }
+    }
+
+    btn.innerHTML = origText;
+    btn.disabled = false;
+
+    // Build combined HTML document
+    const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    const combinedHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>RAISE 2.0 Combined ATO Package</title>
+<style>
+  @page { margin: 0.75in; size: letter; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a2e; line-height: 1.6; font-size: 12pt; max-width: 7.5in; margin: 0 auto; }
+  h1 { font-size: 22pt; color: #1a1a2e; margin: 0 0 8px; }
+  h2 { font-size: 16pt; color: #1a1a2e; margin: 20px 0 8px; border-bottom: 2px solid #1a1a2e; padding-bottom: 4px; }
+  h3 { font-size: 13pt; color: #333; margin: 16px 0 6px; }
+  h4 { font-size: 11pt; color: #555; margin: 12px 0 4px; }
+  p { margin: 8px 0; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 11pt; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; font-size: 10pt; text-align: left; }
+  th { background: #f5f5f5; font-weight: 700; }
+  ul, ol { margin: 8px 0 8px 20px; }
+  li { margin: 2px 0; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+  .cover { text-align: center; padding: 120px 40px 80px; page-break-after: always; }
+  .cover h1 { font-size: 28pt; margin-bottom: 16px; }
+  .cover .subtitle { font-size: 14pt; color: #555; margin-bottom: 32px; }
+  .cover .meta { font-size: 11pt; color: #777; line-height: 2; }
+  .section { page-break-before: always; }
+  .section:first-of-type { page-break-before: auto; }
+  .section-title { font-size: 18pt; color: #1a1a2e; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 3px solid #38bdf8; }
+  .toc { page-break-after: always; }
+  .toc h2 { border-bottom: 2px solid #1a1a2e; }
+  .toc ol { font-size: 12pt; line-height: 2; }
+</style></head><body>
+<div class="cover">
+  <h1>RAISE 2.0 ATO Package</h1>
+  <div class="subtitle">Secure Runtime Environment (SRE) — DSOP</div>
+  <div class="meta">
+    FIPS 199: Moderate-Moderate-Moderate<br>
+    Generated: ${today}<br>
+    Documents: ${sections.length} included
+  </div>
+</div>
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>${sections.map((s, i) => '<li>' + s.title + '</li>').join('')}</ol>
+</div>
+${sections.map(s => '<div class="section"><h2 class="section-title">' + s.title + '</h2>' + s.html + '</div>').join('\n')}
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    w.document.write(combinedHtml);
+    w.document.close();
+    w.addEventListener('load', function() {
+      setTimeout(function() { w.print(); }, 400);
+    });
+    // Fallback for already-loaded
+    setTimeout(function() { w.print(); }, 1000);
+    closeExportModal();
+  }
+
+  /* --- Export All JSON (tool data from localStorage) --- */
+  function exportAllJSON() {
+    const data = {
+      exportDate: new Date().toISOString(),
+      packageName: 'RAISE 2.0 ATO & RPOC Package',
+      system: 'Secure Runtime Environment (SRE) DSOP',
+      categorization: 'FIPS 199 Moderate-Moderate-Moderate',
+      tools: {}
+    };
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      try {
+        const val = localStorage.getItem(key);
+        try { data.tools[key] = JSON.parse(val); } catch { data.tools[key] = val; }
+      } catch (e) { /* skip */ }
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'raise-ato-package-data-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* --- Print portal page itself --- */
+  function exportPortalPDF() {
+    closeExportModal();
+    setTimeout(function() { window.print(); }, 300);
+  }
+</script>
+
+</body>
+</html>
