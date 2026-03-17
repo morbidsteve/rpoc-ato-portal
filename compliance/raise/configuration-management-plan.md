@@ -349,8 +349,7 @@ Kyverno operates in two modes across the platform:
 
 | Policy Set | Mode | Scope |
 |-----------|------|-------|
-| 6 ClusterPolicies | Enforce | Cluster-wide (active blocking) |
-| 1 ClusterPolicy (verify-image-signatures) | Audit | Cluster-wide (report only) |
+| 18 ClusterPolicies | Enforce | Cluster-wide (active blocking) |
 
 **Monitoring:**
 - PolicyReports are generated for all resources (including existing ones via `background: true`)
@@ -432,17 +431,40 @@ Rocky Linux 9.7 is hardened per the DISA STIG for RHEL 9 using the Ansible `os-h
 
 ### 6.4 Kubernetes Baseline (Kyverno Policies)
 
-Seven ClusterPolicies enforce the Kubernetes security baseline:
+Eighteen ClusterPolicies enforce the Kubernetes security baseline across three tiers:
+
+**Custom Policies (SRE-specific):**
+
+| Policy | Mode | Controls Enforced |
+|--------|------|-------------------|
+| `require-labels` | Enforce | CM-8 |
+| `require-resource-limits` | Enforce | SC-6, CM-6 |
+| `require-probes` | Enforce | SI-4, SC-5 |
+| `require-security-context` | Enforce | AC-6, CM-7 |
+| `require-security-categorization` | Enforce | RA-2, SC-2 |
+| `require-network-policies` | Enforce | SC-7, AC-4 |
+| `require-istio-sidecar` | Enforce | SC-8, AC-4 |
+| `restrict-image-registries` | Enforce | CM-11, SA-10 |
+| `disallow-latest-tag` | Enforce | CM-2, SI-7 |
+| `verify-image-signatures` | Enforce | SI-7, SA-10 |
+
+**Pod Security Standards — Baseline (cluster-wide):**
 
 | Policy | Mode | Controls Enforced |
 |--------|------|-------------------|
 | `disallow-privileged-containers` | Enforce | AC-6, CM-7 |
-| `require-run-as-nonroot` | Enforce | AC-6(10) |
-| `require-resource-limits` | Enforce | SC-5 (DoS prevention) |
-| `restrict-image-registries` | Enforce | CM-11, SA-10 |
-| `disallow-latest-tag` | Enforce | CM-2, SI-7 |
-| `require-labels` | Enforce | CM-8 |
-| `verify-image-signatures` | Audit | SI-7, SA-10 |
+| `disallow-host-namespaces` | Enforce | AC-6, SC-7 |
+| `disallow-host-ports` | Enforce | AC-6, SC-7 |
+| `restrict-unsafe-sysctls` | Enforce | CM-6, CM-7 |
+
+**Pod Security Standards — Restricted (tenant namespaces):**
+
+| Policy | Mode | Controls Enforced |
+|--------|------|-------------------|
+| `require-run-as-nonroot` | Enforce | AC-6, AC-6(10) |
+| `require-drop-all-capabilities` | Enforce | AC-6, CM-7 |
+| `restrict-volume-types` | Enforce | AC-6, CM-7 |
+| `disallow-privilege-escalation` | Enforce | AC-6, AC-6(10) |
 
 ### 6.5 Deviation Management
 
