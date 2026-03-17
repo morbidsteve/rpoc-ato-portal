@@ -312,6 +312,22 @@
     background: linear-gradient(135deg, var(--accent), var(--purple));
     color: #fff; border-color: transparent;
   }
+  .export-tab.primary-tab {
+    position: relative;
+  }
+  .export-tab.primary-tab::after {
+    content: 'Recommended';
+    position: absolute;
+    top: -8px; right: -8px;
+    background: var(--green);
+    color: #000;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
   .export-tab-content { display: none; }
   .export-tab-content.active { display: block; }
   .exp-dl {
@@ -925,24 +941,49 @@
   <div class="modal" style="max-width:1000px;">
     <button class="modal-close" onclick="closeExportModal()" aria-label="Close export modal">&times;</button>
     <h2>&#128230; Export ATO Package</h2>
-    <p>Choose how you want to export: individual PDFs, a combined package, or raw data.</p>
+    <p>Generate a professional PDF of your complete ATO package, export individual pages, or download raw data.</p>
 
     <!-- Export Mode Tabs -->
     <div style="display:flex;gap:8px;margin:20px 0 16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
-      <button class="export-tab active" onclick="switchExportTab('individual',this)">Individual PDFs</button>
-      <button class="export-tab" onclick="switchExportTab('combined',this)">Combined Package</button>
+      <button class="export-tab active primary-tab" onclick="switchExportTab('combined',this)">Full Package PDF</button>
+      <button class="export-tab" onclick="switchExportTab('individual',this)">Individual Pages</button>
       <button class="export-tab" onclick="switchExportTab('data',this)">Data Export</button>
     </div>
 
-    <!-- Tab: Individual PDFs -->
-    <div id="export-individual" class="export-tab-content active">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Select documents, then click the PDF button next to each one to save it. Each opens in a print-optimized view — press <kbd style="background:var(--surface3);padding:2px 6px;border-radius:3px;font-size:11px;">Ctrl+P</kbd> and choose "Save as PDF".</p>
+    <!-- Tab: Full Package PDF (default, primary) -->
+    <div id="export-combined" class="export-tab-content active">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Generate a single, professional print-ready document with cover page, table of contents, and all selected compliance documents. Opens in a new window — save as one PDF via <kbd style="background:var(--surface3);padding:2px 6px;border-radius:3px;font-size:11px;">Ctrl+P</kbd>.</p>
 
       <div style="margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;">
-          <input type="checkbox" id="selectAll" onchange="toggleAll()" checked> Select All
+          <input type="checkbox" id="combineAll" checked onchange="document.querySelectorAll('.comb-cb').forEach(c=>c.checked=this.checked)"> Include All Documents
         </label>
       </div>
+
+      <div class="export-grid" style="margin-bottom:16px;">
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/security-categorization.md" checked><label>Security Categorization</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/risk-assessment-report.md" checked><label>Risk Assessment</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/authorization-boundary.md" checked><label>Auth Boundary</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/incident-response-plan.md" checked><label>Incident Response</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/contingency-plan.md" checked><label>Contingency Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/configuration-management-plan.md" checked><label>Config Mgmt Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/continuous-monitoring-plan.md" checked><label>ConMon Plan</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/rules-of-behavior.md" checked><label>Rules of Behavior</label></div>
+        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/sla-template.md" checked><label>SLA Template</label></div>
+      </div>
+
+      <button class="export-btn primary" onclick="exportCombinedPDF()" style="width:100%;justify-content:center;font-size:15px;padding:14px 24px;">
+        &#128195; Generate Full Package PDF
+      </button>
+
+      <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text-muted);line-height:1.6;">
+        <strong style="color:var(--accent);">Output includes:</strong> Cover page with classification banner, table of contents, numbered document sections with page breaks. Professional serif typography optimized for print. One print action = one complete ATO package PDF.
+      </div>
+    </div>
+
+    <!-- Tab: Individual Pages -->
+    <div id="export-individual" class="export-tab-content">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Open individual dashboard pages in a new window for printing. Click the PDF button next to any document to open it — press <kbd style="background:var(--surface3);padding:2px 6px;border-radius:3px;font-size:11px;">Ctrl+P</kbd> and choose "Save as PDF".</p>
 
       <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Core ATO Documents</h4>
       <div class="export-grid" style="margin-bottom:16px;">
@@ -971,43 +1012,6 @@
         <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/contingency-plan.md&title=CP" data-name="15-Contingency"><label>Contingency Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
         <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/configuration-management-plan.md&title=CMP" data-name="16-CMP"><label>Config Mgmt Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
         <div class="export-item"><input type="checkbox" class="exp-cb" data-file="doc-viewer.html?doc=compliance/raise/continuous-monitoring-plan.md&title=ConMon" data-name="17-ConMon"><label>ConMon Plan</label><button class="exp-dl" onclick="exportOne(this)" title="Save as PDF">&#128196;</button></div>
-      </div>
-
-      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
-        <button class="export-btn primary" onclick="exportAllSelected()" style="flex:1;justify-content:center;">
-          &#128196; Open All Selected (save each as PDF)
-        </button>
-      </div>
-    </div>
-
-    <!-- Tab: Combined Package -->
-    <div id="export-combined" class="export-tab-content">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">Generate a single combined document containing all selected sections. Opens in a print-ready view — save as one PDF.</p>
-
-      <div style="margin-bottom:16px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;">
-          <input type="checkbox" id="combineAll" checked onchange="document.querySelectorAll('.comb-cb').forEach(c=>c.checked=this.checked)"> Include All
-        </label>
-      </div>
-
-      <div class="export-grid" style="margin-bottom:16px;">
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/risk-assessment-report.md" checked><label>Risk Assessment</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/authorization-boundary.md" checked><label>Auth Boundary</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/security-categorization.md" checked><label>Security Cat</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/incident-response-plan.md" checked><label>Incident Response</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/contingency-plan.md" checked><label>Contingency Plan</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/configuration-management-plan.md" checked><label>Config Mgmt Plan</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/continuous-monitoring-plan.md" checked><label>ConMon Plan</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/rules-of-behavior.md" checked><label>Rules of Behavior</label></div>
-        <div class="export-item"><input type="checkbox" class="comb-cb" data-doc="compliance/raise/sla-template.md" checked><label>SLA Template</label></div>
-      </div>
-
-      <button class="export-btn primary" onclick="exportCombinedPDF()" style="width:100%;justify-content:center;">
-        &#128195; Generate Combined PDF (one document, one Ctrl+P)
-      </button>
-
-      <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text-muted);">
-        This fetches each markdown document, renders it into a single printable page with page breaks between sections, then opens it for PDF save. One print action = one PDF with all selected documents.
       </div>
     </div>
 
@@ -1069,94 +1073,228 @@
     btn.classList.add('active');
   }
 
-  /* --- Select All toggle --- */
-  function toggleAll() {
-    const checked = document.getElementById('selectAll').checked;
-    document.querySelectorAll('.exp-cb').forEach(cb => cb.checked = checked);
-  }
-
   /* --- Export single document as print-ready PDF --- */
   function exportOne(btn) {
     const item = btn.closest('.export-item');
     const cb = item.querySelector('.exp-cb');
     const file = cb.dataset.file;
-    const name = cb.dataset.name;
     const w = window.open(file, '_blank');
     if (w) {
-      // Give the page time to render, then trigger print
-      w.addEventListener('load', function() {
-        setTimeout(function() { w.print(); }, 600);
-      });
-    }
-  }
-
-  /* --- Export all selected as individual PDFs --- */
-  function exportAllSelected() {
-    const checked = document.querySelectorAll('.exp-cb:checked');
-    if (checked.length === 0) {
-      alert('Select at least one document to export.');
-      return;
-    }
-    // Open each with a stagger to avoid popup blocking
-    let delay = 0;
-    checked.forEach(cb => {
-      setTimeout(() => {
-        const w = window.open(cb.dataset.file, '_blank');
-        if (w) {
-          w.addEventListener('load', function() {
-            setTimeout(function() { w.print(); }, 600);
-          });
+      var printed = false;
+      w.onload = function() {
+        if (!printed) {
+          printed = true;
+          w.print();
         }
-      }, delay);
-      delay += 800;
-    });
-    closeExportModal();
+      };
+      // Fallback in case onload doesn't fire (e.g., cached page)
+      setTimeout(function() {
+        if (!printed) {
+          printed = true;
+          w.print();
+        }
+      }, 2000);
+    }
   }
 
   /* --- Print inline doc (from portal doc cards) --- */
   function printDoc(file) {
     const w = window.open(file, '_blank');
     if (w) {
-      w.addEventListener('load', function() {
-        setTimeout(function() { w.print(); }, 600);
-      });
+      var printed = false;
+      w.onload = function() {
+        if (!printed) {
+          printed = true;
+          w.print();
+        }
+      };
+      // Fallback in case onload doesn't fire
+      setTimeout(function() {
+        if (!printed) {
+          printed = true;
+          w.print();
+        }
+      }, 2000);
     }
   }
 
-  /* --- Minimal markdown to HTML (for combined PDF) --- */
+  /* --- Sanitize URL: reject dangerous schemes --- */
+  function sanitizeUrl(url) {
+    if (!url) return '';
+    var trimmed = url.trim().toLowerCase();
+    if (trimmed.indexOf('javascript:') === 0 ||
+        trimmed.indexOf('data:') === 0 ||
+        trimmed.indexOf('vbscript:') === 0) {
+      return '';
+    }
+    return url.trim();
+  }
+
+  /* --- Markdown to HTML converter (print-safe, professional) --- */
   function mdToHtml(md) {
-    let html = md
-      .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`(.+?)`/g, '<code style="background:#1e293b;padding:2px 6px;border-radius:3px;font-size:13px;">$1</code>')
-      .replace(/^\- (.+)$/gm, '<li>$1</li>')
-      .replace(/^\* (.+)$/gm, '<li>$1</li>')
-      .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
-      .replace(/\n{2,}/g, '</p><p>')
-      .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #374151;margin:16px 0;">')
-      // wrap adjacent <li> in <ul>
-      .replace(/(<li>.*<\/li>\n?)+/g, function(m) { return '<ul style="margin:8px 0 8px 20px;">' + m + '</ul>'; });
+    // Phase 1: Handle fenced code blocks (``` ... ```) before any other processing
+    var codeBlocks = [];
+    md = md.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
+      var idx = codeBlocks.length;
+      codeBlocks.push('<pre class="code-block"><code>' + code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</code></pre>');
+      return '\n%%CODEBLOCK_' + idx + '%%\n';
+    });
+
+    // Phase 2: Handle tables before paragraph processing
+    var tables = [];
+    md = md.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g, function(match, header, body) {
+      var ths = header.split('|').filter(function(c) { return c.trim(); }).map(function(c) {
+        return '<th>' + c.trim() + '</th>';
+      }).join('');
+      var rows = body.trim().split('\n').map(function(r, ri) {
+        var tds = r.split('|').filter(function(c) { return c.trim(); }).map(function(c) {
+          return '<td>' + c.trim() + '</td>';
+        }).join('');
+        return '<tr class="' + (ri % 2 === 1 ? 'alt-row' : '') + '">' + tds + '</tr>';
+      }).join('');
+      var idx = tables.length;
+      tables.push('<table><thead><tr>' + ths + '</tr></thead><tbody>' + rows + '</tbody></table>');
+      return '\n%%TABLE_' + idx + '%%\n';
+    });
+
+    // Phase 3: Process line-by-line for lists, headings, blockquotes, hr
+    var lines = md.split('\n');
+    var result = [];
+    var inUl = false;
+    var inOl = false;
+    var inBlockquote = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+
+      // Check for placeholder lines — pass through
+      if (/^%%CODEBLOCK_\d+%%$/.test(line.trim()) || /^%%TABLE_\d+%%$/.test(line.trim())) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+        result.push(line.trim());
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^---+$/.test(line.trim()) || /^\*\*\*+$/.test(line.trim())) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+        result.push('<hr>');
+        continue;
+      }
+
+      // Headings
+      var headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+      if (headingMatch) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+        var level = headingMatch[1].length;
+        result.push('<h' + level + '>' + headingMatch[2] + '</h' + level + '>');
+        continue;
+      }
+
+      // Blockquote
+      var bqMatch = line.match(/^>\s?(.*)$/);
+      if (bqMatch) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (!inBlockquote) { result.push('<blockquote>'); inBlockquote = true; }
+        result.push(bqMatch[1] || '');
+        continue;
+      } else if (inBlockquote) {
+        result.push('</blockquote>');
+        inBlockquote = false;
+      }
+
+      // Ordered list
+      var olMatch = line.match(/^(\d+)\.\s+(.+)$/);
+      if (olMatch) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (!inOl) { result.push('<ol>'); inOl = true; }
+        result.push('<li>' + olMatch[2] + '</li>');
+        continue;
+      } else if (inOl && !/^\s+/.test(line)) {
+        // End ordered list if not a continuation line
+        result.push('</ol>');
+        inOl = false;
+      }
+
+      // Unordered list
+      var ulMatch = line.match(/^[\-\*]\s+(.+)$/);
+      if (ulMatch) {
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (!inUl) { result.push('<ul>'); inUl = true; }
+        result.push('<li>' + ulMatch[1] + '</li>');
+        continue;
+      } else if (inUl && !/^\s+/.test(line)) {
+        result.push('</ul>');
+        inUl = false;
+      }
+
+      // Empty line = paragraph break
+      if (line.trim() === '') {
+        result.push('</p><p>');
+        continue;
+      }
+
+      // Regular text line
+      result.push(line);
+    }
+
+    // Close any open lists/blockquotes
+    if (inUl) result.push('</ul>');
+    if (inOl) result.push('</ol>');
+    if (inBlockquote) result.push('</blockquote>');
+
+    var html = result.join('\n');
+
+    // Phase 4: Inline formatting
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+?)`/g, '<code class="inline-code">$1</code>');
+
+    // Links: [text](url) with sanitization
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, text, url) {
+      var safe = sanitizeUrl(url);
+      if (!safe) return text;
+      return '<a href="' + safe + '">' + text + '</a>';
+    });
+
     // Wrap in <p> tags
     html = '<p>' + html + '</p>';
-    // Clean up empty paragraphs
-    html = html.replace(/<p>\s*<\/p>/g, '').replace(/<p>\s*(<h[1-4]>)/g, '$1').replace(/(<\/h[1-4]>)\s*<\/p>/g, '$1');
-    // Simple table support
-    html = html.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g, function(match, header, body) {
-      const ths = header.split('|').filter(c=>c.trim()).map(c => '<th style="border:1px solid #374151;padding:8px;background:#1e293b;">'+c.trim()+'</th>').join('');
-      const rows = body.trim().split('\n').map(r => {
-        const tds = r.split('|').filter(c=>c.trim()).map(c => '<td style="border:1px solid #374151;padding:8px;">'+c.trim()+'</td>').join('');
-        return '<tr>' + tds + '</tr>';
-      }).join('');
-      return '<table style="border-collapse:collapse;width:100%;margin:16px 0;font-size:13px;"><thead><tr>' + ths + '</tr></thead><tbody>' + rows + '</tbody></table>';
-    });
+
+    // Clean up empty paragraphs and mis-nested elements
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    html = html.replace(/<p>\s*(<h[1-4]>)/g, '$1');
+    html = html.replace(/(<\/h[1-4]>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<ul>)/g, '$1');
+    html = html.replace(/(<\/ul>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<ol>)/g, '$1');
+    html = html.replace(/(<\/ol>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<blockquote>)/g, '$1');
+    html = html.replace(/(<\/blockquote>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<table>)/g, '$1');
+    html = html.replace(/(<\/table>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<pre)/g, '$1');
+    html = html.replace(/(<\/pre>)\s*<\/p>/g, '$1');
+    html = html.replace(/<p>\s*(<hr>)/g, '$1');
+    html = html.replace(/(<hr>)\s*<\/p>/g, '$1');
+
+    // Phase 5: Restore code blocks and tables
+    for (var c = 0; c < codeBlocks.length; c++) {
+      html = html.replace('%%CODEBLOCK_' + c + '%%', codeBlocks[c]);
+    }
+    for (var t = 0; t < tables.length; t++) {
+      html = html.replace('%%TABLE_' + t + '%%', tables[t]);
+    }
+
     return html;
   }
 
-  /* --- Combined PDF: fetch all selected md files, render into one printable page --- */
+  /* --- Combined PDF: fetch all selected md files, render into one professional printable document --- */
   async function exportCombinedPDF() {
     const checked = document.querySelectorAll('.comb-cb:checked');
     if (checked.length === 0) {
@@ -1164,7 +1302,7 @@
       return;
     }
 
-    const btn = event.target;
+    const btn = event.target.closest('.export-btn') || event.target;
     const origText = btn.innerHTML;
     btn.innerHTML = '&#9203; Loading documents...';
     btn.disabled = true;
@@ -1179,70 +1317,261 @@
           const md = await resp.text();
           sections.push({ title: label, html: mdToHtml(md) });
         } else {
-          sections.push({ title: label, html: '<p style="color:#f87171;">Failed to load: ' + docPath + '</p>' });
+          sections.push({ title: label, html: '<p style="color:#b91c1c;">Failed to load: ' + docPath + '</p>' });
         }
       } catch (e) {
-        sections.push({ title: label, html: '<p style="color:#f87171;">Error loading: ' + e.message + '</p>' });
+        sections.push({ title: label, html: '<p style="color:#b91c1c;">Error loading: ' + e.message + '</p>' });
       }
     }
 
     btn.innerHTML = origText;
     btn.disabled = false;
 
-    // Build combined HTML document
+    // Build professional combined HTML document
     const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-    const combinedHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>RAISE 2.0 Combined ATO Package</title>
-<style>
-  @page { margin: 0.75in; size: letter; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a2e; line-height: 1.6; font-size: 12pt; max-width: 7.5in; margin: 0 auto; }
-  h1 { font-size: 22pt; color: #1a1a2e; margin: 0 0 8px; }
-  h2 { font-size: 16pt; color: #1a1a2e; margin: 20px 0 8px; border-bottom: 2px solid #1a1a2e; padding-bottom: 4px; }
-  h3 { font-size: 13pt; color: #333; margin: 16px 0 6px; }
-  h4 { font-size: 11pt; color: #555; margin: 12px 0 4px; }
-  p { margin: 8px 0; }
-  code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 11pt; }
-  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-  th, td { border: 1px solid #ccc; padding: 6px 10px; font-size: 10pt; text-align: left; }
-  th { background: #f5f5f5; font-weight: 700; }
-  ul, ol { margin: 8px 0 8px 20px; }
-  li { margin: 2px 0; }
-  hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
-  .cover { text-align: center; padding: 120px 40px 80px; page-break-after: always; }
-  .cover h1 { font-size: 28pt; margin-bottom: 16px; }
-  .cover .subtitle { font-size: 14pt; color: #555; margin-bottom: 32px; }
-  .cover .meta { font-size: 11pt; color: #777; line-height: 2; }
-  .section { page-break-before: always; }
-  .section:first-of-type { page-break-before: auto; }
-  .section-title { font-size: 18pt; color: #1a1a2e; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 3px solid #38bdf8; }
-  .toc { page-break-after: always; }
-  .toc h2 { border-bottom: 2px solid #1a1a2e; }
-  .toc ol { font-size: 12pt; line-height: 2; }
-</style></head><body>
-<div class="cover">
-  <h1>RAISE 2.0 ATO Package</h1>
-  <div class="subtitle">Secure Runtime Environment (SRE) — DSOP</div>
-  <div class="meta">
-    FIPS 199: Moderate-Moderate-Moderate<br>
-    Generated: ${today}<br>
-    Documents: ${sections.length} included
-  </div>
-</div>
-<div class="toc">
-  <h2>Table of Contents</h2>
-  <ol>${sections.map((s, i) => '<li>' + s.title + '</li>').join('')}</ol>
-</div>
-${sections.map(s => '<div class="section"><h2 class="section-title">' + s.title + '</h2>' + s.html + '</div>').join('\n')}
-</body></html>`;
+    const combinedHtml = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n' +
+'<title>RAISE 2.0 ATO Package</title>\n' +
+'<style>\n' +
+'  @page { margin: 1in; size: letter; }\n' +
+'  @media print {\n' +
+'    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n' +
+'  }\n' +
+'  * { margin: 0; padding: 0; box-sizing: border-box; }\n' +
+'  body {\n' +
+'    font-family: "Georgia", "Times New Roman", serif;\n' +
+'    color: #111827;\n' +
+'    line-height: 1.6;\n' +
+'    font-size: 11pt;\n' +
+'    max-width: 7.5in;\n' +
+'    margin: 0 auto;\n' +
+'  }\n' +
+'  /* Headings */\n' +
+'  h1 { font-size: 20pt; color: #111827; margin: 0 0 12px; line-height: 1.3; }\n' +
+'  h2 { font-size: 16pt; color: #111827; margin: 30px 0 10px; border-bottom: 2px solid #1a1a2e; padding-bottom: 6px; }\n' +
+'  h3 { font-size: 13pt; color: #1f2937; margin: 24px 0 8px; }\n' +
+'  h4 { font-size: 11pt; color: #1f2937; margin: 18px 0 6px; font-weight: bold; }\n' +
+'  p { margin: 8px 0; text-align: justify; }\n' +
+'  /* Links */\n' +
+'  a { color: #2563eb; text-decoration: underline; }\n' +
+'  /* Inline code */\n' +
+'  .inline-code {\n' +
+'    background: #f3f4f6;\n' +
+'    padding: 1px 5px;\n' +
+'    border-radius: 3px;\n' +
+'    font-family: "Courier New", monospace;\n' +
+'    font-size: 10pt;\n' +
+'    color: #1f2937;\n' +
+'  }\n' +
+'  /* Code blocks */\n' +
+'  .code-block {\n' +
+'    background: #f3f4f6;\n' +
+'    border: 1px solid #d1d5db;\n' +
+'    border-radius: 4px;\n' +
+'    padding: 12px;\n' +
+'    margin: 12px 0;\n' +
+'    font-family: "Courier New", monospace;\n' +
+'    font-size: 9pt;\n' +
+'    line-height: 1.5;\n' +
+'    white-space: pre-wrap;\n' +
+'    word-wrap: break-word;\n' +
+'    page-break-inside: avoid;\n' +
+'    overflow-x: auto;\n' +
+'  }\n' +
+'  .code-block code { background: none; padding: 0; font-size: inherit; }\n' +
+'  /* Tables */\n' +
+'  table {\n' +
+'    border-collapse: collapse;\n' +
+'    width: 100%;\n' +
+'    margin: 16px 0;\n' +
+'    font-size: 10pt;\n' +
+'    page-break-inside: auto;\n' +
+'  }\n' +
+'  th, td {\n' +
+'    border: 1px solid #d1d5db;\n' +
+'    padding: 8px 12px;\n' +
+'    text-align: left;\n' +
+'    vertical-align: top;\n' +
+'  }\n' +
+'  th {\n' +
+'    background: #f3f4f6;\n' +
+'    font-weight: 700;\n' +
+'    color: #111827;\n' +
+'  }\n' +
+'  tr.alt-row { background: #fafafa; }\n' +
+'  /* Lists */\n' +
+'  ul, ol { margin: 8px 0 8px 24px; }\n' +
+'  li { margin: 4px 0; line-height: 1.5; }\n' +
+'  /* Horizontal rule */\n' +
+'  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }\n' +
+'  /* Blockquotes */\n' +
+'  blockquote {\n' +
+'    border-left: 3px solid #6b7280;\n' +
+'    padding-left: 16px;\n' +
+'    margin: 12px 0;\n' +
+'    font-style: italic;\n' +
+'    color: #4b5563;\n' +
+'  }\n' +
+'  /* Strong/Em */\n' +
+'  strong { color: #111827; }\n' +
+'  /* === Cover Page === */\n' +
+'  .cover {\n' +
+'    text-align: center;\n' +
+'    padding: 100px 40px 60px;\n' +
+'    page-break-after: always;\n' +
+'    position: relative;\n' +
+'  }\n' +
+'  .cover h1 {\n' +
+'    font-size: 28pt;\n' +
+'    margin-bottom: 12px;\n' +
+'    border-bottom: none;\n' +
+'    text-align: center;\n' +
+'  }\n' +
+'  .cover .subtitle {\n' +
+'    font-size: 14pt;\n' +
+'    color: #4b5563;\n' +
+'    margin-bottom: 40px;\n' +
+'    font-style: italic;\n' +
+'  }\n' +
+'  .cover .meta {\n' +
+'    font-size: 11pt;\n' +
+'    color: #6b7280;\n' +
+'    line-height: 2;\n' +
+'  }\n' +
+'  .cover .meta strong { color: #111827; }\n' +
+'  .classification-banner {\n' +
+'    background: #f8f9fa;\n' +
+'    border: 2px solid #1a1a2e;\n' +
+'    padding: 8px 20px;\n' +
+'    font-size: 11pt;\n' +
+'    font-weight: 700;\n' +
+'    letter-spacing: 2px;\n' +
+'    text-transform: uppercase;\n' +
+'    color: #1a1a2e;\n' +
+'    display: inline-block;\n' +
+'    margin-bottom: 40px;\n' +
+'  }\n' +
+'  .cover-rule {\n' +
+'    width: 200px;\n' +
+'    border: none;\n' +
+'    border-top: 3px solid #1a1a2e;\n' +
+'    margin: 40px auto;\n' +
+'  }\n' +
+'  /* === Table of Contents === */\n' +
+'  .toc {\n' +
+'    page-break-after: always;\n' +
+'    padding-top: 20px;\n' +
+'  }\n' +
+'  .toc h2 {\n' +
+'    font-size: 20pt;\n' +
+'    border-bottom: 3px solid #1a1a2e;\n' +
+'    padding-bottom: 8px;\n' +
+'    margin-bottom: 24px;\n' +
+'  }\n' +
+'  .toc ol {\n' +
+'    list-style: none;\n' +
+'    margin: 0;\n' +
+'    padding: 0;\n' +
+'  }\n' +
+'  .toc ol li {\n' +
+'    font-size: 12pt;\n' +
+'    padding: 8px 0;\n' +
+'    border-bottom: 1px dotted #d1d5db;\n' +
+'    display: flex;\n' +
+'    align-items: baseline;\n' +
+'    gap: 12px;\n' +
+'  }\n' +
+'  .toc ol li .toc-num {\n' +
+'    font-weight: 700;\n' +
+'    color: #1a1a2e;\n' +
+'    min-width: 32px;\n' +
+'  }\n' +
+'  .toc ol li .toc-title {\n' +
+'    flex: 1;\n' +
+'  }\n' +
+'  /* === Document Sections === */\n' +
+'  .section {\n' +
+'    page-break-before: always;\n' +
+'  }\n' +
+'  .section-header-block {\n' +
+'    margin-bottom: 24px;\n' +
+'    padding-bottom: 12px;\n' +
+'    border-bottom: 3px solid #1a1a2e;\n' +
+'  }\n' +
+'  .section-number {\n' +
+'    font-size: 12pt;\n' +
+'    color: #6b7280;\n' +
+'    font-weight: 700;\n' +
+'    text-transform: uppercase;\n' +
+'    letter-spacing: 1px;\n' +
+'    margin-bottom: 4px;\n' +
+'  }\n' +
+'  .section-title {\n' +
+'    font-size: 20pt;\n' +
+'    color: #111827;\n' +
+'    margin: 0;\n' +
+'    border-bottom: none;\n' +
+'    padding-bottom: 0;\n' +
+'  }\n' +
+'</style>\n' +
+'</head>\n<body>\n' +
+'<!-- Classification Banner Top -->\n' +
+'<div class="cover">\n' +
+'  <div class="classification-banner">CUI // SP-RAISE</div>\n' +
+'  <h1>RAISE 2.0<br>ATO Package</h1>\n' +
+'  <div class="subtitle">Authority to Operate &mdash; Submission Documentation</div>\n' +
+'  <hr class="cover-rule">\n' +
+'  <div class="meta">\n' +
+'    <strong>System:</strong> Secure Runtime Environment (SRE) &mdash; DSOP<br>\n' +
+'    <strong>FIPS 199 Categorization:</strong> Moderate &ndash; Moderate &ndash; Moderate<br>\n' +
+'    <strong>Generated:</strong> ' + today + '<br>\n' +
+'    <strong>Documents Included:</strong> ' + sections.length + '<br>\n' +
+'    <strong>eMASS ID:</strong> <em>[PENDING]</em>\n' +
+'  </div>\n' +
+'  <hr class="cover-rule">\n' +
+'  <div class="classification-banner">CUI // SP-RAISE</div>\n' +
+'</div>\n' +
+'<!-- Table of Contents -->\n' +
+'<div class="toc">\n' +
+'  <h2>Table of Contents</h2>\n' +
+'  <ol>\n' +
+sections.map(function(s, i) {
+  return '    <li><span class="toc-num">' + (i + 1) + '.</span><span class="toc-title">' + s.title + '</span></li>';
+}).join('\n') +
+'\n  </ol>\n' +
+'</div>\n' +
+'<!-- Document Sections -->\n' +
+sections.map(function(s, i) {
+  return '<div class="section">\n' +
+    '  <div class="section-header-block">\n' +
+    '    <div class="section-number">Section ' + (i + 1) + ' of ' + sections.length + '</div>\n' +
+    '    <h1 class="section-title">' + s.title + '</h1>\n' +
+    '  </div>\n' +
+    s.html + '\n' +
+    '</div>';
+}).join('\n') +
+'\n</body>\n</html>';
 
     const w = window.open('', '_blank');
+    if (!w) {
+      alert('Pop-up blocked. Please allow pop-ups for this site and try again.');
+      return;
+    }
     w.document.write(combinedHtml);
     w.document.close();
-    w.addEventListener('load', function() {
-      setTimeout(function() { w.print(); }, 400);
-    });
-    // Fallback for already-loaded
-    setTimeout(function() { w.print(); }, 1000);
+    var printed = false;
+    w.onload = function() {
+      if (!printed) {
+        printed = true;
+        w.print();
+      }
+    };
+    // Fallback in case onload doesn't fire
+    setTimeout(function() {
+      if (!printed) {
+        printed = true;
+        w.print();
+      }
+    }, 2000);
     closeExportModal();
   }
 

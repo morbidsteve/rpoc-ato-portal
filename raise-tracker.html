@@ -356,6 +356,25 @@
     .main { padding: 16px; }
     .overview-grid { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ── Print Styles ── */
+  @media print {
+    @page { margin: 0.75in; size: letter; }
+    body { background: #fff !important; color: #111 !important; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .topbar { position: static; background: #fff !important; border-bottom: 2px solid #111; }
+    .topbar button, .topbar .actions, .topbar-stats { display: none !important; }
+    * { max-height: none !important; overflow: visible !important; }
+    [style*="max-height"] { max-height: none !important; }
+    [style*="overflow"] { overflow: visible !important; }
+    .gate-card, .gate-detail, .gate-section { break-inside: avoid; }
+    .gate-details, .gate-body, .collapsible-content { display: block !important; }
+    .sidebar { display: none !important; }
+    .main { max-width: 100%; padding: 0; }
+    :root {
+      --bg: #fff; --surface: #fff; --surface2: #f8fafc;
+      --border: #d1d5db; --text: #111; --text-dim: #4b5563;
+    }
+  }
 </style>
 </head>
 <body>

@@ -117,8 +117,12 @@ button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--ra
 
 /* Print */
 @media print{
-  body{background:#fff;color:#000;font-size:11px}
+  @page { margin: 0.75in; size: letter; }
+  body{background:#fff;color:#000;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .topbar,.topbar-actions,.controls-toolbar button,.btn-primary,.btn-secondary{display:none!important}
+  *{max-height:none!important;overflow:visible!important}
+  [style*="max-height"]{max-height:none!important}
+  [style*="overflow"]{overflow:visible!important}
   .section,.family-section{break-inside:avoid;border-color:#ccc}
   .section-header,.family-header{background:#f0f0f0!important;color:#000!important}
   .section-header h2,.family-header h3{color:#000!important}

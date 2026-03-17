@@ -386,6 +386,24 @@
   ::-webkit-scrollbar-track { background:var(--bg); }
   ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:4px; }
   ::-webkit-scrollbar-thumb:hover { background:var(--border); }
+
+  /* ── Print Styles ── */
+  @media print {
+    @page { margin: 0.75in; size: letter; }
+    body { background: #fff !important; color: #111 !important; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .topbar { position: static; background: #fff !important; border-bottom: 2px solid #111; }
+    .topbar button, .topbar .actions, .topbar-right { display: none !important; }
+    * { max-height: none !important; overflow: visible !important; }
+    [style*="max-height"] { max-height: none !important; }
+    [style*="overflow"] { overflow: visible !important; }
+    .log-output { max-height: none !important; overflow: visible !important; }
+    .gate-card, .pipeline-gate { break-inside: avoid; }
+    .main { max-width: 100%; padding: 0; }
+    :root {
+      --bg: #fff; --surface: #fff; --surface2: #f8fafc; --surface3: #f1f5f9;
+      --border: #d1d5db; --text: #111; --text-dim: #4b5563; --text-muted: #6b7280;
+    }
+  }
 </style>
 </head>
 <body>

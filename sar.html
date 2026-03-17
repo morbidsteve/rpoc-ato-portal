@@ -940,6 +940,7 @@
 
   /* Print styles */
   @media print {
+    @page { margin: 0.75in; size: letter; }
     body {
       background: #fff;
       color: #1a1a1a;
@@ -947,6 +948,10 @@
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
+
+    * { max-height: none !important; overflow: visible !important; }
+    [style*="max-height"] { max-height: none !important; }
+    [style*="overflow"] { overflow: visible !important; }
 
     body::before {
       color: rgba(220, 38, 38, 0.08);
@@ -981,6 +986,7 @@
     .section-body {
       background: #fff !important;
       border-color: #ccc !important;
+      display: block !important;
     }
 
     .info-card, .stat-card, .risk-card, .strength-item, .recommendation-box {

@@ -162,7 +162,11 @@ body {
 /* ── Print ── */
 @media print {
   :root { --bg:#fff; --surface:#fff; --surface2:#f1f5f9; --border:#cbd5e1; --text:#0f172a; --text-dim:#475569; }
-  body { background:#fff; color:#0f172a; font-size:10px; }
+  body { background:#fff; color:#0f172a; font-size:11pt; }
+  * { max-height: none !important; overflow: visible !important; }
+  [style*="max-height"] { max-height: none !important; }
+  [style*="overflow"] { overflow: visible !important; }
+  @page { margin: 0.75in; size: letter; }
   .topbar { position:static; }
   .topbar-actions { display:none; }
   .sidebar { display:none; }
