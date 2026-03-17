@@ -209,7 +209,7 @@
 
 <div class="topbar">
   <div class="topbar-left">
-    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal" aria-label="Back to portal">&larr;</a>
     <div class="topbar-logo">R2</div>
     <h1><span>RAISE 2.0</span> &mdash; <span id="docTitle">Document</span></h1>
   </div>
@@ -283,8 +283,14 @@ function renderMarkdown(md) {
   html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
   html = html.replace(/_(.+?)_/g, '<em>$1</em>');
 
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Links (sanitize href to block javascript:, data:, vbscript: schemes)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(m, text, url) {
+    var scheme = url.trim().toLowerCase();
+    if (/^(javascript|data|vbscript)\s*:/i.test(scheme)) {
+      return '<a href="#">' + text + '</a>';
+    }
+    return '<a href="' + url + '">' + text + '</a>';
+  });
 
   // Images
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
@@ -356,6 +362,13 @@ function fileToTitle(filename) {
   if (!doc) {
     document.getElementById('content').innerHTML =
       '<div class="error"><h2>No document specified</h2><p>Use ?doc=path/to/file.md to load a document.</p></div>';
+    return;
+  }
+
+  // Validate doc parameter: must start with "compliance/" and must not contain ".." path traversal
+  if (!doc.startsWith('compliance/') || doc.indexOf('..') !== -1) {
+    document.getElementById('content').innerHTML =
+      '<div class="error"><h2>Invalid document path</h2><p>Document path must start with <code>compliance/</code> and must not contain path traversal sequences.</p></div>';
     return;
   }
 

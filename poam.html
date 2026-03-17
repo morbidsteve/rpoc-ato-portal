@@ -624,7 +624,7 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+      <a href="raise-portal.html" class="back-btn" title="Back to Portal" aria-label="Back to portal">&larr;</a>
       <div class="logo">R2</div>
       <div class="header-title">
         <h1>RAISE 2.0 &mdash; Plan of Action &amp; Milestones</h1>
@@ -636,7 +636,7 @@
       <button class="btn" onclick="exportCSV()">Export CSV</button>
       <button class="btn" onclick="exportJSON()">Export JSON</button>
       <button class="btn" onclick="document.getElementById('importInput').click()">Import JSON</button>
-      <input type="file" id="importInput" accept=".json" onchange="importJSON(event)">
+      <input type="file" id="importInput" accept=".json" onchange="importJSON(event)" aria-label="Import findings JSON file">
       <button class="btn" onclick="window.print()">Print</button>
     </div>
   </div>
@@ -647,15 +647,15 @@
 
     <!-- Toolbar -->
     <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="Search findings..." oninput="renderAll()">
-      <select id="filterSeverity" onchange="renderAll()">
+      <input type="text" id="searchInput" placeholder="Search findings..." oninput="renderAll()" aria-label="Search findings">
+      <select id="filterSeverity" onchange="renderAll()" aria-label="Filter by severity">
         <option value="">All Severities</option>
         <option value="Critical">Critical</option>
         <option value="High">High</option>
         <option value="Moderate">Moderate</option>
         <option value="Low">Low</option>
       </select>
-      <select id="filterStatus" onchange="renderAll()">
+      <select id="filterStatus" onchange="renderAll()" aria-label="Filter by status">
         <option value="">All Statuses</option>
         <option value="Open">Open</option>
         <option value="In Progress">In Progress</option>
@@ -710,7 +710,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2 id="modalTitle">New Finding</h2>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="field">

@@ -146,7 +146,7 @@ button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--ra
 
 <div class="topbar">
   <div class="topbar-left">
-    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal" aria-label="Back to portal">&larr;</a>
     <div class="logo">R2</div>
     <div>
       <div class="topbar-title">RAISE 2.0 &mdash; System Security Plan</div>
@@ -165,7 +165,7 @@ button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--ra
 <!-- PROGRESS DASHBOARD -->
 <div id="dashboard-section">
   <div class="donut-wrap">
-    <svg class="donut-svg" viewBox="0 0 42 42" id="donut"></svg>
+    <svg class="donut-svg" viewBox="0 0 42 42" id="donut" role="img" aria-label="Donut chart showing SSP completion progress"></svg>
     <div class="donut-legend" id="donut-legend"></div>
   </div>
   <div class="dashboard" id="stat-cards"></div>
@@ -181,7 +181,7 @@ button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--ra
       <div class="label">System Name</div><div>Secure Runtime Environment (SRE)</div>
       <div class="label">Acronym</div><div>SRE</div>
       <div class="label">Version</div><div>2.0</div>
-      <div class="label">eMASS ID</div><div><input type="text" data-field="emass_id" placeholder="Enter eMASS System ID" style="width:200px"></div>
+      <div class="label">eMASS ID</div><div><input type="text" data-field="emass_id" placeholder="Enter eMASS System ID" aria-label="eMASS System ID" style="width:200px"></div>
       <div class="label">Date</div><div>2026-03-11</div>
       <div class="label">FIPS 199 Categorization</div><div><strong style="color:var(--yellow)">MODERATE &mdash; MODERATE &mdash; MODERATE</strong> (Confidentiality &mdash; Integrity &mdash; Availability)</div>
       <div class="label">System Type</div><div>IS Enclave &mdash; Kubernetes DevSecOps Platform</div>
@@ -313,7 +313,7 @@ button{font-family:var(--font);cursor:pointer;border:none;border-radius:var(--ra
   </div>
   <div class="section-body">
     <div class="controls-toolbar">
-      <input type="text" id="control-search" placeholder="Search controls by ID or keyword..." oninput="filterControls()">
+      <input type="text" id="control-search" placeholder="Search controls by ID or keyword..." aria-label="Search controls by ID or keyword" oninput="filterControls()">
       <div class="filter-btns">
         <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">All</button>
         <button class="filter-btn" data-filter="Implemented" onclick="setFilter(this)">Implemented</button>
@@ -611,10 +611,10 @@ function renderControl(famId, ctrl) {
       <div class="control-impl">
         <textarea data-sid="${sid}" data-cfield="impl" oninput="autoSave()">${ctrl.impl}</textarea>
       </div>
-      <div style="margin-top:4px;font-size:.75rem;color:var(--text2)">Responsible: <input type="text" data-sid="${sid}" data-cfield="party" value="${ctrl.party}" style="width:140px;font-size:.75rem;padding:2px 6px" oninput="autoSave()"></div>
+      <div style="margin-top:4px;font-size:.75rem;color:var(--text2)">Responsible: <input type="text" data-sid="${sid}" data-cfield="party" value="${ctrl.party}" aria-label="Responsible party for ${ctrl.id}" style="width:140px;font-size:.75rem;padding:2px 6px" oninput="autoSave()"></div>
     </div>
     <div>
-      <select data-sid="${sid}" data-cfield="status" onchange="statusChanged(this)">
+      <select data-sid="${sid}" data-cfield="status" aria-label="Implementation status for ${ctrl.id}" onchange="statusChanged(this)">
         <option value="Implemented" ${ctrl.status==='Implemented'?'selected':''}>Implemented</option>
         <option value="Partially Implemented" ${ctrl.status==='Partially Implemented'?'selected':''}>Partially Implemented</option>
         <option value="Planned" ${ctrl.status==='Planned'?'selected':''}>Planned</option>

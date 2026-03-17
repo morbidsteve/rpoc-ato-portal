@@ -516,7 +516,7 @@
 <!-- Top Bar -->
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:12px;">
-    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal" aria-label="Back to portal">&larr;</a>
     <h1><span>RAISE 2.0</span> &mdash; eMASS Registration &amp; RMF Guide</h1>
   </div>
   <div class="topbar-right">
@@ -619,7 +619,7 @@
           <tr><td><strong>eMASS URL</strong></td><td>NISP: <code>https://emass-nisp.csd.disa.mil/</code> (CAC required)</td></tr>
           <tr><td><strong>Role</strong></td><td>IAM (Information Assurance Manager) role for system registration</td></tr>
           <tr><td><strong>CAGE Code</strong></td><td>Your organization must have an assigned CAGE code under DCSA</td></tr>
-          <tr><td><strong>Account Guide</strong></td><td><a href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank" style="color: var(--accent);">NISP eMASS User Account Request Guide v3</a></td></tr>
+          <tr><td><strong>Account Guide</strong></td><td><a href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">NISP eMASS User Account Request Guide v3</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -1059,7 +1059,7 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
     <p>The MITRE Security Automation Framework (SAF) CLI integrates with the eMASS REST API, enabling automated evidence upload from your CI/CD pipeline.</p>
 
     <h3>SAF CLI (eMASS Integration)</h3>
-    <p>GitHub: <a href="https://github.com/mitre/saf" target="_blank" style="color: var(--accent);">mitre/saf</a> and <a href="https://github.com/mitre/emass_client" target="_blank" style="color: var(--accent);">mitre/emass_client</a></p>
+    <p>GitHub: <a href="https://github.com/mitre/saf" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">mitre/saf</a> and <a href="https://github.com/mitre/emass_client" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">mitre/emass_client</a></p>
 
     <p>Available API endpoints:</p>
     <div class="table-wrap">
@@ -1092,7 +1092,7 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
       <li>FedRAMP will require OSCAL after September 2026</li>
       <li>DoD is moving in the same direction</li>
       <li>SRE already has an OSCAL SSP at <code>compliance/oscal/ssp.json</code></li>
-      <li><a href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank" style="color: var(--accent);">FedRAMP OSCAL Resources and Templates</a></li>
+      <li><a href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">FedRAMP OSCAL Resources and Templates</a></li>
     </ul>
   </div>
 </div>
@@ -1187,27 +1187,27 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
 
     <h3>eMASS Guides</h3>
     <div class="ref-cards">
-      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/NISP%20eMASS%20Industry%20Operation%20Guide%20Version%201.1.pdf" target="_blank">
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/NISP%20eMASS%20Industry%20Operation%20Guide%20Version%201.1.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NISP eMASS Industry Operation Guide v1.1</div>
         <div class="ref-card-desc">Complete eMASS operations guide for NISP industry users</div>
         <span class="ref-card-tag">DCSA</span>
       </a>
-      <a class="ref-card" href="https://www.dcsa.mil/Portals/69/documents/io/rmf/NISP-eMASS%20Job%20Aid.pdf" target="_blank">
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/69/documents/io/rmf/NISP-eMASS%20Job%20Aid.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NISP eMASS Job Aid</div>
         <div class="ref-card-desc">Quick-reference job aid for eMASS tasks</div>
         <span class="ref-card-tag">DCSA</span>
       </a>
-      <a class="ref-card" href="https://s3.us-gov-west-1.amazonaws.com/sepub-demo-0001-124733793621-us-gov-west-1/s3fs-public/documents/eMASS+STEPbySTEP.pdf" target="_blank">
+      <a class="ref-card" href="https://s3.us-gov-west-1.amazonaws.com/sepub-demo-0001-124733793621-us-gov-west-1/s3fs-public/documents/eMASS+STEPbySTEP.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">eMASS Step-by-Step Instructions</div>
         <div class="ref-card-desc">Detailed walkthrough of eMASS registration steps</div>
         <span class="ref-card-tag">DISA</span>
       </a>
-      <a class="ref-card" href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank">
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/128/Documents/CTP/tools/NISP%20eMASS%20User%20Account%20Request%20Guide%20Version%203.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NISP eMASS Account Request Guide v3</div>
         <div class="ref-card-desc">How to request your eMASS user account</div>
         <span class="ref-card-tag">DCSA</span>
       </a>
-      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/DCSA%20Assessment%20and%20Authorization%20Process%20Manual%20Version%202.2.pdf" target="_blank">
+      <a class="ref-card" href="https://www.dcsa.mil/Portals/91/Documents/CTP/tools/DCSA%20Assessment%20and%20Authorization%20Process%20Manual%20Version%202.2.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">DCSA A&amp;A Process Manual (DAAPM) v2.2</div>
         <div class="ref-card-desc">The authoritative guide for DCSA assessment and authorization</div>
         <span class="ref-card-tag">DCSA</span>
@@ -1216,22 +1216,22 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
 
     <h3>RMF &amp; NIST Standards</h3>
     <div class="ref-cards">
-      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/37/r2/final" target="_blank">
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/37/r2/final" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NIST SP 800-37 Rev 2</div>
         <div class="ref-card-desc">Risk Management Framework for Information Systems</div>
         <span class="ref-card-tag">NIST</span>
       </a>
-      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final" target="_blank">
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NIST SP 800-53 Rev 5</div>
         <div class="ref-card-desc">Security and Privacy Controls for Information Systems</div>
         <span class="ref-card-tag">NIST</span>
       </a>
-      <a class="ref-card" href="https://csrc.nist.gov/pubs/fips/199/final" target="_blank">
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/fips/199/final" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">FIPS 199</div>
         <div class="ref-card-desc">Standards for Security Categorization</div>
         <span class="ref-card-tag">NIST</span>
       </a>
-      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/60/v1/r1/final" target="_blank">
+      <a class="ref-card" href="https://csrc.nist.gov/pubs/sp/800/60/v1/r1/final" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">NIST SP 800-60</div>
         <div class="ref-card-desc">Guide for Mapping Types of Information to Security Categories</div>
         <span class="ref-card-tag">NIST</span>
@@ -1240,22 +1240,22 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
 
     <h3>DoD DevSecOps &amp; cATO</h3>
     <div class="ref-cards">
-      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DoDCIO-ContinuousAuthorizationImplementationGuide.pdf" target="_blank">
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DoDCIO-ContinuousAuthorizationImplementationGuide.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">DoD cATO Implementation Guide</div>
         <div class="ref-card-desc">Continuous Authorization to Operate guidance</div>
         <span class="ref-card-tag">DoD CIO</span>
       </a>
-      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/cATO-EvaluationCriteria.pdf" target="_blank">
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/cATO-EvaluationCriteria.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">cATO Evaluation Criteria</div>
         <div class="ref-card-desc">Criteria for evaluating cATO readiness</div>
         <span class="ref-card-tag">DoD CIO</span>
       </a>
-      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DevSecOpsReferenceDesign.pdf" target="_blank">
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/DevSecOpsReferenceDesign.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">DoD DevSecOps Reference Design v2.0</div>
         <div class="ref-card-desc">Reference architecture for DoD DevSecOps pipelines</div>
         <span class="ref-card-tag">DoD CIO</span>
       </a>
-      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/(U)%202024-01-02%20DoD%20Cybersecurity%20Reciprocity%20Playbook.pdf" target="_blank">
+      <a class="ref-card" href="https://dodcio.defense.gov/Portals/0/Documents/Library/(U)%202024-01-02%20DoD%20Cybersecurity%20Reciprocity%20Playbook.pdf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">DoD Cybersecurity Reciprocity Playbook</div>
         <div class="ref-card-desc">Guidance on authorization reciprocity across DoD</div>
         <span class="ref-card-tag">DoD CIO</span>
@@ -1264,22 +1264,22 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
 
     <h3>Automation Tools</h3>
     <div class="ref-cards">
-      <a class="ref-card" href="https://github.com/mitre/saf" target="_blank">
+      <a class="ref-card" href="https://github.com/mitre/saf" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">MITRE SAF CLI</div>
         <div class="ref-card-desc">Security Automation Framework with eMASS integration</div>
         <span class="ref-card-tag">GitHub</span>
       </a>
-      <a class="ref-card" href="https://github.com/mitre/emass_client" target="_blank">
+      <a class="ref-card" href="https://github.com/mitre/emass_client" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">MITRE eMASS Client API</div>
         <div class="ref-card-desc">Ruby/Node client library for eMASS REST API</div>
         <span class="ref-card-tag">GitHub</span>
       </a>
-      <a class="ref-card" href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank">
+      <a class="ref-card" href="https://www.fedramp.gov/using-the-fedramp-oscal-resources-and-templates/" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">FedRAMP OSCAL Templates</div>
         <div class="ref-card-desc">Official OSCAL resources and SSP templates</div>
         <span class="ref-card-tag">FedRAMP</span>
       </a>
-      <a class="ref-card" href="https://www.cyber.mil/connect/ppsm/" target="_blank">
+      <a class="ref-card" href="https://www.cyber.mil/connect/ppsm/" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">DISA PPSM Resources</div>
         <div class="ref-card-desc">Ports, Protocols, and Services Management</div>
         <span class="ref-card-tag">Cyber.mil</span>
@@ -1288,27 +1288,27 @@ Evidence: Keycloak configuration export, RBAC role definitions, account audit lo
 
     <h3>Helpful Articles</h3>
     <div class="ref-cards">
-      <a class="ref-card" href="https://www.rise8.us/resources/what-is-required-in-an-ato-package" target="_blank">
+      <a class="ref-card" href="https://www.rise8.us/resources/what-is-required-in-an-ato-package" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">What is Required in an ATO Package</div>
         <div class="ref-card-desc">Practical guide to assembling your ATO documentation</div>
         <span class="ref-card-tag">Rise8</span>
       </a>
-      <a class="ref-card" href="https://www.rise8.us/resources/how-long-does-the-ato-process-take" target="_blank">
+      <a class="ref-card" href="https://www.rise8.us/resources/how-long-does-the-ato-process-take" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">How Long Does the ATO Process Take</div>
         <div class="ref-card-desc">Timeline expectations and how to accelerate</div>
         <span class="ref-card-tag">Rise8</span>
       </a>
-      <a class="ref-card" href="https://www.rise8.us/resources/authorization-to-operate-checklist" target="_blank">
+      <a class="ref-card" href="https://www.rise8.us/resources/authorization-to-operate-checklist" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">ATO Checklist</div>
         <div class="ref-card-desc">Step-by-step checklist for ATO readiness</div>
         <span class="ref-card-tag">Rise8</span>
       </a>
-      <a class="ref-card" href="https://www.secondfront.com/resources/blog/7-common-and-costly-mistakes-to-avoid-in-your-dod-ato-process/" target="_blank">
+      <a class="ref-card" href="https://www.secondfront.com/resources/blog/7-common-and-costly-mistakes-to-avoid-in-your-dod-ato-process/" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">7 Common Mistakes in DoD ATO</div>
         <div class="ref-card-desc">Costly pitfalls to avoid in the authorization process</div>
         <span class="ref-card-tag">Second Front</span>
       </a>
-      <a class="ref-card" href="https://www.secondfront.com/resources/blog/how-to-maximize-control-inheritance-a-guide-to-reducing-your-nist-800-53-workload/" target="_blank">
+      <a class="ref-card" href="https://www.secondfront.com/resources/blog/how-to-maximize-control-inheritance-a-guide-to-reducing-your-nist-800-53-workload/" target="_blank" rel="noopener noreferrer">
         <div class="ref-card-title">Maximize Control Inheritance</div>
         <div class="ref-card-desc">Guide to reducing your NIST 800-53 workload through inheritance</div>
         <span class="ref-card-tag">Second Front</span>

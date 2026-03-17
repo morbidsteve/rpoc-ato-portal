@@ -393,7 +393,7 @@
 <!-- Top Bar -->
 <div class="topbar">
   <div class="topbar-left">
-    <a href="raise-portal.html" class="back-btn" title="Back to Portal">&larr;</a>
+    <a href="raise-portal.html" class="back-btn" title="Back to Portal" aria-label="Back to portal">&larr;</a>
     <div class="topbar-logo">R2</div>
     <h1><span>RAISE 2.0</span> DSOP Security Gate Pipeline</h1>
   </div>
@@ -412,7 +412,7 @@
   <div class="pipeline-header">
     <h2>Security Gate Pipeline</h2>
     <div class="run-selector">
-      <select id="runSelect">
+      <select id="runSelect" aria-label="Select pipeline run">
         <option value="demo-success">demo-app v1.4.2 — All Gates Passed</option>
         <option value="demo-fail">demo-app v1.4.1 — GATE 4 Failed (CVE)</option>
         <option value="demo-running">api-service v2.1.0 — Running...</option>
@@ -442,7 +442,7 @@
         <span class="detail-title" id="detailTitle"></span>
         <span class="detail-badge" id="detailBadge"></span>
       </div>
-      <button class="detail-close" onclick="closeDetail()">&times;</button>
+      <button class="detail-close" onclick="closeDetail()" aria-label="Close detail panel">&times;</button>
     </div>
     <div class="detail-body">
       <div class="detail-tabs" id="detailTabs"></div>

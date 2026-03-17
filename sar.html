@@ -1025,7 +1025,7 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div style="padding:12px 20px 0;">
-      <a href="raise-portal.html" class="back-link">&larr; Back to Portal</a>
+      <a href="raise-portal.html" class="back-link" aria-label="Back to portal">&larr; Back to Portal</a>
     </div>
     <div class="sidebar-brand">
       <div class="logo-mark">
@@ -1234,7 +1234,7 @@ Email: [ENTER EMAIL]</textarea>
       <div class="section-body">
         <div class="chart-container">
           <div class="donut-wrap">
-            <svg class="donut-svg" viewBox="0 0 42 42">
+            <svg class="donut-svg" viewBox="0 0 42 42" role="img" aria-label="Donut chart showing assessment completion progress">
               <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--surface2)" stroke-width="5"/>
               <!-- Satisfied: 280/325 = 86.15% -->
               <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--green)" stroke-width="5"
@@ -1304,7 +1304,7 @@ Email: [ENTER EMAIL]</textarea>
       </div>
       <div class="section-body">
         <div class="findings-controls">
-          <input type="text" class="findings-search" id="findings-search" placeholder="Search findings...">
+          <input type="text" class="findings-search" id="findings-search" placeholder="Search findings..." aria-label="Search findings">
           <button class="filter-btn active" data-sev="all" onclick="filterFindings(this,'all')">All (15)</button>
           <button class="filter-btn" data-sev="HIGH" onclick="filterFindings(this,'HIGH')">High (2)</button>
           <button class="filter-btn" data-sev="MODERATE" onclick="filterFindings(this,'MODERATE')">Moderate (8)</button>
@@ -1417,19 +1417,19 @@ Email: [ENTER EMAIL]</textarea>
           <div class="signature-fields">
             <div class="sig-field">
               <label>Lead Assessor Name</label>
-              <input type="text" data-save="sig-name" placeholder="[ENTER NAME]">
+              <input type="text" data-save="sig-name" placeholder="[ENTER NAME]" aria-label="Lead Assessor Name">
             </div>
             <div class="sig-field">
               <label>Organization</label>
-              <input type="text" data-save="sig-org" placeholder="[ENTER SCA ORGANIZATION]">
+              <input type="text" data-save="sig-org" placeholder="[ENTER SCA ORGANIZATION]" aria-label="Organization">
             </div>
             <div class="sig-field">
               <label>Signature Date</label>
-              <input type="text" data-save="sig-date" placeholder="[ENTER DATE]">
+              <input type="text" data-save="sig-date" placeholder="[ENTER DATE]" aria-label="Signature Date">
             </div>
             <div class="sig-field">
               <label>Assessor Certification</label>
-              <input type="text" data-save="sig-cert" placeholder="e.g., CISSP, CAP, CISM">
+              <input type="text" data-save="sig-cert" placeholder="e.g., CISSP, CAP, CISM" aria-label="Assessor Certification">
             </div>
           </div>
         </div>
