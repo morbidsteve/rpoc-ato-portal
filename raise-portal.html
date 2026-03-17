@@ -1332,16 +1332,20 @@
 '<style>\n' +
 '  @page { margin: 1in; size: letter; }\n' +
 '  @media print {\n' +
-'    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n' +
+'    .pdf-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n' +
 '  }\n' +
 '  * { margin: 0; padding: 0; box-sizing: border-box; }\n' +
-'  body {\n' +
+'  .pdf-root {\n' +
 '    font-family: "Georgia", "Times New Roman", serif;\n' +
 '    color: #111827;\n' +
+'    background: #fff;\n' +
 '    line-height: 1.6;\n' +
 '    font-size: 11pt;\n' +
 '    max-width: 7.5in;\n' +
 '    margin: 0 auto;\n' +
+'  }\n' +
+'  .pdf-root p, .pdf-root li, .pdf-root td, .pdf-root div, .pdf-root span {\n' +
+'    color: #111827;\n' +
 '  }\n' +
 '  /* Headings */\n' +
 '  h1 { font-size: 20pt; color: #111827; margin: 0 0 12px; line-height: 1.3; }\n' +
@@ -1512,6 +1516,7 @@
 '  }\n' +
 '</style>\n' +
 '</head>\n<body>\n' +
+'<div class="pdf-root">\n' +
 '<!-- Classification Banner Top -->\n' +
 '<div class="cover">\n' +
 '  <div class="classification-banner">CUI // SP-RAISE</div>\n' +
@@ -1547,7 +1552,7 @@ sections.map(function(s, i) {
     s.html + '\n' +
     '</div>';
 }).join('\n') +
-'\n</body>\n</html>';
+'\n</div>\n</body>\n</html>';
 
     // Build self-contained HTML string with styles for html2pdf
     var styleMatch = combinedHtml.match(/<style>([\s\S]*?)<\/style>/);
@@ -1569,7 +1574,8 @@ sections.map(function(s, i) {
         useCORS: true,
         letterRendering: true,
         logging: false,
-        windowWidth: 816
+        windowWidth: 816,
+        backgroundColor: '#ffffff'
       },
       jsPDF: {
         unit: 'in',
