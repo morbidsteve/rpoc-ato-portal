@@ -1132,6 +1132,17 @@
     return url.trim();
   }
 
+  function inlineFmt(s) {
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    s = s.replace(/`([^`]+?)`/g, '<code class="inline-code">$1</code>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(m, text, url) {
+      var safe = sanitizeUrl(url);
+      return safe ? '<a href="' + safe + '">' + text + '</a>' : text;
+    });
+    return s;
+  }
+
   /* --- Markdown to HTML converter (print-safe, professional) --- */
   function mdToHtml(md) {
     // Phase 1: Handle fenced code blocks (``` ... ```) before any other processing
@@ -1146,11 +1157,11 @@
     var tables = [];
     md = md.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g, function(match, header, body) {
       var ths = header.split('|').filter(function(c) { return c.trim(); }).map(function(c) {
-        return '<th>' + c.trim() + '</th>';
+        return '<th>' + inlineFmt(c.trim()) + '</th>';
       }).join('');
       var rows = body.trim().split('\n').map(function(r, ri) {
         var tds = r.split('|').filter(function(c) { return c.trim(); }).map(function(c) {
-          return '<td>' + c.trim() + '</td>';
+          return '<td>' + inlineFmt(c.trim()) + '</td>';
         }).join('');
         return '<tr class="' + (ri % 2 === 1 ? 'alt-row' : '') + '">' + tds + '</tr>';
       }).join('');
@@ -1212,7 +1223,7 @@
       }
 
       // Ordered list
-      var olMatch = line.match(/^(\d+)\.\s+(.+)$/);
+      var olMatch = line.match(/^\s*(\d+)\.\s+(.+)$/);
       if (olMatch) {
         if (inUl) { result.push('</ul>'); inUl = false; }
         if (!inOl) { result.push('<ol>'); inOl = true; }
@@ -1225,7 +1236,7 @@
       }
 
       // Unordered list
-      var ulMatch = line.match(/^[\-\*]\s+(.+)$/);
+      var ulMatch = line.match(/^\s*[\-\*]\s+(.+)$/);
       if (ulMatch) {
         if (inOl) { result.push('</ol>'); inOl = false; }
         if (!inUl) { result.push('<ul>'); inUl = true; }
@@ -1297,7 +1308,7 @@
   }
 
   /* --- Shared CSS for PDF export chunks --- */
-  var pdfCss = '.pdf-root{font-family:Georgia,"Times New Roman",serif;color:#111827;background:#fff;line-height:1.6;font-size:11pt;padding:0;width:816px;max-width:816px;}'
+  var pdfCss = '.pdf-root{font-family:Georgia,"Times New Roman",serif;color:#111827;background:#fff;line-height:1.6;font-size:11pt;padding:0 24px;width:816px;max-width:816px;}'
     +'.pdf-root *{color:#111827;}'
     +'h1{font-size:20pt;color:#111827;margin:0 0 12px;line-height:1.3;}'
     +'h2{font-size:16pt;color:#111827;margin:30px 0 10px;border-bottom:2px solid #1a1a2e;padding-bottom:6px;}'
@@ -1308,8 +1319,9 @@
     +'.inline-code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-family:"Courier New",monospace;font-size:10pt;color:#1f2937;}'
     +'.code-block{background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:12px;margin:12px 0;font-family:"Courier New",monospace;font-size:9pt;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;overflow-x:auto;}'
     +'.code-block code{background:none;padding:0;font-size:inherit;}'
-    +'table{border-collapse:collapse;width:100%;margin:16px 0;font-size:10pt;}'
-    +'th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:left;vertical-align:top;}'
+    +'table{border-collapse:collapse;width:100%;margin:16px 0;font-size:9pt;table-layout:auto;}'
+    +'th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:left;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;}'
+    +'td{max-width:0;}'
     +'th{background:#f3f4f6;font-weight:700;color:#111827;}'
     +'tr.alt-row{background:#fafafa;}'
     +'ul,ol{margin:8px 0 8px 24px;}'
