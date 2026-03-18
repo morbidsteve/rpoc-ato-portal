@@ -1295,7 +1295,48 @@
     return html;
   }
 
-  /* --- Combined PDF: fetch all selected md files, render into one professional printable document --- */
+  /* --- Shared CSS for PDF export chunks --- */
+  var pdfCss = '.pdf-root{font-family:Georgia,"Times New Roman",serif;color:#111827;background:#fff;line-height:1.6;font-size:11pt;padding:0;}'
+    +'.pdf-root *{color:#111827;}'
+    +'h1{font-size:20pt;color:#111827;margin:0 0 12px;line-height:1.3;}'
+    +'h2{font-size:16pt;color:#111827;margin:30px 0 10px;border-bottom:2px solid #1a1a2e;padding-bottom:6px;}'
+    +'h3{font-size:13pt;color:#1f2937;margin:24px 0 8px;}'
+    +'h4{font-size:11pt;color:#1f2937;margin:18px 0 6px;font-weight:bold;}'
+    +'p{margin:8px 0;text-align:justify;}'
+    +'a{color:#2563eb;text-decoration:underline;}'
+    +'.inline-code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-family:"Courier New",monospace;font-size:10pt;color:#1f2937;}'
+    +'.code-block{background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:12px;margin:12px 0;font-family:"Courier New",monospace;font-size:9pt;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;overflow-x:auto;}'
+    +'.code-block code{background:none;padding:0;font-size:inherit;}'
+    +'table{border-collapse:collapse;width:100%;margin:16px 0;font-size:10pt;}'
+    +'th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:left;vertical-align:top;}'
+    +'th{background:#f3f4f6;font-weight:700;color:#111827;}'
+    +'tr.alt-row{background:#fafafa;}'
+    +'ul,ol{margin:8px 0 8px 24px;}'
+    +'li{margin:4px 0;line-height:1.5;}'
+    +'hr{border:none;border-top:1px solid #e5e7eb;margin:20px 0;}'
+    +'blockquote{border-left:3px solid #6b7280;padding-left:16px;margin:12px 0;font-style:italic;color:#4b5563;}'
+    +'strong{color:#111827;}'
+    +'.cover{text-align:center;padding:100px 40px 60px;}'
+    +'.cover h1{font-size:28pt;margin-bottom:12px;border-bottom:none;text-align:center;}'
+    +'.cover .subtitle{font-size:14pt;color:#4b5563;margin-bottom:40px;font-style:italic;}'
+    +'.cover .meta{font-size:11pt;color:#6b7280;line-height:2;}'
+    +'.cover .meta strong{color:#111827;}'
+    +'.classification-banner{background:#f8f9fa;border:2px solid #1a1a2e;padding:8px 20px;font-size:11pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1a1a2e;display:inline-block;margin-bottom:40px;}'
+    +'.cover-rule{width:200px;border:none;border-top:3px solid #1a1a2e;margin:40px auto;}'
+    +'.toc{padding-top:20px;}'
+    +'.toc h2{font-size:20pt;border-bottom:3px solid #1a1a2e;padding-bottom:8px;margin-bottom:24px;}'
+    +'.toc ol{list-style:none;margin:0;padding:0;}'
+    +'.toc ol li{font-size:12pt;padding:8px 0;border-bottom:1px dotted #d1d5db;}'
+    +'.toc .toc-num{font-weight:700;margin-right:8px;}'
+    +'.section-header-block{margin-bottom:24px;padding-bottom:12px;border-bottom:3px solid #1a1a2e;}'
+    +'.section-number{font-size:12pt;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}'
+    +'.section-title{font-size:20pt;color:#111827;margin:0;border-bottom:none;padding-bottom:0;}';
+
+  function wrapPdfChunk(html) {
+    return '<div class="pdf-root"><style>' + pdfCss + '</style>' + html + '</div>';
+  }
+
+  /* --- Combined PDF: render each section separately to avoid canvas size limits --- */
   async function exportCombinedPDF() {
     const checked = document.querySelectorAll('.comb-cb:checked');
     if (checked.length === 0) {
@@ -1315,285 +1356,121 @@
       try {
         const resp = await fetch(docPath);
         if (resp.ok) {
-          const md = await resp.text();
-          sections.push({ title: label, html: mdToHtml(md) });
+          sections.push({ title: label, html: mdToHtml(await resp.text()) });
         } else {
           sections.push({ title: label, html: '<p style="color:#b91c1c;">Failed to load: ' + docPath + '</p>' });
         }
       } catch (e) {
-        sections.push({ title: label, html: '<p style="color:#b91c1c;">Error loading: ' + e.message + '</p>' });
+        sections.push({ title: label, html: '<p style="color:#b91c1c;">Error: ' + e.message + '</p>' });
       }
     }
 
-    // Build professional combined HTML document
-    const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-    const combinedHtml = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n' +
-'<title>RAISE 2.0 ATO Package</title>\n' +
-'<style>\n' +
-'  @page { margin: 1in; size: letter; }\n' +
-'  @media print {\n' +
-'    .pdf-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n' +
-'  }\n' +
-'  * { margin: 0; padding: 0; box-sizing: border-box; }\n' +
-'  .pdf-root {\n' +
-'    font-family: "Georgia", "Times New Roman", serif;\n' +
-'    color: #111827;\n' +
-'    background: #fff;\n' +
-'    line-height: 1.6;\n' +
-'    font-size: 11pt;\n' +
-'    max-width: 7.5in;\n' +
-'    margin: 0 auto;\n' +
-'  }\n' +
-'  .pdf-root p, .pdf-root li, .pdf-root td, .pdf-root div, .pdf-root span {\n' +
-'    color: #111827;\n' +
-'  }\n' +
-'  /* Headings */\n' +
-'  h1 { font-size: 20pt; color: #111827; margin: 0 0 12px; line-height: 1.3; }\n' +
-'  h2 { font-size: 16pt; color: #111827; margin: 30px 0 10px; border-bottom: 2px solid #1a1a2e; padding-bottom: 6px; }\n' +
-'  h3 { font-size: 13pt; color: #1f2937; margin: 24px 0 8px; }\n' +
-'  h4 { font-size: 11pt; color: #1f2937; margin: 18px 0 6px; font-weight: bold; }\n' +
-'  p { margin: 8px 0; text-align: justify; }\n' +
-'  /* Links */\n' +
-'  a { color: #2563eb; text-decoration: underline; }\n' +
-'  /* Inline code */\n' +
-'  .inline-code {\n' +
-'    background: #f3f4f6;\n' +
-'    padding: 1px 5px;\n' +
-'    border-radius: 3px;\n' +
-'    font-family: "Courier New", monospace;\n' +
-'    font-size: 10pt;\n' +
-'    color: #1f2937;\n' +
-'  }\n' +
-'  /* Code blocks */\n' +
-'  .code-block {\n' +
-'    background: #f3f4f6;\n' +
-'    border: 1px solid #d1d5db;\n' +
-'    border-radius: 4px;\n' +
-'    padding: 12px;\n' +
-'    margin: 12px 0;\n' +
-'    font-family: "Courier New", monospace;\n' +
-'    font-size: 9pt;\n' +
-'    line-height: 1.5;\n' +
-'    white-space: pre-wrap;\n' +
-'    word-wrap: break-word;\n' +
-'    page-break-inside: avoid;\n' +
-'    overflow-x: auto;\n' +
-'  }\n' +
-'  .code-block code { background: none; padding: 0; font-size: inherit; }\n' +
-'  /* Tables */\n' +
-'  table {\n' +
-'    border-collapse: collapse;\n' +
-'    width: 100%;\n' +
-'    margin: 16px 0;\n' +
-'    font-size: 10pt;\n' +
-'    page-break-inside: auto;\n' +
-'  }\n' +
-'  th, td {\n' +
-'    border: 1px solid #d1d5db;\n' +
-'    padding: 8px 12px;\n' +
-'    text-align: left;\n' +
-'    vertical-align: top;\n' +
-'  }\n' +
-'  th {\n' +
-'    background: #f3f4f6;\n' +
-'    font-weight: 700;\n' +
-'    color: #111827;\n' +
-'  }\n' +
-'  tr.alt-row { background: #fafafa; }\n' +
-'  /* Lists */\n' +
-'  ul, ol { margin: 8px 0 8px 24px; }\n' +
-'  li { margin: 4px 0; line-height: 1.5; }\n' +
-'  /* Horizontal rule */\n' +
-'  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }\n' +
-'  /* Blockquotes */\n' +
-'  blockquote {\n' +
-'    border-left: 3px solid #6b7280;\n' +
-'    padding-left: 16px;\n' +
-'    margin: 12px 0;\n' +
-'    font-style: italic;\n' +
-'    color: #4b5563;\n' +
-'  }\n' +
-'  /* Strong/Em */\n' +
-'  strong { color: #111827; }\n' +
-'  /* === Cover Page === */\n' +
-'  .cover {\n' +
-'    text-align: center;\n' +
-'    padding: 100px 40px 60px;\n' +
-'    page-break-after: always;\n' +
-'    position: relative;\n' +
-'  }\n' +
-'  .cover h1 {\n' +
-'    font-size: 28pt;\n' +
-'    margin-bottom: 12px;\n' +
-'    border-bottom: none;\n' +
-'    text-align: center;\n' +
-'  }\n' +
-'  .cover .subtitle {\n' +
-'    font-size: 14pt;\n' +
-'    color: #4b5563;\n' +
-'    margin-bottom: 40px;\n' +
-'    font-style: italic;\n' +
-'  }\n' +
-'  .cover .meta {\n' +
-'    font-size: 11pt;\n' +
-'    color: #6b7280;\n' +
-'    line-height: 2;\n' +
-'  }\n' +
-'  .cover .meta strong { color: #111827; }\n' +
-'  .classification-banner {\n' +
-'    background: #f8f9fa;\n' +
-'    border: 2px solid #1a1a2e;\n' +
-'    padding: 8px 20px;\n' +
-'    font-size: 11pt;\n' +
-'    font-weight: 700;\n' +
-'    letter-spacing: 2px;\n' +
-'    text-transform: uppercase;\n' +
-'    color: #1a1a2e;\n' +
-'    display: inline-block;\n' +
-'    margin-bottom: 40px;\n' +
-'  }\n' +
-'  .cover-rule {\n' +
-'    width: 200px;\n' +
-'    border: none;\n' +
-'    border-top: 3px solid #1a1a2e;\n' +
-'    margin: 40px auto;\n' +
-'  }\n' +
-'  /* === Table of Contents === */\n' +
-'  .toc {\n' +
-'    page-break-after: always;\n' +
-'    padding-top: 20px;\n' +
-'  }\n' +
-'  .toc h2 {\n' +
-'    font-size: 20pt;\n' +
-'    border-bottom: 3px solid #1a1a2e;\n' +
-'    padding-bottom: 8px;\n' +
-'    margin-bottom: 24px;\n' +
-'  }\n' +
-'  .toc ol {\n' +
-'    list-style: none;\n' +
-'    margin: 0;\n' +
-'    padding: 0;\n' +
-'  }\n' +
-'  .toc ol li {\n' +
-'    font-size: 12pt;\n' +
-'    padding: 8px 0;\n' +
-'    border-bottom: 1px dotted #d1d5db;\n' +
-'    display: flex;\n' +
-'    align-items: baseline;\n' +
-'    gap: 12px;\n' +
-'  }\n' +
-'  .toc ol li .toc-num {\n' +
-'    font-weight: 700;\n' +
-'    color: #1a1a2e;\n' +
-'    min-width: 32px;\n' +
-'  }\n' +
-'  .toc ol li .toc-title {\n' +
-'    flex: 1;\n' +
-'  }\n' +
-'  /* === Document Sections === */\n' +
-'  .section {\n' +
-'    page-break-before: always;\n' +
-'  }\n' +
-'  .section-header-block {\n' +
-'    margin-bottom: 24px;\n' +
-'    padding-bottom: 12px;\n' +
-'    border-bottom: 3px solid #1a1a2e;\n' +
-'  }\n' +
-'  .section-number {\n' +
-'    font-size: 12pt;\n' +
-'    color: #6b7280;\n' +
-'    font-weight: 700;\n' +
-'    text-transform: uppercase;\n' +
-'    letter-spacing: 1px;\n' +
-'    margin-bottom: 4px;\n' +
-'  }\n' +
-'  .section-title {\n' +
-'    font-size: 20pt;\n' +
-'    color: #111827;\n' +
-'    margin: 0;\n' +
-'    border-bottom: none;\n' +
-'    padding-bottom: 0;\n' +
-'  }\n' +
-'</style>\n' +
-'</head>\n<body>\n' +
-'<div class="pdf-root">\n' +
-'<!-- Classification Banner Top -->\n' +
-'<div class="cover">\n' +
-'  <div class="classification-banner">CUI // SP-RAISE</div>\n' +
-'  <h1>RAISE 2.0<br>ATO Package</h1>\n' +
-'  <div class="subtitle">Authority to Operate &mdash; Submission Documentation</div>\n' +
-'  <hr class="cover-rule">\n' +
-'  <div class="meta">\n' +
-'    <strong>System:</strong> Secure Runtime Environment (SRE) &mdash; DSOP<br>\n' +
-'    <strong>FIPS 199 Categorization:</strong> Moderate &ndash; Moderate &ndash; Moderate<br>\n' +
-'    <strong>Generated:</strong> ' + today + '<br>\n' +
-'    <strong>Documents Included:</strong> ' + sections.length + '<br>\n' +
-'    <strong>eMASS ID:</strong> <em>[PENDING]</em>\n' +
-'  </div>\n' +
-'  <hr class="cover-rule">\n' +
-'  <div class="classification-banner">CUI // SP-RAISE</div>\n' +
-'</div>\n' +
-'<!-- Table of Contents -->\n' +
-'<div class="toc">\n' +
-'  <h2>Table of Contents</h2>\n' +
-'  <ol>\n' +
-sections.map(function(s, i) {
-  return '    <li><span class="toc-num">' + (i + 1) + '.</span><span class="toc-title">' + s.title + '</span></li>';
-}).join('\n') +
-'\n  </ol>\n' +
-'</div>\n' +
-'<!-- Document Sections -->\n' +
-sections.map(function(s, i) {
-  return '<div class="section">\n' +
-    '  <div class="section-header-block">\n' +
-    '    <div class="section-number">Section ' + (i + 1) + ' of ' + sections.length + '</div>\n' +
-    '    <h1 class="section-title">' + s.title + '</h1>\n' +
-    '  </div>\n' +
-    s.html + '\n' +
-    '</div>';
-}).join('\n') +
-'\n</div>\n</body>\n</html>';
+    var today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
 
-    // Build self-contained HTML string with styles for html2pdf
-    var styleMatch = combinedHtml.match(/<style>([\s\S]*?)<\/style>/);
-    var cssText = styleMatch ? styleMatch[1] : '';
-    var bodyMatch = combinedHtml.match(/<body[^>]*>([\s\S]*)<\/body>/);
-    var bodyContent = bodyMatch ? bodyMatch[1] : '';
-    var renderHtml = '<style>' + cssText + '</style>' + bodyContent;
+    // Build cover + TOC as first chunk
+    var coverHtml = '<div class="cover">'
+      + '<div class="classification-banner">CUI // SP-RAISE</div>'
+      + '<h1>RAISE 2.0<br>ATO Package</h1>'
+      + '<div class="subtitle">Authority to Operate &mdash; Submission Documentation</div>'
+      + '<hr class="cover-rule"><div class="meta">'
+      + '<strong>System:</strong> Secure Runtime Environment (SRE) &mdash; DSOP<br>'
+      + '<strong>FIPS 199 Categorization:</strong> Moderate &ndash; Moderate &ndash; Moderate<br>'
+      + '<strong>Generated:</strong> ' + today + '<br>'
+      + '<strong>Documents Included:</strong> ' + sections.length + '<br>'
+      + '<strong>eMASS ID:</strong> <em>[PENDING]</em>'
+      + '</div><hr class="cover-rule">'
+      + '<div class="classification-banner">CUI // SP-RAISE</div></div>';
 
-    var filename = 'RAISE-2.0-ATO-Package-' + new Date().toISOString().slice(0, 10) + '.pdf';
+    var tocHtml = '<div class="toc"><h2>Table of Contents</h2><ol>'
+      + sections.map(function(s, i) {
+        return '<li><span class="toc-num">' + (i + 1) + '.</span>' + s.title + '</li>';
+      }).join('')
+      + '</ol></div>';
 
-    btn.innerHTML = '&#9203; Generating PDF...';
+    // Each document section is its own chunk (avoids canvas size limits)
+    var chunks = [coverHtml + tocHtml];
+    for (var i = 0; i < sections.length; i++) {
+      chunks.push(
+        '<div class="section-header-block">'
+        + '<div class="section-number">Section ' + (i + 1) + ' of ' + sections.length + '</div>'
+        + '<h1 class="section-title">' + sections[i].title + '</h1>'
+        + '</div>'
+        + sections[i].html
+      );
+    }
 
-    var opt = {
-      margin: [0.6, 0.6, 0.6, 0.6],
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        letterRendering: true,
-        logging: false,
-        windowWidth: 816,
-        backgroundColor: '#ffffff'
-      },
-      jsPDF: {
-        unit: 'in',
-        format: 'letter',
-        orientation: 'portrait'
-      },
-      pagebreak: { mode: ['css', 'legacy'], before: '.section', after: ['.cover', '.toc'] }
-    };
+    btn.innerHTML = '&#9203; Generating PDF (0/' + chunks.length + ')...';
 
-    html2pdf().set(opt).from(renderHtml, 'string').save().then(function() {
+    try {
+      var h2cOpt = { scale: 2, windowWidth: 816, backgroundColor: '#ffffff', logging: false };
+      var margin = 0.6;
+      var contentW = 8.5 - 2 * margin;
+      var contentH = 11 - 2 * margin;
+      var pdf = null;
+      var isFirst = true;
+
+      // Render first chunk with html2pdf to get the jsPDF instance
+      var firstWorker = html2pdf().set({
+        margin: [margin, margin, margin, margin],
+        html2canvas: h2cOpt,
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(wrapPdfChunk(chunks[0]), 'string');
+      await firstWorker.toContainer().toCanvas().toImg().toPdf();
+      pdf = firstWorker.prop.pdf;
+      if (firstWorker.prop.container && firstWorker.prop.container.parentNode) firstWorker.prop.container.parentNode.removeChild(firstWorker.prop.container);
+      if (firstWorker.prop.overlay && firstWorker.prop.overlay.parentNode) firstWorker.prop.overlay.parentNode.removeChild(firstWorker.prop.overlay);
+
+      // Render each remaining chunk and append pages to the same PDF
+      for (var c = 1; c < chunks.length; c++) {
+        btn.innerHTML = '&#9203; Generating PDF (' + c + '/' + chunks.length + ')...';
+
+        var worker = html2pdf().set({
+          margin: 0,
+          html2canvas: h2cOpt,
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        }).from(wrapPdfChunk(chunks[c]), 'string');
+        await worker.toContainer().toCanvas();
+        var canvas = worker.prop.canvas;
+
+        // Calculate page slicing
+        var scale = contentW / canvas.width;
+        var totalH = canvas.height * scale;
+        var pagesNeeded = Math.ceil(totalH / contentH);
+
+        for (var p = 0; p < pagesNeeded; p++) {
+          pdf.addPage();
+          var srcY = Math.round(p * contentH / scale);
+          var srcH = Math.min(Math.round(contentH / scale), canvas.height - srcY);
+          if (srcH <= 0) continue;
+
+          var sl = document.createElement('canvas');
+          sl.width = canvas.width;
+          sl.height = srcH;
+          var ctx = sl.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, sl.width, sl.height);
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+          pdf.addImage(sl.toDataURL('image/jpeg', 0.92), 'JPEG', margin, margin, contentW, srcH * scale);
+        }
+
+        // Clean up worker DOM
+        if (worker.prop.container && worker.prop.container.parentNode) worker.prop.container.parentNode.removeChild(worker.prop.container);
+        if (worker.prop.overlay && worker.prop.overlay.parentNode) worker.prop.overlay.parentNode.removeChild(worker.prop.overlay);
+      }
+
+      // Download the PDF
+      var filename = 'RAISE-2.0-ATO-Package-' + new Date().toISOString().slice(0, 10) + '.pdf';
+      pdf.save(filename);
       btn.innerHTML = origText;
       btn.disabled = false;
       closeExportModal();
-    }).catch(function(err) {
+    } catch (err) {
       btn.innerHTML = origText;
       btn.disabled = false;
       alert('PDF generation failed: ' + err.message);
-    });
+    }
   }
 
   /* --- Export All JSON (tool data from localStorage) --- */
