@@ -1412,35 +1412,14 @@
 
     // Each document section is its own chunk (avoids canvas size limits)
     var chunks = [coverHtml, tocHtml];
-    // Canvas height limit ~16384px at scale 2 = ~8 pages of content.
-    // At 672px width, ~8 pages of HTML is roughly 50-60KB.
-    // Only split sections that would exceed canvas limits.
-    var MAX_CHUNK_LEN = 55000;
-    var MIN_CHUNK_LEN = 10000; // Don't create tiny orphaned chunks
     for (var i = 0; i < sections.length; i++) {
-      var sectionHeader = '<div class="section-header-block">'
+      chunks.push(
+        '<div class="section-header-block">'
         + '<div class="section-number">Section ' + (i + 1) + ' of ' + sections.length + '</div>'
         + '<h1 class="section-title">' + sections[i].title + '</h1>'
-        + '</div>';
-      var sHtml = sections[i].html;
-
-      if (sHtml.length <= MAX_CHUNK_LEN) {
-        chunks.push(sectionHeader + sHtml);
-      } else {
-        // Split long sections at <h2> boundaries to keep canvases manageable
-        var parts = sHtml.split(/(?=<h2[ >])/i);
-        var currentChunk = sectionHeader;
-        for (var p = 0; p < parts.length; p++) {
-          var wouldExceed = currentChunk.length + parts[p].length > MAX_CHUNK_LEN;
-          var hasEnoughContent = currentChunk.length > MIN_CHUNK_LEN;
-          if (wouldExceed && hasEnoughContent) {
-            chunks.push(currentChunk);
-            currentChunk = '';
-          }
-          currentChunk += parts[p];
-        }
-        if (currentChunk.length > 0) chunks.push(currentChunk);
-      }
+        + '</div>'
+        + sections[i].html
+      );
     }
 
     btn.innerHTML = '&#9203; Generating PDF (0/' + chunks.length + ')...';
