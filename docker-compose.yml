@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      pdf-server:
+        condition: service_healthy
+
+  pdf-server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      - COMPLIANCE_DIR=/data/compliance/raise
+      - NODE_ENV=production
+    expose:
+      - "3000"

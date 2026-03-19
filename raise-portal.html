@@ -1359,7 +1359,7 @@
   }
 
   /* --- Combined PDF: render each section via html2pdf, merge with pdf-lib --- */
-  async function exportCombinedPDF() {
+  async function exportCombinedPDF_clientSide() {
     const checked = document.querySelectorAll('.comb-cb:checked');
     if (checked.length === 0) {
       alert('Select at least one document to include.');
@@ -1513,6 +1513,55 @@
       btn.innerHTML = origText;
       btn.disabled = false;
       alert('PDF generation failed: ' + err.message);
+    }
+  }
+
+  /* --- Combined PDF: server-side with client-side fallback --- */
+  async function exportCombinedPDF() {
+    const checked = document.querySelectorAll('.comb-cb:checked');
+    if (checked.length === 0) { alert('Select at least one document to include.'); return; }
+
+    const btn = event.target.closest('.export-btn') || event.target;
+    const origText = btn.innerHTML;
+    btn.innerHTML = '&#9203; Generating PDF...';
+    btn.disabled = true;
+
+    // Collect selected document paths
+    var documents = [];
+    checked.forEach(function(cb) { documents.push(cb.dataset.doc); });
+
+    try {
+      // Try server-side generation first
+      var resp = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documents: documents })
+      });
+
+      if (!resp.ok) throw new Error('Server returned ' + resp.status);
+
+      var blob = await resp.blob();
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'RAISE-2.0-ATO-Package-' + new Date().toISOString().slice(0, 10) + '.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      btn.innerHTML = origText;
+      btn.disabled = false;
+      closeExportModal();
+    } catch (serverErr) {
+      // Fall back to client-side generation
+      console.warn('Server PDF unavailable, using client-side:', serverErr.message);
+      btn.innerHTML = '&#9203; Generating PDF (client)...';
+      try {
+        await exportCombinedPDF_clientSide();
+      } catch (clientErr) {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        alert('PDF generation failed: ' + clientErr.message);
+      }
     }
   }
 
