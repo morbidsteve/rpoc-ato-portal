@@ -692,5 +692,40 @@ document.addEventListener("keydown",e=>{
 // ═══════════════════════════════════════════════════════════════════════════════
 load();rTop();rSb();rMn();
 </script>
+<script src="js/sre-api.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// Live Data from SRE Platform API
+// ═══════════════════════════════════════════════════════════════════════════════
+(function(){
+  if(typeof SreApi==='undefined')return;
+  SreApi.checkConnection().then(function(isLive){
+    if(!isLive)return;
+    SreApi.fetchFromSRE('/api/compliance/controls').then(function(result){
+      if(!result.ok||!result.data||!result.data.controls)return;
+      var apiControls=result.data.controls;
+      var statusMap={
+        'implemented':'implemented','partial':'planned','planned':'planned',
+        'auto-verified':'implemented','manual':'planned','failed':'gap','gap':'gap',
+        'inherited':'inherited','na':'na'
+      };
+      var idMap={};
+      apiControls.forEach(function(ac){ idMap[ac.id]=ac; });
+      Object.keys(D).forEach(function(fam){
+        D[fam].c.forEach(function(ctrl){
+          var liveCtrl=idMap[ctrl.id];
+          if(liveCtrl){
+            var mapped=statusMap[liveCtrl.status]||liveCtrl.status;
+            if(mapped&&mapped!==ctrl.s){ ctrl.s=mapped; ctrl._live=true; }
+            if(liveCtrl.implementation&&!ctrl.d){ ctrl.d=liveCtrl.implementation; }
+          }
+        });
+      });
+      load();rTop();rSb();rMn();
+      SreApi.setDataSource('live');
+    });
+  });
+})();
+</script>
 </body>
 </html>

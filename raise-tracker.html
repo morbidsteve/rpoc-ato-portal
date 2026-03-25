@@ -1158,5 +1158,32 @@ function setFilter(f) {
 // ============================================================
 render();
 </script>
+<script src="js/sre-api.js"></script>
+<script>
+// Live data from SRE Platform API — RAISE requirements status
+(function(){
+  if(typeof SreApi==='undefined'||typeof rpocRequirements==='undefined')return;
+  SreApi.checkConnection().then(function(isLive){
+    if(!isLive)return;
+    SreApi.fetchFromSRE('/api/compliance/raise/status').then(function(result){
+      if(!result.ok||!result.data||!result.data.requirements)return;
+      var liveReqs=result.data.requirements;
+      var liveMap={};
+      liveReqs.forEach(function(r){ liveMap[r.id]=r; });
+      var statusFromApi={'auto-verified':'done','failed':'missing','manual':'process'};
+      rpocRequirements.forEach(function(req){
+        var lr=liveMap[req.id];
+        if(lr){
+          var mapped=statusFromApi[lr.status];
+          if(mapped&&mapped!==req.status){ req.status=mapped; req._live=true; }
+          if(lr.evidence){ req._liveEvidence=lr.evidence; }
+        }
+      });
+      render();
+      SreApi.setDataSource('live');
+    });
+  });
+})();
+</script>
 </body>
 </html>

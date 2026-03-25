@@ -1,0 +1,69 @@
+# Organization Configuration for ATO Package Placeholder Replacement
+#
+# Fill in these fields and run scripts/fill-placeholders.sh to replace
+# all _[PLACEHOLDER]_ markers across compliance documents.
+#
+# Usage:
+#   scripts/fill-placeholders.sh                   # replace placeholders
+#   scripts/fill-placeholders.sh --check           # list remaining unfilled placeholders
+
+organization:
+  name: ""                        # e.g., "Department of the Navy"
+  abbreviation: ""                # e.g., "DON"
+  unit: ""                        # e.g., "NAVWAR"
+
+system:
+  name: "Secure Runtime Environment (SRE)"
+  abbreviation: "SRE"
+  categorization: "Moderate"       # FIPS 199 categorization
+  emass_id: ""                    # eMASS system ID once registered
+  ditpr_id: ""                    # DITPR registration ID
+  mac_level: "MAC II"            # Mission Assurance Category
+  confidentiality_level: "Moderate"
+
+personnel:
+  system_owner:
+    name: ""                      # e.g., "John Smith"
+    title: ""                     # e.g., "Program Manager"
+    email: ""                     # e.g., "john.smith@navy.mil"
+    phone: ""                     # e.g., "(555) 123-4567"
+
+  issm:
+    name: ""                      # Information System Security Manager
+    title: ""
+    email: ""
+    phone: ""
+
+  isso:
+    name: ""                      # Information System Security Officer
+    title: ""
+    email: ""
+    phone: ""
+
+  authorizing_official:
+    name: ""                      # Authorizing Official
+    title: ""
+    email: ""
+    phone: ""
+
+  platform_lead:
+    name: ""                      # Platform Lead Engineer
+    title: ""
+    email: ""
+    phone: ""
+
+  sca:
+    name: ""                      # Security Control Assessor
+    title: ""
+    email: ""
+    phone: ""
+
+location:
+  facility: ""                    # e.g., "NIWC Pacific, San Diego, CA"
+  address: ""                     # Full mailing address
+  classification: "Unclassified"  # Classification level
+
+dates:
+  ato_target: ""                  # Target ATO date, e.g., "2026-06-30"
+  last_assessment: ""             # Last assessment date
+  next_review: ""                 # Next quarterly review date

@@ -1332,5 +1332,48 @@ document.addEventListener('keydown', function(e) {
 loadData();
 renderAll();
 </script>
+<script src="js/sre-api.js"></script>
+<script>
+// Live data from SRE Platform API — POA&M findings
+(function(){
+  if(typeof SreApi==='undefined')return;
+  SreApi.checkConnection().then(function(isLive){
+    if(!isLive)return;
+    SreApi.fetchFromSRE('/api/compliance/poam').then(function(result){
+      if(!result.ok||!result.data||!result.data.findings)return;
+      var liveFindings=result.data.findings;
+      if(!liveFindings.length)return;
+      // Merge live findings with local data — live takes precedence for matching IDs
+      var localIds={};
+      items.forEach(function(it){ localIds[it.id]=true; });
+      var sevMap={'critical':'Critical','high':'High','moderate':'Moderate','medium':'Moderate','low':'Low'};
+      var statMap={'open':'Open','in-progress':'In Progress','risk-accepted':'Risk Accepted','resolved':'Completed'};
+      liveFindings.forEach(function(lf){
+        var lfId=lf.id||lf.poam_id;
+        if(!lfId)return;
+        if(!localIds[lfId]){
+          items.push({
+            id:lfId,
+            weakness:lf.weakness||lf.description||lf.title||'',
+            control:lf.control||lf.nist_control||'',
+            source:lf.source||'SRE Platform',
+            severity:sevMap[(lf.severity||'').toLowerCase()]||lf.severity||'Moderate',
+            status:statMap[(lf.status||'').toLowerCase()]||lf.status||'Open',
+            responsible:lf.responsible||lf.owner||'Platform Team',
+            dueDate:lf.target_resolution||lf.due_date||daysFromNow(90),
+            completedDate:lf.completed_date||'',
+            milestones:lf.milestones||[],
+            resources:lf.resources||'',
+            comments:lf.comments||'(Imported from SRE Platform)',
+            _live:true
+          });
+        }
+      });
+      renderAll();
+      SreApi.setDataSource('live');
+    });
+  });
+})();
+</script>
 </body>
 </html>

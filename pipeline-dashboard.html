@@ -1220,5 +1220,34 @@ document.getElementById('runSelect').addEventListener('change', function() {
 // Init
 render();
 </script>
+<script src="js/sre-api.js"></script>
+<script>
+// Live data from SRE Platform API — pipeline summary
+(function(){
+  if(typeof SreApi==='undefined')return;
+  SreApi.checkConnection().then(function(isLive){
+    if(!isLive)return;
+    SreApi.fetchFromSRE('/api/compliance/pipeline/summary').then(function(result){
+      if(!result.ok||!result.data||!result.data.available)return;
+      var d=result.data;
+      // Update pipeline run counts if elements exist
+      var totalEl=document.querySelector('[data-live="totalRuns"]');
+      if(totalEl) totalEl.textContent=d.totalRuns||0;
+      // Update gate pass rates into RUNS data if available
+      if(d.gatePassRates&&typeof RUNS!=='undefined'){
+        Object.keys(d.gatePassRates).forEach(function(gate){
+          var info=d.gatePassRates[gate];
+          if(info&&info.rate!==undefined){
+            // Store for potential UI display
+            var el=document.querySelector('[data-gate-rate="'+gate+'"]');
+            if(el) el.textContent=info.rate+'%';
+          }
+        });
+      }
+      SreApi.setDataSource('live');
+    });
+  });
+})();
+</script>
 </body>
 </html>
