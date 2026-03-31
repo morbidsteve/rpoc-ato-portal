@@ -43,23 +43,23 @@ SRE with _[eMASS/MCAST ID]_ is seeking certification for usability and functiona
 |---|------|---------|------------|---------|
 | 1 | Semgrep | 1.102.0 | GATE 1 (SAST) | Static application security testing for source code |
 | 2 | Syft | 1.18.1 | GATE 2 (SBOM) | Software Bill of Materials generation (SPDX + CycloneDX) |
-| 3 | Gitleaks | 8.21.2 | GATE 3 (Secrets) | Secrets and credential detection in source code |
+| 3 | Gitleaks | 8.22.1 | GATE 3 (Secrets) | Secrets and credential detection in source code |
 | 4 | Trivy | 0.58.2 | GATE 4 (CSS) | Container image vulnerability scanning |
-| 5 | OWASP ZAP | 2.15.0 | GATE 5 (DAST) | Dynamic application security testing |
+| 5 | OWASP ZAP | Latest stable | GATE 5 (DAST) | Dynamic application security testing |
 | 6 | GitHub Environments | N/A | GATE 6 (ISSM Review) | Manual approval gate with required reviewers |
-| 7 | Cosign (Sigstore) | 2.4.1 | GATE 7 (Signing) | Container image signing with key-based verification |
-| 8 | Harbor | 1.16.3 | GATE 8 (Artifact Repo) | OCI-compliant container registry with Trivy scanning |
+| 7 | Cosign (Sigstore) | 3.8.0 | GATE 7 (Signing) | Container image signing with key-based verification |
+| 8 | Harbor | 2.12.3 | GATE 8 (Artifact Repo) | OCI-compliant container registry with Trivy scanning |
 
 ### Supporting Tools and Services
 
 | # | Tool/Service | Version | Purpose |
 |---|-------------|---------|---------|
-| 9 | GitHub Actions | N/A | CI/CD pipeline orchestration |
+| 9 | GitHub Actions | N/A | CI/CD pipeline orchestration (reusable workflows, SHA-pinned actions) |
 | 10 | GitLab CI | N/A | Alternative CI/CD pipeline orchestration |
-| 11 | Flux CD | 2.8.1 | GitOps continuous deployment |
-| 12 | Kyverno | 3.x | Admission control — image signature verification |
-| 13 | NeuVector | 5.x | Runtime container security scanning |
-| 14 | Docker Buildx | 0.18.x | Multi-platform container image builds |
+| 11 | Flux CD | 1.8.0 | GitOps continuous deployment |
+| 12 | Kyverno | 1.13.4 | Admission control — image signature verification (19 ClusterPolicies) |
+| 13 | NeuVector | 5.4.3 | Runtime container security scanning (3 controllers, 3 enforcers, 3 scanners) |
+| 14 | Kaniko | 1.23.2 | Container image builds |
 
 ---
 
@@ -90,7 +90,7 @@ Developer pushes version tag (e.g., v1.2.3)
 [GATE 1] Semgrep: SAST scan of source code
     |
     v
-[Build] Docker Buildx: Build container image
+[Build] Kaniko: Build container image
     |
     v
 [GATE 4] Trivy: Container vulnerability scan

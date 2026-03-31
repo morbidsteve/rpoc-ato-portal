@@ -62,7 +62,8 @@ The SRE platform consists of the following authorized components:
 
 **Kubernetes Distribution:** RKE2 v1.34.4 (DISA STIG-certified, FIPS 140-2 compliant)
 **Operating System:** Rocky Linux 9.7 (DISA STIG-hardened, SELinux enforcing, FIPS enabled)
-**GitOps Engine:** Flux CD v2.8.1
+**GitOps Engine:** Flux CD v1.8.0
+**Container Runtime:** containerd v2.1.5-k3s1
 
 ### 4. CI/CD PIPELINE TOOLS — CERTIFICATION REQUEST
 
@@ -74,23 +75,23 @@ Per reference (a), Section 3.2, the following tools implement the 8 required RAI
 |------|------|---------|---------|--------|---------------------|
 | **GATE 1: SAST** | Semgrep OSS | 1.102.0 | LGPL-2.1 | github.com/semgrep/semgrep | SA-11, SA-15 |
 | **GATE 2: SBOM** | Syft | 1.18.1 | Apache-2.0 | github.com/anchore/syft | CM-2, CM-8, SA-17 |
-| **GATE 3: Secrets Detection** | Gitleaks | 8.21.2 | MIT | github.com/gitleaks/gitleaks | IA-5, SC-28 |
+| **GATE 3: Secrets Detection** | Gitleaks | 8.22.1 | MIT | github.com/gitleaks/gitleaks | IA-5, SC-28 |
 | **GATE 4: Container Security Scan** | Trivy | 0.58.2 | Apache-2.0 | github.com/aquasecurity/trivy | RA-5, SI-2 |
-| **GATE 5: DAST** | OWASP ZAP | 2.15.0 | Apache-2.0 | github.com/zaproxy/zaproxy | SA-11, SI-10 |
+| **GATE 5: DAST** | OWASP ZAP | Latest stable | Apache-2.0 | github.com/zaproxy/zaproxy | SA-11, SI-10 |
 | **GATE 6: ISSM Review** | GitHub Environments | N/A | SaaS | github.com | CA-2, CA-7 |
-| **GATE 7: Image Signing** | Cosign (Sigstore) | 2.4.1 | Apache-2.0 | github.com/sigstore/cosign | SI-7, SA-10 |
-| **GATE 8: Artifact Repository** | Harbor | 1.16.3 | Apache-2.0 | github.com/goharbor/harbor | CM-8, SI-7 |
+| **GATE 7: Image Signing** | Cosign (Sigstore) | 3.8.0 | Apache-2.0 | github.com/sigstore/cosign | SI-7, SA-10 |
+| **GATE 8: Artifact Repository** | Harbor | 2.12.3 | Apache-2.0 | github.com/goharbor/harbor | CM-8, SI-7 |
 
 #### 4b. Supporting Infrastructure
 
 | Tool | Version | Purpose | NIST Controls |
 |------|---------|---------|---------------|
-| GitHub Actions | SaaS | CI/CD pipeline orchestration (primary) | SA-10, AU-2 |
+| GitHub Actions | SaaS | CI/CD pipeline orchestration (primary, reusable workflows, SHA-pinned actions) | SA-10, AU-2 |
 | GitLab CI | SaaS | CI/CD pipeline orchestration (alternative) | SA-10, AU-2 |
-| Flux CD | 2.8.1 | GitOps continuous deployment engine | CM-2, CM-3, SA-10 |
-| Kyverno | 3.x | Kubernetes admission control — signature verification | SI-7, CM-7 |
-| NeuVector | 5.x | Runtime container security monitoring | SI-3, SI-4, IR-4 |
-| Docker Buildx | 0.18.x | Multi-platform container image builds | SA-10 |
+| Flux CD | 1.8.0 | GitOps continuous deployment engine (26 Kustomizations, 16+ HelmReleases) | CM-2, CM-3, SA-10 |
+| Kyverno | 1.13.4 | Kubernetes admission control -- signature verification (19 ClusterPolicies) | SI-7, CM-7 |
+| NeuVector | 5.4.3 | Runtime container security monitoring (3 controllers, 3 enforcers, 3 scanners) | SI-3, SI-4, IR-4 |
+| Kaniko | 1.23.2 | Container image builds | SA-10 |
 
 ### 5. PIPELINE ARCHITECTURE
 
@@ -111,7 +112,7 @@ The CI/CD pipeline implements all 8 RAISE security gates in the following sequen
 │      │         Output: semgrep.sarif → GitHub Security tab        │
 │      │         Fail: ERROR-level findings → pipeline stops        │
 │      │                                                            │
-│      ├──► [Build] Docker Buildx: Build container image            │
+│      ├──► [Build] Kaniko: Build container image                    │
 │      │                                                            │
 │      ├──► [GATE 4] Trivy: Container vulnerability scan            │
 │      │         Output: trivy.sarif → GitHub Security tab          │

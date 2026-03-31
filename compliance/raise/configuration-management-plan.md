@@ -126,22 +126,24 @@ All configuration items (CIs) in the SRE platform are organized into these categ
 
 All platform services are tracked as Flux HelmRelease custom resources with pinned chart versions:
 
-| Service | Chart Version | Namespace | Flux HelmRelease | NIST Controls |
-|---------|--------------|-----------|------------------|---------------|
-| Istio | Pinned | istio-system | istio | SC-8, AC-4, IA-3 |
-| Kyverno | Pinned | kyverno | kyverno | AC-6, CM-6, CM-7 |
-| cert-manager | Pinned | cert-manager | cert-manager | SC-12, IA-5 |
-| Prometheus/Grafana | Pinned | monitoring | monitoring | AU-6, SI-4, CA-7 |
-| Loki | Pinned | logging | loki | AU-2, AU-4, AU-12 |
-| Alloy | Pinned | logging | alloy | AU-2, AU-12 |
-| Tempo | Pinned | tracing | tempo | AU-2, SI-4 |
-| OpenBao | Pinned | openbao | openbao | SC-12, SC-28, IA-5 |
-| ESO | Pinned | external-secrets | external-secrets | SC-28 |
-| Harbor | 1.16.3 | harbor | harbor | CM-8, SI-7, RA-5 |
-| NeuVector | Pinned | neuvector | neuvector | SI-3, SI-4, IR-4 |
-| Keycloak | 24.8.1 | keycloak | keycloak | AC-2, IA-2, IA-8 |
-| Velero | Pinned | velero | velero | CP-9, CP-10 |
+| Service | App Version | Namespace | Flux HelmRelease | NIST Controls |
+|---------|------------|-----------|------------------|---------------|
+| Istio | 1.25.2 | istio-system | istio | SC-8, AC-4, IA-3 |
+| Kyverno | 1.13.4 | kyverno | kyverno | AC-6, CM-6, CM-7 |
+| cert-manager | 1.14.4 | cert-manager | cert-manager | SC-12, IA-5 |
+| Prometheus | 3.4.0 | monitoring | monitoring | AU-6, SI-4, CA-7 |
+| Grafana | 11.6.0 | monitoring | monitoring | AU-6, CA-7 |
+| Loki | 1.30.2 | logging | loki | AU-2, AU-4, AU-12 |
+| Alloy | 1.x | logging | alloy | AU-2, AU-12 |
+| Tempo | 2.7.1 | tracing | tempo | AU-2, SI-4 |
+| OpenBao | 2.2.0 | openbao | openbao | SC-12, SC-28, IA-5 |
+| ESO | 0.9.13 | external-secrets | external-secrets | SC-28 |
+| Harbor | 2.12.3 | harbor | harbor | CM-8, SI-7, RA-5 |
+| NeuVector | 5.4.3 | neuvector | neuvector | SI-3, SI-4, IR-4 |
+| Keycloak | 26.3.2 | keycloak | keycloak | AC-2, IA-2, IA-8 |
+| Velero | 1.17.1 | velero | velero | CP-9, CP-10 |
 | MetalLB | 0.14.9 | metallb-system | metallb | SC-7 |
+| CloudNativePG | 1.25.0 | cnpg-system | cloudnative-pg | CM-6, CP-9 |
 
 **Version pinning policy:** All HelmRelease manifests specify exact chart versions. Range specifiers (`*`, `>=`, `~`) are prohibited. Version changes require a pull request with impact assessment.
 
@@ -150,9 +152,10 @@ All platform services are tracked as Flux HelmRelease custom resources with pinn
 | Component | Version | Configuration Source |
 |-----------|---------|---------------------|
 | Proxmox VE | Current | Manual (hypervisor layer, out of scope for GitOps) |
-| Rocky Linux | 9.7 | Packer image + Ansible STIG hardening |
-| RKE2 | v1.34.4 | Ansible roles: rke2-server, rke2-agent |
-| Flux CD | v2.8.1 | `platform/flux-system/gotk-components.yaml` |
+| Rocky Linux | 9.7 (Blue Onyx) | Packer image + Ansible STIG hardening, kernel 5.14.0-611.36.1.el9_7 |
+| RKE2 | v1.34.4+rke2r1 | Ansible roles: rke2-server, rke2-agent (DISA STIG-certified, FIPS 140-2) |
+| containerd | 2.1.5-k3s1 | Embedded in RKE2 distribution |
+| Flux CD | v1.8.0 | `platform/flux-system/gotk-components.yaml` |
 | SELinux | Enforcing | Ansible os-hardening role |
 | FIPS mode | Enabled | Ansible os-hardening role + RKE2 BoringCrypto |
 
@@ -162,11 +165,12 @@ Reference: QREV-1 (System Security Plan) for authoritative hardware inventory.
 
 | Asset | Specification | IP Address | Role |
 |-------|--------------|------------|------|
-| pve-node-1 | [PLACEHOLDER -- CPU/RAM/Storage] | 192.168.2.x | Proxmox host, RKE2 server VM |
-| pve-node-2 | [PLACEHOLDER -- CPU/RAM/Storage] | 192.168.2.x | Proxmox host, RKE2 agent VM |
-| pve-node-3 | [PLACEHOLDER -- CPU/RAM/Storage] | 192.168.2.x | Proxmox host, RKE2 agent VM |
-| Network switch | [PLACEHOLDER -- Model] | 192.168.2.1 | Layer 2/3 switching |
-| Backup storage | [PLACEHOLDER -- Model/Capacity] | 192.168.2.x | S3-compatible, Velero target |
+| sre-lab-rke2-server-0 | 4 vCPU, 15.4 GiB RAM, 100 GB storage | 192.168.2.104 | RKE2 server (control plane + etcd) |
+| sre-lab-rke2-agent-0 | 4 vCPU, 15.4 GiB RAM, 100 GB storage | 192.168.2.103 | RKE2 agent (worker) |
+| sre-lab-rke2-agent-1 | 4 vCPU, 15.4 GiB RAM, 100 GB storage | 192.168.2.102 | RKE2 agent (worker) |
+| MetalLB IP pool | Virtual IPs for LoadBalancer services | 192.168.2.200-210 | Ingress load balancing (Istio gateway on .200) |
+| Network switch | _[Model TBD]_ | 192.168.2.1 | Layer 2/3 switching |
+| Backup storage | _[Model/Capacity TBD]_ | 192.168.2.x | S3-compatible, Velero target |
 
 ### 3.5 Software License Inventory
 
@@ -349,7 +353,7 @@ Kyverno operates in two modes across the platform:
 
 | Policy Set | Mode | Scope |
 |-----------|------|-------|
-| 18 ClusterPolicies | Enforce | Cluster-wide (active blocking) |
+| 19 ClusterPolicies | Enforce/Audit | Cluster-wide (active blocking and compliance reporting) |
 
 **Monitoring:**
 - PolicyReports are generated for all resources (including existing ones via `background: true`)
@@ -431,7 +435,7 @@ Rocky Linux 9.7 is hardened per the DISA STIG for RHEL 9 using the Ansible `os-h
 
 ### 6.4 Kubernetes Baseline (Kyverno Policies)
 
-Eighteen ClusterPolicies enforce the Kubernetes security baseline across three tiers:
+Nineteen ClusterPolicies enforce the Kubernetes security baseline across three tiers:
 
 **Custom Policies (SRE-specific):**
 
@@ -576,8 +580,8 @@ Reports are generated from Grafana dashboards and included in the Quarterly Revi
 
 | Tool | Purpose | Version | Configuration Location |
 |------|---------|---------|----------------------|
-| Git | Version control for all configuration | Current | `.gitignore`, `.gitattributes` |
-| Flux CD | GitOps reconciliation engine | v2.8.1 | `platform/flux-system/` |
+| Git | Version control for all configuration (github.com/morbidsteve/sre-platform) | Current | `.gitignore`, `.gitattributes` |
+| Flux CD | GitOps reconciliation engine | v1.8.0 | `platform/flux-system/` |
 | OpenTofu | Infrastructure provisioning | Pinned | `tofu/environments/*/versions.tf` |
 | Ansible | OS hardening and RKE2 installation | Current | `ansible/ansible.cfg` |
 | Packer | Immutable VM image builds | Current | `packer/` |
@@ -676,7 +680,8 @@ task validate
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2026-03-11 | [PLACEHOLDER] | Initial plan |
+| 1.0 | 2026-03-11 | _[NAME]_ | Initial plan |
+| 1.1 | 2026-03-30 | _[NAME]_ | Updated with live platform data: real component versions, node inventory, Flux CD v1.8.0, 19 Kyverno policies, repository reference (morbidsteve/sre-platform) |
 
 ### 9.3 Related Documents
 

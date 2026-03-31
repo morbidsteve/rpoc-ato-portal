@@ -42,15 +42,17 @@ The SRE platform is a Kubernetes-based runtime environment designed to host miss
 
 **Overall Risk Posture: LOW to MODERATE**
 
-Of the 18 risks identified in this assessment:
+Of the 21 risks identified in this assessment:
 
 - **0 risks** rated as Very High
 - **0 risks** rated as High
 - **4 risks** rated as Moderate
-- **10 risks** rated as Low
+- **13 risks** rated as Low
 - **4 risks** rated as Very Low
 
 The platform demonstrates a mature security posture with multiple layers of preventive, detective, and corrective controls. The four Moderate-level risks are associated with advanced persistent threats targeting the supply chain, insider threat scenarios, zero-day exploitation, and physical security (inherited). All identified risks have existing mitigations in place, and recommended actions focus on hardening residual risk areas to further reduce the overall risk profile.
+
+Three additional risks (R-19, R-20, R-21) were identified during integration testing rounds 1-5, which tested 15 real-world applications and deployed 36+ services through the platform. Five critical bugs were found and fixed during E2E testing, validating the platform's security controls under realistic load.
 
 No unacceptable risks were identified. The Authorizing Official (AO) is recommended to approve an Authorization to Operate with the conditions outlined in Section 8.
 
@@ -70,7 +72,7 @@ The SRE platform is composed of four layers:
 |-------|-------------|----------------|
 | **Cluster Foundation** | Hardened OS and Kubernetes distribution | Rocky Linux 9.7 (STIG-hardened, SELinux enforcing, FIPS enabled), RKE2 v1.34.4 |
 | **Platform Services** | Security, observability, networking, and policy tooling | Istio, Kyverno, Prometheus/Grafana/Loki/Tempo, NeuVector, OpenBao, cert-manager, Harbor, Keycloak, Velero |
-| **Developer Experience** | GitOps-based application deployment | Flux CD v2.8.1, Helm chart templates, tenant onboarding automation |
+| **Developer Experience** | GitOps-based application deployment | Flux CD v1.8.0, Helm chart templates, tenant onboarding automation |
 | **Supply Chain Security** | Image scanning, signing, SBOM, admission control | Trivy, Cosign, Syft, Kyverno imageVerify, Harbor registry |
 
 ### 2.3 Authorization Boundary
@@ -225,8 +227,11 @@ The assessment considers:
 | **R-14** | Any Adversary | Compromise of TLS certificates or signing keys | V-07: Certificate or key material exposure or misuse | Very Low (1) | High (4) | **Low** | cert-manager automated certificate rotation; internal CA chain (root + intermediate); Prometheus alerts at 30/14/7 days before expiry; OpenBao manages all signing keys with audit logging; Cosign keys stored in OpenBao; auto-unseal via KMS prevents manual key handling | Implement hardware security module (HSM) for root CA key; establish certificate compromise response procedure; rotate signing keys annually; implement certificate transparency logging | Mitigated |
 | **R-15** | External Attacker | Exploitation of Kubernetes API server vulnerability | V-02: API server is a high-value target; any RCE is catastrophic | Very Low (1) | Very High (5) | **Low** (post-mitigation) | RKE2 CIS-hardened configuration (1.23 profile); Kubernetes RBAC enforced; API audit logging (all request/response); NetworkPolicy restricts API server access; Keycloak OIDC for user authentication; ServiceAccount tokens scoped and short-lived; admission controllers (Kyverno) validate all requests | Restrict API server network access to management VLAN; implement API request rate limiting; subscribe to Kubernetes security announcements; maintain RKE2 patching SLA; conduct periodic API server penetration testing | Mitigated |
 | **R-16** | Software Defect | Flux CD reconciliation failure causing stale deployments | V-13: GitOps engine failure leaves cluster in outdated state | Low (2) | Low (2) | **Very Low** | Flux health checks on all Kustomizations and HelmReleases; Prometheus alerts on reconciliation failures; Grafana dashboard for Flux status; manual reconciliation available via CLI; Flux auto-retries (3 attempts); suspend/resume resets failure counter | Implement Flux HA deployment; establish reconciliation failure escalation procedure; conduct periodic Flux upgrade testing; maintain runbook for manual deployment fallback | Mitigated |
-| **R-17** | Configuration Error | Kyverno policy misconfiguration allowing non-compliant workload | V-13: Policy bypass via incorrect match/exclude rules | Very Low (1) | Moderate (3) | **Very Low** | All Kyverno policies have automated test suites (pass/fail cases); policies stored in Git with PR review; Kyverno background scanning detects non-compliant existing resources; PolicyReport CRDs feed Grafana compliance dashboards; 18 ClusterPolicies in Enforce mode (baseline, restricted, and custom tiers) | Implement policy-as-code testing in CI; conduct quarterly policy review; establish policy exception workflow requiring ISSM approval; monitor PolicyReport violations daily | Mitigated |
+| **R-17** | Configuration Error | Kyverno policy misconfiguration allowing non-compliant workload | V-13: Policy bypass via incorrect match/exclude rules | Very Low (1) | Moderate (3) | **Very Low** | All Kyverno policies have automated test suites (pass/fail cases); policies stored in Git with PR review; Kyverno background scanning detects non-compliant existing resources; PolicyReport CRDs feed Grafana compliance dashboards; 19 ClusterPolicies in Enforce/Audit mode (baseline, restricted, and custom tiers) | Implement policy-as-code testing in CI; conduct quarterly policy review; establish policy exception workflow requiring ISSM approval; monitor PolicyReport violations daily | Mitigated |
 | **R-18** | Software Defect | OpenBao unavailability causing application secret access failure | OpenBao is a stateful singleton; downtime affects ESO sync | Low (2) | Moderate (3) | **Low** | OpenBao deployed with Raft HA storage; auto-unseal CronJob (every 5 minutes); External Secrets Operator caches last-known secrets in K8s Secrets; Prometheus alerts on OpenBao seal status and health; init keys stored as K8s Secret for recovery | Deploy OpenBao with 3+ replicas for full HA; implement OpenBao performance standby nodes; establish OpenBao disaster recovery procedure; test unseal/recovery quarterly | Planned |
+| **R-19** | Configuration Error | Kyverno PolicyException accumulation without periodic review | Per-app PolicyExceptions granted during integration testing may accumulate over time without formal review process; 15 apps tested with security overrides | Low (2) | Moderate (3) | **Low** | PolicyExceptions are tracked with audit trail in Git; each exception documents justification and scope; Kyverno PolicyReports surface active exceptions; exceptions are namespace-scoped (not cluster-wide) | Establish quarterly PolicyException review process with ISSO; implement PolicyException expiration dates; create Grafana dashboard tracking active exceptions by namespace and age; require ISSM re-approval for exceptions older than 90 days | Mitigated |
+| **R-20** | Configuration Error | OAuth2 Proxy redirect URI misconfiguration enabling SSO bypass | During integration testing, misconfigured redirect URIs on OAuth2 Proxy allowed unauthenticated access to protected services; 5 critical bugs found during E2E testing included redirect chain issues | Low (2) | High (4) | **Low** (post-mitigation) | OAuth2 Proxy + Istio ext-authz gate enforced on all services except Keycloak, Harbor, and NeuVector (which have their own auth); redirect URIs are now explicitly allowlisted per service; Keycloak OIDC clients have fixed redirect URI patterns; all platform UIs and tenant apps confirmed behind SSO after Round 5 testing | Implement automated redirect URI validation in CI; add integration test that verifies SSO enforcement on all ingress routes; document approved redirect URI patterns per service; conduct quarterly SSO configuration audit | Mitigated |
+| **R-21** | Authorized User | Tenant applications requiring root or elevated privileges weaken container isolation | During integration testing, some tenant apps (e.g., Wireshark, Unifi) required root user, host networking, or additional capabilities to function; Kyverno PolicyExceptions were granted with documented justification | Low (2) | Moderate (3) | **Low** | Kyverno PolicyExceptions require documented justification and are namespace-scoped; NeuVector runtime monitoring provides behavioral baseline enforcement on privileged containers; privileged containers are isolated in dedicated namespaces with strict NetworkPolicies; each exception is tracked in Git with audit trail | Implement container escape detection rules in NeuVector for privileged pods; require compensating controls documentation for each PolicyException; explore rootless alternatives for apps currently requiring root; establish hard cap on number of active PolicyExceptions per tenant | Mitigated |
 
 ---
 
@@ -238,17 +243,17 @@ The assessment considers:
 |------------|-------|------------|----------|
 | **Very High** | 0 | 0% | -- |
 | **High** | 0 | 0% | -- |
-| **Moderate** | 4 | 22% | R-01, R-02, R-03, R-13 |
-| **Low** | 10 | 56% | R-04, R-05, R-06, R-07, R-08, R-10, R-11, R-12, R-14, R-15, R-18 |
-| **Very Low** | 4 | 22% | R-16, R-17 |
+| **Moderate** | 4 | 19% | R-01, R-02, R-03, R-13 |
+| **Low** | 13 | 62% | R-04, R-05, R-06, R-07, R-08, R-10, R-11, R-12, R-14, R-15, R-18, R-19, R-20, R-21 |
+| **Very Low** | 4 | 19% | R-16, R-17 |
 
-*Note: R-07 (post-mitigation) and R-08 (post-mitigation) are assessed at Low. R-13 is an inherited risk from the hosting facility.*
+*Note: R-07 (post-mitigation), R-08 (post-mitigation), and R-20 (post-mitigation) are assessed at Low. R-13 is an inherited risk from the hosting facility. R-19, R-20, and R-21 were identified during integration testing rounds 1-5.*
 
 ### 7.2 Risk by Status
 
 | Status | Count | Risk IDs |
 |--------|-------|----------|
-| **Mitigated** | 14 | R-01, R-02, R-03, R-04, R-05, R-06, R-07, R-08, R-09, R-11, R-14, R-15, R-16, R-17 |
+| **Mitigated** | 17 | R-01, R-02, R-03, R-04, R-05, R-06, R-07, R-08, R-09, R-11, R-14, R-15, R-16, R-17, R-19, R-20, R-21 |
 | **Planned** | 3 | R-10, R-12, R-18 |
 | **Accepted** | 1 | R-13 |
 
@@ -257,8 +262,8 @@ The assessment considers:
 | Category | Count | Highest Risk |
 |----------|-------|-------------|
 | Adversarial (External) | 7 | Moderate (R-02, R-03) |
-| Adversarial (Insider) | 1 | Moderate (R-01) |
-| Non-Adversarial (Human Error) | 3 | Low (R-09, R-11) |
+| Adversarial (Insider) | 2 | Moderate (R-01), Low (R-21) |
+| Non-Adversarial (Human Error) | 5 | Low (R-09, R-11, R-19, R-20) |
 | Non-Adversarial (Environmental) | 2 | Low (R-10, R-12) |
 | Non-Adversarial (Software) | 3 | Low (R-18) |
 | Inherited | 1 | Moderate (R-13) |
@@ -307,7 +312,9 @@ The four Moderate-level risks represent residual risk from advanced threat actor
 | Activity | Frequency | Associated Risks |
 |----------|-----------|-----------------|
 | Vulnerability scan review and remediation | Daily | R-08 |
-| Kyverno PolicyReport compliance review | Weekly | R-17 |
+| Kyverno PolicyReport compliance review | Weekly | R-17, R-19 |
+| Kyverno PolicyException review | Quarterly | R-19, R-21 |
+| OAuth2 Proxy / SSO configuration audit | Quarterly | R-20 |
 | Access review and privilege audit | Quarterly | R-01 |
 | Backup restore validation | Monthly (automated) | R-05 |
 | Certificate expiration monitoring | Continuous (Prometheus) | R-14 |
@@ -316,6 +323,7 @@ The four Moderate-level risks represent residual risk from advanced threat actor
 | Penetration testing | Annual | R-03, R-04, R-15 |
 | Disaster recovery tabletop exercise | Semi-annual | R-10, R-12 |
 | Supply chain dependency review | Quarterly | R-02 |
+| Privileged container compensating controls review | Quarterly | R-21 |
 
 ---
 

@@ -48,8 +48,8 @@ This plan satisfies the following NIST 800-53 Rev 5 controls:
 This plan covers the complete SRE platform, including:
 
 - **Infrastructure layer:** Proxmox VE hypervisor hosts, Rocky Linux 9.7 virtual machines, networking
-- **Kubernetes layer:** RKE2 v1.34.4 cluster (1 server node, 2 agent nodes)
-- **Platform services:** Istio, Kyverno, cert-manager, Prometheus/Grafana/Loki/Tempo, OpenBao, Harbor 1.16.3, NeuVector, Keycloak, Velero, MetalLB, External Secrets Operator, Flux CD v2.8.1
+- **Kubernetes layer:** RKE2 v1.34.4+rke2r1 cluster (1 server node, 2 agent nodes), containerd v2.1.5-k3s1
+- **Platform services:** Istio v1.25.2, Kyverno v1.13.4, cert-manager v1.14.4, Prometheus v3.4.0/Grafana v11.6.0/Loki v1.30.2/Tempo v2.7.1, OpenBao v2.2.0, Harbor v2.12.3, NeuVector v5.4.3, Keycloak v26.3.2, Velero v1.17.1, MetalLB v0.14.9, External Secrets Operator v0.9.13, CloudNativePG v1.25.0, Flux CD v1.8.0
 - **Tenant workloads:** All applications deployed via Flux CD GitOps
 - **Data stores:** Persistent volumes, etcd cluster state, secrets vault, container registry
 
@@ -73,11 +73,11 @@ The Secure Runtime Environment (SRE) is a Kubernetes-based platform providing a 
 
 **Deployment topology:**
 
-| Node | Role | IP Address | Proxmox Host |
-|------|------|------------|--------------|
-| cp-1 | RKE2 server (control plane + etcd) | 192.168.2.10 | pve-node-1 |
-| worker-1 | RKE2 agent (workload) | 192.168.2.11 | pve-node-2 |
-| worker-2 | RKE2 agent (workload) | 192.168.2.12 | pve-node-3 |
+| Node | Role | IP Address | Specs | Proxmox Host |
+|------|------|------------|-------|--------------|
+| sre-lab-rke2-server-0 | RKE2 server (control plane + etcd) | 192.168.2.104 | 4 vCPU, 15.4 GiB RAM, 100 GB | pve-node-1 |
+| sre-lab-rke2-agent-0 | RKE2 agent (workload) | 192.168.2.103 | 4 vCPU, 15.4 GiB RAM, 100 GB | pve-node-2 |
+| sre-lab-rke2-agent-1 | RKE2 agent (workload) | 192.168.2.102 | 4 vCPU, 15.4 GiB RAM, 100 GB | pve-node-3 |
 
 **MetalLB IP pool:** 192.168.2.200-210
 **Istio ingress gateway:** 192.168.2.200
@@ -86,21 +86,25 @@ The Secure Runtime Environment (SRE) is a Kubernetes-based platform providing a 
 
 | Component | Version | Function | Data Persistence |
 |-----------|---------|----------|-----------------|
-| RKE2 | v1.34.4 | Kubernetes distribution | etcd (embedded) |
-| Flux CD | v2.8.1 | GitOps reconciliation | Git repository (external) |
-| Istio | Current | Service mesh, mTLS | None (stateless) |
-| Kyverno | Current | Policy enforcement | PolicyReports (in etcd) |
-| cert-manager | Current | Certificate management | Certificates (in etcd) |
-| Prometheus | Current | Metrics collection | Persistent volume (15d) |
-| Grafana | Current | Dashboards and visualization | Persistent volume |
-| Loki | Current | Log aggregation | Persistent volume (90d) |
-| Tempo | Current | Distributed tracing | Persistent volume |
-| OpenBao | Current | Secrets management | Raft storage (persistent volume) |
-| Harbor | 1.16.3 | Container registry | Persistent volume |
-| NeuVector | Current | Runtime security | Persistent volume |
-| Keycloak | 24.8.1 | Identity and SSO | PostgreSQL (persistent volume) |
-| Velero | Current | Backup and restore | S3-compatible storage (external) |
-| MetalLB | 0.14.9 | Load balancer | None (stateless) |
+| RKE2 | v1.34.4+rke2r1 | Kubernetes distribution (DISA STIG-certified, FIPS 140-2) | etcd (embedded) |
+| containerd | 2.1.5-k3s1 | Container runtime | None (stateless) |
+| Flux CD | v1.8.0 | GitOps reconciliation (26 Kustomizations, 16+ HelmReleases) | Git repository (external, github.com/morbidsteve/sre-platform) |
+| Istio | 1.25.2 | Service mesh, mTLS STRICT | None (stateless) |
+| Kyverno | 1.13.4 | Policy enforcement (19 ClusterPolicies) | PolicyReports (in etcd) |
+| cert-manager | 1.14.4 | Certificate management (internal CA) | Certificates (in etcd) |
+| Prometheus | 3.4.0 | Metrics collection (26 ServiceMonitors, 15s scrape) | Persistent volume (15d) |
+| Grafana | 11.6.0 | Dashboards and visualization | Persistent volume |
+| Loki | 1.30.2 | Log aggregation | Persistent volume (90d) |
+| Alloy | 1.x | Log collection (3 DaemonSet pods) | None (stateless) |
+| Tempo | 2.7.1 | Distributed tracing | Persistent volume |
+| OpenBao | 2.2.0 | Secrets management | Raft storage (persistent volume) |
+| ESO | 0.9.13 | External Secrets Operator | None (syncs from OpenBao) |
+| Harbor | 2.12.3 | Container registry with Trivy scanning | Persistent volume |
+| NeuVector | 5.4.3 | Runtime security (3 controllers, 3 enforcers, 3 scanners) | Persistent volume |
+| Keycloak | 26.3.2 | Identity and SSO (OIDC, SAML) | PostgreSQL via CloudNativePG (persistent volume) |
+| CloudNativePG | 1.25.0 | PostgreSQL database operator | Persistent volume |
+| Velero | 1.17.1 | Backup and restore (3 schedules: daily/weekly/monthly) | S3-compatible storage (external) |
+| MetalLB | 0.14.9 | Load balancer (IP pool: 192.168.2.200-210) | None (stateless) |
 
 ### 2.3 FIPS 140-2 Impact
 
@@ -142,6 +146,8 @@ Per FIPS 199 and the system's Security Categorization (reference: `compliance/ra
 | Tier 4 -- Tenant | 4 hours | Tenant applications (auto-deployed by Flux after platform services) |
 
 **Overall RTO: 4 hours** from declaration of contingency event to full platform operational capability.
+
+**Note on storage:** The current 3-node cluster uses local-path-provisioner for persistent volume storage. This means PV data is node-local and not replicated across nodes. If the node hosting a PV fails, that data is unavailable until the node is recovered or the PV is restored from Velero backup. This is a known limitation of the current topology and is documented in the POA&M with a recommendation to implement distributed storage (e.g., Longhorn or Rook-Ceph) for production.
 
 ### 3.2 Recovery Point Objective (RPO)
 
@@ -585,7 +591,7 @@ The SRE platform currently operates on a 3-node Proxmox VE cluster at the primar
 
 Any alternate processing site must provide:
 
-- Minimum 3 VMs: 4 vCPU, 16 GB RAM, 100 GB storage each
+- Minimum 3 VMs: 4 vCPU, 16 GiB RAM, 100 GB storage each (matching current node specs)
 - Network connectivity with static IPs for MetalLB
 - Access to S3-compatible storage for Velero backup retrieval
 - Access to Git repository (primary or backup mirror)
@@ -690,7 +696,8 @@ All recipients must acknowledge receipt within 5 business days. Acknowledgment i
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2026-03-11 | [PLACEHOLDER] | Initial plan |
+| 1.0 | 2026-03-11 | _[NAME]_ | Initial plan |
+| 1.1 | 2026-03-30 | _[NAME]_ | Updated with live platform data: real node hostnames/IPs/specs (3 nodes, 4 vCPU/15.4 GiB each), Velero v1.17.1 (3 schedules), all component versions, local-path-provisioner storage note, Flux CD v1.8.0 |
 
 ---
 
@@ -705,7 +712,7 @@ All recipients must acknowledge receipt within 5 business days. Acknowledgment i
 | Backup Type | Primary Location | Secondary Location |
 |-------------|-----------------|-------------------|
 | Velero backups | S3-compatible storage (primary) | Replicated to alternate region |
-| Git repository | [PLACEHOLDER -- Git host] | [PLACEHOLDER -- mirror host] |
+| Git repository | github.com/morbidsteve/sre-platform | _[mirror host TBD]_ |
 | OpenBao snapshots | S3-compatible storage (encrypted) | Offline copy in secure storage |
 | etcd snapshots | Server node local + S3 copy | Alternate storage site |
 | Packer images | [PLACEHOLDER -- image registry] | Portable media (air-gap) |

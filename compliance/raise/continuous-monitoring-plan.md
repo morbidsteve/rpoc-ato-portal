@@ -84,9 +84,9 @@ Controls that cannot be fully automated (e.g., access reviews, risk assessments,
 
 | Tier | Frequency | Scope | Primary Tool |
 |------|-----------|-------|-------------|
-| Real-time | Continuous (<1 minute) | Runtime security, policy enforcement, metrics | Prometheus, NeuVector, Kyverno |
+| Real-time | Continuous (<1 minute) | Runtime security, policy enforcement, metrics | Prometheus v3.4.0 (26 ServiceMonitors, 15s scrape interval), NeuVector v5.4.3, Kyverno v1.13.4 |
 | Near-real-time | Every 10 minutes | Configuration drift, GitOps reconciliation | Flux CD |
-| Periodic-short | Hourly to daily | Vulnerability scanning, secrets sync, compliance checks | Trivy, ESO, CronJob scanner |
+| Periodic-short | Hourly to daily | Vulnerability scanning, secrets sync, compliance checks | Trivy (via Harbor v2.12.3), ESO v0.9.13, CronJob scanner |
 | Periodic-medium | Weekly to monthly | Vulnerability summaries, trend analysis | Grafana reports |
 | Periodic-long | Quarterly to annually | Full control assessment, QREV package, SCA | Manual + automated |
 
@@ -206,13 +206,13 @@ These controls are assessed automatically and continuously by platform tooling:
 
 | Control Family | Controls | Assessment Tool | Evidence Location |
 |---------------|----------|----------------|-------------------|
-| AC (Access Control) | AC-3, AC-4, AC-6, AC-14 | Kyverno, Istio, K8s RBAC | Kyverno PolicyReports, Istio logs |
-| AU (Audit) | AU-2, AU-3, AU-8, AU-12 | Loki, Alloy, Prometheus | Loki log queries, Grafana dashboards |
-| CM (Config Mgmt) | CM-2, CM-3, CM-6, CM-7 | Flux CD, Kyverno, Ansible | Flux status, PolicyReports, Git history |
-| IA (Identification) | IA-3 | Istio mTLS | PeerAuthentication status, Istio metrics |
-| RA (Risk Assessment) | RA-5 | Harbor + Trivy, NeuVector | Trivy scan reports, NeuVector dashboard |
-| SC (System Comms) | SC-7, SC-8, SC-13 | Istio, NetworkPolicies | NetworkPolicy audit, mTLS metrics |
-| SI (Sys Integrity) | SI-3, SI-4, SI-7 | NeuVector, Cosign/Kyverno | NeuVector alerts, image verification logs |
+| AC (Access Control) | AC-3, AC-4, AC-6, AC-14 | Kyverno v1.13.4 (19 ClusterPolicies), Istio v1.25.2 (15 AuthorizationPolicies), K8s RBAC | Kyverno PolicyReports, Istio logs |
+| AU (Audit) | AU-2, AU-3, AU-8, AU-12 | Loki v1.30.2, Alloy (3 DaemonSet pods), Prometheus v3.4.0 | Loki log queries, Grafana v11.6.0 dashboards |
+| CM (Config Mgmt) | CM-2, CM-3, CM-6, CM-7 | Flux CD v1.8.0, Kyverno v1.13.4, Ansible | Flux status (26 Kustomizations), PolicyReports, Git history |
+| IA (Identification) | IA-3 | Istio mTLS v1.25.2, Keycloak v26.3.2 (OAuth2 Proxy + ext-authz) | PeerAuthentication status, Istio metrics, SSO enforcement |
+| RA (Risk Assessment) | RA-5 | Harbor v2.12.3 + Trivy, NeuVector v5.4.3 (3 controllers, 3 enforcers, 3 scanners) | Trivy scan reports, NeuVector dashboard |
+| SC (System Comms) | SC-7, SC-8, SC-13 | Istio v1.25.2, 119 NetworkPolicies across 29 namespaces | NetworkPolicy audit, mTLS metrics |
+| SI (Sys Integrity) | SI-3, SI-4, SI-7 | NeuVector v5.4.3, Cosign/Kyverno v1.13.4 | NeuVector alerts, image verification logs |
 
 ### 4.2 Semi-Automated Controls (Periodic Assessment)
 
@@ -309,7 +309,7 @@ These controls require human judgment and cannot be fully automated:
 
 ### 6.1 Grafana Dashboards
 
-The platform maintains 10 Grafana dashboards providing continuous visibility:
+The platform maintains 10 Grafana v11.6.0 dashboards providing continuous visibility:
 
 | Dashboard | Purpose | Key Panels |
 |-----------|---------|------------|
@@ -590,7 +590,8 @@ After each quarterly review cycle:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2026-03-11 | [PLACEHOLDER] | Initial plan |
+| 1.0 | 2026-03-11 | _[NAME]_ | Initial plan |
+| 1.1 | 2026-03-30 | _[NAME]_ | Updated with live platform data: Prometheus v3.4.0 (26 ServiceMonitors), Grafana v11.6.0, Loki v1.30.2 + Alloy (3 pods), NeuVector v5.4.3 (3/3/3), Kyverno v1.13.4 (19 policies), 119 NetworkPolicies across 29 namespaces |
 
 ### 9.5 Related Documents
 

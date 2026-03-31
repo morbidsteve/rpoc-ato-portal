@@ -10,6 +10,9 @@
 |-------|-------|
 | System Name | Secure Runtime Environment (SRE) |
 | System Type | RAISE Platform of Choice (RPOC) |
+| Kubernetes Distribution | RKE2 v1.34.4+rke2r1 (DISA STIG-certified, FIPS 140-2 compliant) |
+| Operating System | Rocky Linux 9.7 (Blue Onyx), kernel 5.14.0-611.36.1.el9_7 |
+| Cluster Topology | 3 nodes (1 control plane, 2 workers), 12 vCPU / 46.2 GiB RAM total |
 | eMASS/MCAST ID | _[TO BE ASSIGNED]_ |
 | System Owner | _[NAME / ORGANIZATION]_ |
 | ISSM | _[NAME]_ |
@@ -59,3 +62,17 @@ The Kyverno policy `require-security-categorization` ensures all tenant namespac
 ## Control Baseline
 
 The MODERATE categorization requires implementation of NIST SP 800-53 Rev 5 Moderate baseline controls. The SRE platform implements **47 controls** across 11 control families. See `compliance/nist-800-53-mappings/control-mapping.json` for the full mapping.
+
+### Platform Security Posture (as of 2026-03-30)
+
+The following security controls are actively enforced on the live platform:
+
+- **19 Kyverno ClusterPolicies** in Enforce/Audit mode (privileged containers, root user, capabilities, image registries, signatures, labels, probes, resource limits)
+- **119 NetworkPolicies** across 29 namespaces (default-deny with explicit allows)
+- **15 Istio AuthorizationPolicies** (including ext-authz SSO enforcement for all apps)
+- **Istio mTLS STRICT** cluster-wide (zero-trust pod-to-pod encryption)
+- **Cosign image signature verification** at admission via Kyverno
+- **OAuth2 Proxy + Keycloak SSO** enforced on all ingress traffic
+- **Per-app Kyverno PolicyExceptions** with audit trail for security overrides
+- **SELinux enforcing mode** on all nodes
+- **FIPS 140-2 mode** enabled (RKE2 BoringCrypto + OS-level FIPS)

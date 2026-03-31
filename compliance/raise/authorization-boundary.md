@@ -2,10 +2,10 @@
 
 ## Secure Runtime Environment (SRE) Platform
 
-**Document Version:** 1.0
-**Date:** _____________
-**System Owner:** _____________
-**eMASS ID:** _____________
+**Document Version:** 1.1
+**Date:** 2026-03-30
+**System Owner:** _[NAME / ORGANIZATION]_
+**eMASS ID:** _[TO BE ASSIGNED]_
 
 ---
 
@@ -32,22 +32,23 @@ The authorization boundary encompasses the following components. Everything INSI
 
 | Component | Version | Namespace | Purpose | NIST Controls |
 |-----------|---------|-----------|---------|---------------|
-| Flux CD | 2.8.1 | flux-system | GitOps continuous deployment | CM-2, CM-3, SA-10 |
-| Istio | 1.24.x | istio-system | Service mesh, mTLS, traffic management | SC-8, AC-4, AU-2 |
-| Kyverno | 3.x | kyverno | Policy engine, admission control | CM-7, SI-7, AC-6 |
-| cert-manager | 1.x | cert-manager | TLS certificate lifecycle | SC-12, IA-5 |
-| Prometheus | 2.x | monitoring | Metrics collection and alerting | SI-4, AU-6 |
-| Grafana | 11.x | monitoring | Observability dashboards | AU-6, CA-7 |
+| Flux CD | 1.8.0 | flux-system | GitOps continuous deployment | CM-2, CM-3, SA-10 |
+| Istio | 1.25.2 | istio-system | Service mesh, mTLS STRICT, traffic management | SC-8, AC-4, AU-2 |
+| Kyverno | 1.13.4 | kyverno | Policy engine, admission control (19 ClusterPolicies) | CM-7, SI-7, AC-6 |
+| cert-manager | 1.14.4 | cert-manager | TLS certificate lifecycle (internal CA) | SC-12, IA-5 |
+| Prometheus | 3.4.0 | monitoring | Metrics collection and alerting (26 ServiceMonitors) | SI-4, AU-6 |
+| Grafana | 11.6.0 | monitoring | Observability dashboards | AU-6, CA-7 |
 | AlertManager | 0.27.x | monitoring | Alert routing and notification | IR-4, SI-5 |
-| Loki | 3.x | logging | Log aggregation | AU-4, AU-9 |
-| Alloy | 1.x | logging | Log collection (DaemonSet) | AU-12, AU-3 |
-| Tempo | 2.x | tracing | Distributed trace storage | AU-2 |
-| OpenBao | 2.x | openbao | Secrets management (HA, Raft storage) | SC-28, IA-5 |
-| External Secrets Operator | 0.x | external-secrets | Sync secrets from OpenBao → K8s | SC-28 |
-| Harbor | 1.16.3 | harbor | Container registry, Trivy scanning | CM-8, SI-7, RA-5 |
-| NeuVector | 5.x | neuvector | Runtime security, DLP, admission | SI-3, SI-4, SC-7 |
-| Keycloak | 24.8.1 | keycloak | SSO/OIDC identity provider | IA-2, AC-2, AC-17 |
-| Velero | 1.x | velero | Backup and disaster recovery | CP-9, CP-10 |
+| Loki | 1.30.2 | logging | Log aggregation (90-day retention) | AU-4, AU-9 |
+| Alloy | 1.x | logging | Log collection (3 DaemonSet pods) | AU-12, AU-3 |
+| Tempo | 2.7.1 | tracing | Distributed trace storage | AU-2 |
+| OpenBao | 2.2.0 | openbao | Secrets management (HA, Raft storage) | SC-28, IA-5 |
+| External Secrets Operator | 0.9.13 | external-secrets | Sync secrets from OpenBao → K8s | SC-28 |
+| Harbor | 2.12.3 | harbor | Container registry, Trivy scanning | CM-8, SI-7, RA-5 |
+| NeuVector | 5.4.3 | neuvector | Runtime security, DLP, admission (3 controllers, 3 enforcers, 3 scanners) | SI-3, SI-4, SC-7 |
+| Keycloak | 26.3.2 | keycloak | SSO/OIDC/SAML identity provider | IA-2, AC-2, AC-17 |
+| Velero | 1.17.1 | velero | Backup and disaster recovery (3 schedules) | CP-9, CP-10 |
+| CloudNativePG | 1.25.0 | cnpg-system | PostgreSQL database operator | CM-6, CP-9 |
 
 #### CI/CD Pipeline Tools
 
@@ -55,13 +56,13 @@ The authorization boundary encompasses the following components. Everything INSI
 |-----------|---------|----------|---------|------------|
 | Semgrep | 1.102.0 | CI runner | SAST scanning | GATE 1 |
 | Syft | 1.18.1 | CI runner | SBOM generation | GATE 2 |
-| Gitleaks | 8.21.2 | CI runner | Secrets detection | GATE 3 |
+| Gitleaks | 8.22.1 | CI runner | Secrets detection | GATE 3 |
 | Trivy | 0.58.2 | CI runner + Harbor | Container vulnerability scanning | GATE 4 |
-| OWASP ZAP | 2.15.0 | CI runner | DAST scanning | GATE 5 |
+| OWASP ZAP | Latest stable | CI runner | DAST scanning | GATE 5 |
 | GitHub Environments | SaaS | GitHub | ISSM manual approval gate | GATE 6 |
-| Cosign | 2.4.1 | CI runner | Image signing and attestation | GATE 7 |
-| GitHub Actions | SaaS | GitHub | Pipeline orchestration | Supporting |
-| Docker Buildx | 0.18.x | CI runner | Container image builds | Supporting |
+| Cosign | 3.8.0 | CI runner | Image signing and attestation | GATE 7 |
+| GitHub Actions | SaaS | GitHub | Pipeline orchestration (SHA-pinned actions) | Supporting |
+| Kaniko | 1.23.2 | CI runner | Container image builds | Supporting |
 
 #### Data Stores
 
@@ -157,11 +158,15 @@ All ports/protocols listed above must be registered in the PPSM registry per DoD
 
 ## 3. Hardware Inventory
 
-| Hostname | IP Address | Role | CPU | RAM | Storage | OS |
-|----------|-----------|------|-----|-----|---------|-----|
-| sre-cp-1 | 192.168.2.10 | RKE2 Server (control plane) | _[SPEC]_ | _[SPEC]_ | _[SPEC]_ | Rocky Linux 9.7 |
-| sre-worker-1 | 192.168.2.11 | RKE2 Agent (worker) | _[SPEC]_ | _[SPEC]_ | _[SPEC]_ | Rocky Linux 9.7 |
-| sre-worker-2 | 192.168.2.12 | RKE2 Agent (worker) | _[SPEC]_ | _[SPEC]_ | _[SPEC]_ | Rocky Linux 9.7 |
+| Hostname | IP Address | Role | CPU | RAM | Storage | OS | Kernel |
+|----------|-----------|------|-----|-----|---------|-----|--------|
+| sre-lab-rke2-server-0 | 192.168.2.104 | RKE2 Server (control plane + etcd) | 4 vCPU | 15.4 GiB | 100 GB | Rocky Linux 9.7 (Blue Onyx) | 5.14.0-611.36.1.el9_7 |
+| sre-lab-rke2-agent-0 | 192.168.2.103 | RKE2 Agent (worker) | 4 vCPU | 15.4 GiB | 100 GB | Rocky Linux 9.7 (Blue Onyx) | 5.14.0-611.36.1.el9_7 |
+| sre-lab-rke2-agent-1 | 192.168.2.102 | RKE2 Agent (worker) | 4 vCPU | 15.4 GiB | 100 GB | Rocky Linux 9.7 (Blue Onyx) | 5.14.0-611.36.1.el9_7 |
+
+**Total Cluster Resources:** 12 vCPU, 46.2 GiB RAM
+**Container Runtime:** containerd v2.1.5-k3s1
+**Kubernetes Version:** RKE2 v1.34.4+rke2r1
 
 ---
 
