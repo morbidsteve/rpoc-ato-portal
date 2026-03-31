@@ -222,6 +222,118 @@ Each finding follows this structure:
 | **Remediation Plan** | Create sre-statefulset Helm chart with PVC templates, headless service, ordered pod management, and pod disruption budget. |
 | **Milestones** | Day 30: Design chart spec. Day 45: Implement chart. Day 60: Add values.schema.json and tests. Day 75: Document in developer guide. |
 
+### POAM-014: Compliance CronJobs failing
+
+| Field | Value |
+|-------|-------|
+| **Source** | Cluster Monitoring |
+| **CVE/CWE** | N/A |
+| **Severity** | MEDIUM |
+| **Description** | Three compliance CronJobs in the monitoring namespace are in Error state: sre-compliance-drift, sre-compliance-evidence, sre-compliance-scan, sre-stig-scan. These jobs are supposed to run automated compliance checks but are failing. |
+| **Affected Asset** | Platform: monitoring namespace CronJobs |
+| **NIST Controls** | CA-7, SI-6 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-05-29 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Investigate CronJob failure logs, fix image references or RBAC permissions, verify jobs produce compliance evidence artifacts. |
+| **Milestones** | Day 14: Collect CronJob failure logs and diagnose root cause. Day 30: Fix image references and RBAC permissions. Day 45: Validate all CronJobs run successfully. Day 55: Confirm compliance evidence artifacts generated. |
+
+---
+
+### POAM-015: 108 Kyverno policy violations across cluster
+
+| Field | Value |
+|-------|-------|
+| **Source** | Kyverno PolicyReports (background scan) |
+| **CVE/CWE** | N/A |
+| **Severity** | MEDIUM |
+| **Description** | Background policy scans report 108 violations across the cluster: 43 missing probes, 34 running as root, 15 restricted volume types, 7 missing labels. Most are in platform namespaces (sre-dsop, sre-portal, local-path-storage) and tenant namespaces with legacy apps. |
+| **Affected Asset** | Multiple namespaces (9 namespaces affected) |
+| **NIST Controls** | CM-6, SI-2 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-05-29 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Review each violation category. Missing probes: add health checks to platform services. Running as root: add PolicyExceptions with justification. Volume types: migrate from hostPath to emptyDir/PVC. |
+| **Milestones** | Day 14: Categorize all 108 violations by namespace and rule. Day 30: Remediate missing probes (43 violations). Day 45: Create PolicyExceptions for justified root containers (34 violations). Day 55: Address restricted volume types and missing labels (22 violations). |
+
+---
+
+### POAM-016: Certificate sre-wildcard NOT READY
+
+| Field | Value |
+|-------|-------|
+| **Source** | cert-manager |
+| **CVE/CWE** | N/A |
+| **Severity** | MEDIUM |
+| **Description** | The Istio gateway wildcard TLS certificate (sre-wildcard in istio-system) shows status NOT READY. It expires 2026-06-03 and appears to be in a renewal failure state. All HTTPS traffic uses this certificate. |
+| **Affected Asset** | Platform: istio-system/sre-wildcard certificate |
+| **NIST Controls** | SC-12, SC-8 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-04-29 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Investigate cert-manager logs for renewal failure. Check if the issuer CA is available. Manually trigger renewal if needed: kubectl cert-manager renew sre-wildcard -n istio-system. |
+| **Milestones** | Day 7: Investigate cert-manager logs and identify renewal failure cause. Day 14: Fix issuer CA or certificate request configuration. Day 21: Trigger renewal and validate certificate status is READY. Day 28: Confirm HTTPS traffic uses renewed certificate. |
+
+---
+
+### POAM-017: Platform services running as root without PolicyExceptions
+
+| Field | Value |
+|-------|-------|
+| **Source** | Kyverno PolicyReports |
+| **CVE/CWE** | N/A |
+| **Severity** | LOW |
+| **Description** | Several platform services (local-path-provisioner, Tekton pipelines, DSOP wizard nginx) run as root. These are in platform-managed namespaces and are infrastructure components that legitimately require root, but they lack formal PolicyExceptions with documented justifications. |
+| **Affected Asset** | Platform: local-path-storage, tekton-pipelines, sre-dsop namespaces |
+| **NIST Controls** | AC-6 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-06-28 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Create PolicyExceptions for each platform service that legitimately requires root. Document the business justification for each exception. Review quarterly. |
+| **Milestones** | Day 14: Inventory all platform services running as root. Day 30: Draft PolicyExceptions with business justification for each. Day 60: Deploy PolicyExceptions via Flux. Day 80: Establish quarterly review process. |
+
+---
+
+### POAM-018: Keystone-frontend deployment in ErrImagePull
+
+| Field | Value |
+|-------|-------|
+| **Source** | Cluster Monitoring |
+| **CVE/CWE** | N/A |
+| **Severity** | LOW |
+| **Description** | The keystone-frontend app in team-keystone namespace has a pod in ErrImagePull state. The image harbor.apps.sre.example.com/keystone/keystone-frontend:build-sso-v5 cannot be pulled. This is a stale deployment referencing an old image tag. |
+| **Affected Asset** | Tenant: team-keystone/keystone-frontend |
+| **NIST Controls** | CM-2 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-06-28 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Either update the image tag to a valid version or remove the stale deployment. Clean up the HelmRelease. |
+| **Milestones** | Day 14: Contact team-keystone to determine if deployment is still needed. Day 30: Update image tag or remove stale HelmRelease. Day 45: Validate namespace is clean (no errored pods). |
+
+---
+
+### POAM-019: Harbor image scans not producing exportable reports
+
+| Field | Value |
+|-------|-------|
+| **Source** | Integration Testing (Round 5) |
+| **CVE/CWE** | N/A |
+| **Severity** | LOW |
+| **Description** | Harbor's Trivy scan results are not being exported to the ATO evidence package. The scan results exist in Harbor's database but are not collected as machine-readable artifacts for the POA&M or continuous monitoring evidence. |
+| **Affected Asset** | Platform: Harbor vulnerability scanning |
+| **NIST Controls** | RA-5 |
+| **Discovery Date** | 2026-03-30 |
+| **Due Date** | 2026-06-28 |
+| **Status** | Open |
+| **Responsible** | Platform Team |
+| **Remediation Plan** | Create a CronJob that exports Harbor scan results via the Harbor API to the compliance evidence directory. Feed results into the RPOC ATO Portal POA&M dashboard. |
+| **Milestones** | Day 14: Design Harbor API export script (list projects, artifacts, scan reports). Day 30: Implement CronJob with Harbor robot account credentials. Day 60: Validate exported reports feed into compliance evidence. Day 80: Integrate with RPOC ATO Portal POA&M dashboard. |
+
 ---
 
 ## Platform-Level Findings
@@ -239,6 +351,12 @@ _Track findings that affect the RPOC platform itself (not specific applications)
 | POAM-011 | MEDIUM | No MySQL/MariaDB service (only PostgreSQL via CNPG) | Open | 2026-05-14 |
 | POAM-012 | LOW | No GPU workload support | Open | 2026-06-13 |
 | POAM-013 | LOW | No distributed StatefulSet chart for multi-replica databases | Open | 2026-06-13 |
+| POAM-014 | MEDIUM | Compliance CronJobs failing (sre-compliance-drift, evidence, scan, stig-scan) | Open | 2026-05-29 |
+| POAM-015 | MEDIUM | 108 Kyverno policy violations across cluster (9 namespaces) | Open | 2026-05-29 |
+| POAM-016 | MEDIUM | Certificate sre-wildcard NOT READY (expires 2026-06-03) | Open | 2026-04-29 |
+| POAM-017 | LOW | Platform services running as root without PolicyExceptions | Open | 2026-06-28 |
+| POAM-018 | LOW | Keystone-frontend deployment in ErrImagePull (stale image tag) | Open | 2026-06-28 |
+| POAM-019 | LOW | Harbor image scans not producing exportable reports | Open | 2026-06-28 |
 
 ---
 
@@ -248,7 +366,7 @@ _Aggregate view of findings per hosted application._
 
 | Application | Team | CRITICAL | HIGH | MEDIUM | LOW | Oldest Open |
 |-------------|------|----------|------|--------|-----|-------------|
-| SRE Platform | Platform Team | 0 | 0 | 4 | 5 | 2026-03-15 |
+| SRE Platform | Platform Team | 0 | 0 | 7 | 8 | 2026-03-15 |
 
 ---
 
