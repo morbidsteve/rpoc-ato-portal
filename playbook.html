@@ -21,6 +21,8 @@
     --purple: #a78bfa;
     --blue: #60a5fa;
     --cyan: #22d3ee;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -32,13 +34,13 @@
     flex-direction: column;
   }
 
-  /* Section Nav */
+  /* ── Section Nav ── */
   .section-nav { background:#050810; border-bottom:1px solid #1e293b; display:flex; padding:0 24px; }
   .section-nav a { color:#94a3b8; text-decoration:none; padding:10px 20px; border-bottom:2px solid transparent; font-size:13px; font-weight:600; letter-spacing:0.5px; transition:all 0.2s; }
   .section-nav a:hover { color:#e2e8f0; background:rgba(255,255,255,0.03); }
   .section-nav a.active { color:#38bdf8; border-bottom-color:#38bdf8; }
 
-  /* Topbar */
+  /* ── Topbar ── */
   .topbar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -58,145 +60,197 @@
   }
   .topbar h1 { font-size: 18px; font-weight: 700; }
   .topbar h1 span { color: var(--accent); }
-  .topbar-right { display: flex; gap: 12px; align-items: center; }
+  .topbar-right { display: flex; gap: 8px; align-items: center; }
 
-  /* Layout */
-  .layout {
-    display: flex;
-    flex: 1;
-    min-height: 0;
+  /* ── View Tabs ── */
+  .view-tabs { display: flex; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 3px; }
+  .view-tab {
+    background: none; border: none; color: var(--text-dim); font-size: 13px;
+    font-weight: 600; padding: 7px 18px; border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
   }
-
-  /* Sidebar */
-  .sidebar {
-    width: 250px;
-    min-width: 250px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    padding: 20px 0;
-    flex-shrink: 0;
-  }
-  .sidebar-header {
-    padding: 0 20px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-  }
-  .sidebar-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 20px 16px;
-  }
-  .sidebar-section {
-    margin-bottom: 20px;
-  }
-  .sidebar-section-title {
-    padding: 0 20px 8px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-  }
-  .sidebar-item {
-    display: block;
-    padding: 8px 20px;
-    font-size: 13px;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.15s;
-    border-left: 3px solid transparent;
-    text-decoration: none;
-    line-height: 1.4;
-  }
-  .sidebar-item:hover {
-    color: var(--text);
-    background: rgba(255,255,255,0.03);
-  }
-  .sidebar-item.active {
-    color: var(--accent);
-    border-left-color: var(--accent);
-    background: rgba(56,189,248,0.06);
-    font-weight: 600;
-  }
-  .sidebar-item .chapter-num {
-    display: inline-block;
-    width: 20px;
-    font-weight: 700;
-    color: var(--text-muted);
-    font-size: 12px;
-  }
-  .sidebar-item.active .chapter-num {
-    color: var(--accent);
-  }
-  .sidebar-item .template-bullet {
-    display: inline-block;
-    width: 16px;
-    color: var(--text-muted);
-    font-size: 11px;
-  }
-  .sidebar-item.active .template-bullet {
-    color: var(--accent);
+  .view-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .view-tab.active {
+    color: #fff; background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(167,139,250,0.3));
+    box-shadow: 0 2px 8px rgba(56,189,248,0.15);
   }
 
-  /* Mobile sidebar toggle */
+  /* ── Mobile sidebar toggle ── */
   .sidebar-toggle {
     display: none;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 8px 16px;
-    cursor: pointer;
-    transition: all 0.15s;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 13px; font-weight: 600; padding: 8px 16px;
+    cursor: pointer; transition: all 0.15s;
   }
-  .sidebar-toggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+  .sidebar-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── View containers ── */
+  .view { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  .view.active { display: flex; }
+
+  /* ═══════════════════════════════════════════════
+     OVERVIEW VIEW
+     ═══════════════════════════════════════════════ */
+  .overview { overflow-y: auto; }
+  .overview-inner { max-width: 1100px; margin: 0 auto; padding: 48px 32px 64px; }
+
+  /* Hero */
+  .hero-section { text-align: center; margin-bottom: 48px; }
+  .hero-badge {
+    display: inline-block; padding: 6px 16px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(45,212,191,0.15), rgba(56,189,248,0.15));
+    border: 1px solid rgba(45,212,191,0.3); color: var(--teal);
+    font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-size: 42px; font-weight: 900; line-height: 1.15; margin-bottom: 14px;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-subtitle { font-size: 18px; color: var(--text-dim); max-width: 560px; margin: 0 auto; line-height: 1.6; }
+
+  /* Stats row */
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin: 40px auto 0; max-width: 700px;
+  }
+  .hero-stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 12px; text-align: center; transition: all 0.2s;
+  }
+  .hero-stat:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .hero-stat-value { font-size: 28px; font-weight: 800; color: var(--teal); line-height: 1; margin-bottom: 4px; }
+  .hero-stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim); }
+
+  /* Section headings */
+  .ov-section-title {
+    font-size: 22px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border); color: #fff;
+  }
+  .ov-section-title .ov-badge {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 6px; margin-left: 10px; vertical-align: middle;
+    background: rgba(56,189,248,0.12); color: var(--accent);
   }
 
-  /* Content */
-  .content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 40px 48px;
-    min-width: 0;
+  /* Chapter cards */
+  .chapter-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .chapter-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
   }
-  .content-inner {
-    max-width: 800px;
-    margin: 0 auto;
+  .chapter-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    opacity: 0; transition: opacity 0.25s;
   }
+  .chapter-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+  .chapter-card:hover::before { opacity: 1; }
+  .chapter-card-num {
+    font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 8px;
+  }
+  .chapter-card-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .chapter-card-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
 
-  /* Loading */
-  .loading {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--text-dim);
-    font-size: 16px;
+  /* Template cards */
+  .template-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 48px; }
+  .template-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px; cursor: pointer; transition: all 0.25s;
   }
+  .template-card:hover { border-color: var(--emerald); transform: translateY(-2px); }
+  .template-card-tag {
+    font-size: 10px; font-weight: 700; color: var(--emerald); text-transform: uppercase;
+    letter-spacing: 1.2px; margin-bottom: 6px;
+  }
+  .template-card-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .template-card-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* Featured presentation card */
+  .featured-card {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border); border-radius: 16px; padding: 32px;
+    cursor: pointer; transition: all 0.3s; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .featured-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(45,212,191,0.05), rgba(56,189,248,0.08));
+    pointer-events: none;
+  }
+  .featured-card:hover {
+    border-color: var(--teal); transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(45,212,191,0.15);
+  }
+  .featured-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--teal), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; position: relative; z-index: 1;
+  }
+  .featured-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; position: relative; z-index: 1; }
+  .featured-desc { font-size: 14px; color: var(--text-dim); line-height: 1.5; position: relative; z-index: 1; max-width: 440px; margin: 0 auto; }
+
+  /* ═══════════════════════════════════════════════
+     CHAPTERS VIEW
+     ═══════════════════════════════════════════════ */
+  .chapters-layout { display: flex; flex: 1; min-height: 0; }
+
+  .sidebar {
+    width: 250px; min-width: 250px; background: var(--surface);
+    border-right: 1px solid var(--border); overflow-y: auto;
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 0 20px 12px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
+  }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 4px 20px 16px; }
+  .sidebar-section { margin-bottom: 20px; }
+  .sidebar-section-title {
+    padding: 0 20px 8px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
+  }
+  .sidebar-item {
+    display: block; padding: 8px 20px; font-size: 13px; color: var(--text-dim);
+    cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent;
+    text-decoration: none; line-height: 1.4;
+  }
+  .sidebar-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .sidebar-item.active {
+    color: var(--accent); border-left-color: var(--accent);
+    background: rgba(56,189,248,0.06); font-weight: 600;
+  }
+  .sidebar-item .chapter-num {
+    display: inline-block; width: 20px; font-weight: 700;
+    color: var(--text-muted); font-size: 12px;
+  }
+  .sidebar-item.active .chapter-num { color: var(--accent); }
+  .sidebar-item .template-bullet {
+    display: inline-block; width: 16px; color: var(--text-muted); font-size: 11px;
+  }
+  .sidebar-item.active .template-bullet { color: var(--accent); }
+
+  /* Content area */
+  .content-area { flex: 1; overflow-y: auto; padding: 40px 48px; min-width: 0; }
+  .content-inner { max-width: 800px; margin: 0 auto; }
+
+  /* Loading / Error */
+  .loading { text-align: center; padding: 80px 20px; color: var(--text-dim); font-size: 16px; }
   .loading .spinner {
     width: 32px; height: 32px; border: 3px solid var(--border);
     border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Error */
-  .error-msg {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--red);
-  }
+  .error-msg { text-align: center; padding: 80px 20px; color: var(--red); }
   .error-msg h2 { margin-bottom: 8px; font-size: 18px; }
   .error-msg p { color: var(--text-dim); font-size: 14px; }
 
-  /* Markdown rendered content */
+  /* ── Markdown rendered content ── */
   .md-content h1 { font-size: 28px; font-weight: 800; color: #fff; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
   .md-content h1:first-child { margin-top: 0; }
   .md-content h2 { font-size: 22px; font-weight: 700; color: var(--accent); margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
@@ -217,14 +271,27 @@
   .md-content pre {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 8px; padding: 16px; margin: 16px 0;
-    overflow-x: auto; line-height: 1.5;
+    overflow-x: auto; line-height: 1.5; position: relative;
   }
   .md-content pre code { background: none; padding: 0; color: var(--text); font-size: 13px; }
+  .md-content pre .lang-label {
+    position: absolute; top: 6px; right: 10px; font-size: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); font-family: inherit;
+  }
+  /* Syntax highlighting keywords */
+  .md-content pre .kw { color: var(--purple); }
+  .md-content pre .str { color: var(--green); }
+  .md-content pre .num { color: var(--yellow); }
+  .md-content pre .cmt { color: var(--text-muted); font-style: italic; }
+  .md-content pre .fn { color: var(--accent); }
+  .md-content pre .key { color: var(--cyan); }
+  .md-content pre .bool { color: var(--yellow); }
+
   .md-content blockquote {
     border-left: 3px solid var(--accent); margin: 16px 0;
     padding: 12px 16px; background: var(--surface);
-    border-radius: 0 8px 8px 0; color: var(--text-dim);
-    font-style: italic;
+    border-radius: 0 8px 8px 0; color: var(--text-dim); font-style: italic;
   }
   .md-content blockquote p { color: var(--text-dim); }
   .md-content a { color: var(--accent); text-decoration: none; }
@@ -232,7 +299,6 @@
   .md-content hr { border: none; height: 1px; background: var(--border); margin: 24px 0; }
   .md-content img { max-width: 100%; border-radius: 8px; margin: 16px 0; }
 
-  /* Tables */
   .md-content table {
     width: 100%; border-collapse: collapse; margin: 16px 0;
     background: var(--surface); border-radius: 8px; overflow: hidden;
@@ -252,32 +318,340 @@
   .md-content tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
   .md-content tr:hover td { background: rgba(56,189,248,0.04); }
 
-  /* Checkbox lists */
-  .md-content .checklist {
-    list-style: none;
-    margin-left: 0;
-    padding-left: 0;
-  }
-  .md-content .checklist li {
-    padding-left: 24px;
-    position: relative;
-  }
+  .md-content .checklist { list-style: none; margin-left: 0; padding-left: 0; }
+  .md-content .checklist li { padding-left: 24px; position: relative; }
   .md-content .checklist li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 6px;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--border);
-    border-radius: 3px;
+    content: ''; position: absolute; left: 0; top: 6px;
+    width: 14px; height: 14px; border: 2px solid var(--border); border-radius: 3px;
   }
-  .md-content .checklist li.checked::before {
-    background: var(--accent);
-    border-color: var(--accent);
+  .md-content .checklist li.checked::before { background: var(--accent); border-color: var(--accent); }
+
+  /* ═══════════════════════════════════════════════
+     PRESENTATION VIEW
+     ═══════════════════════════════════════════════ */
+  .pres-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+  .pres-view.active { display: flex; }
+
+  /* Controls bar */
+  .pres-controls {
+    background: rgba(15,23,42,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(55,65,81,0.5); padding: 8px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; z-index: 20;
+  }
+  .pres-controls-left, .pres-controls-right { display: flex; align-items: center; gap: 8px; }
+  .pres-counter {
+    display: flex; align-items: center; gap: 6px; background: var(--surface2);
+    border-radius: 20px; padding: 5px 14px; font-size: 13px;
+  }
+  .pres-counter-current { font-weight: 800; color: #fff; }
+  .pres-counter-sep { color: var(--text-muted); }
+  .pres-counter-total { color: var(--text-dim); }
+  .pres-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pres-btn:hover { border-color: var(--accent); color: #fff; }
+  .pres-btn:disabled { opacity: 0.3; cursor: default; }
+  .pres-btn:disabled:hover { border-color: var(--border); color: var(--text-dim); }
+  .pres-btn-text {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 8px; padding: 6px 14px; cursor: pointer; transition: all 0.15s;
+    font-size: 12px; font-weight: 600;
+  }
+  .pres-btn-text:hover { border-color: var(--accent); color: #fff; }
+  .pres-btn-text.active { background: rgba(45,212,191,0.2); border-color: var(--teal); color: var(--teal); }
+
+  /* Slide area */
+  .slide-viewport { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #0f172a; }
+  .slide-aspect {
+    width: 100%; max-width: calc((100vh - 180px) * 16 / 9); aspect-ratio: 16/9;
+    position: relative; overflow: hidden; border-radius: 0;
   }
 
-  /* Print Styles */
+  /* Slide backgrounds */
+  .slide-bg-dark { background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a); }
+  .slide-bg-light { background: linear-gradient(135deg, #1e293b, #0f172a, #1e293b); }
+  .slide-bg-gradient { background: linear-gradient(135deg, #0f172a, rgba(13,148,136,0.15), #0f172a); }
+  .slide-bg-accent { background: linear-gradient(135deg, rgba(13,148,136,0.25), #0f172a, rgba(16,185,129,0.25)); }
+
+  /* Decorative blurs */
+  .slide-decor { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .slide-decor .glow1 {
+    position: absolute; top: -100px; right: -100px; width: 320px; height: 320px;
+    background: rgba(45,212,191,0.08); border-radius: 50%; filter: blur(80px);
+  }
+  .slide-decor .glow2 {
+    position: absolute; bottom: -100px; left: -100px; width: 320px; height: 320px;
+    background: rgba(16,185,129,0.08); border-radius: 50%; filter: blur(80px);
+  }
+
+  /* Slide content */
+  .slide-content {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 48px 64px;
+    transition: opacity 0.25s ease, transform 0.25s ease; z-index: 1;
+  }
+  .slide-content.transitioning { opacity: 0; transform: scale(0.96); }
+
+  /* Slide title */
+  .slide-title { font-size: 40px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .slide-subtitle { font-size: 20px; color: var(--teal); font-weight: 500; text-align: center; margin-bottom: 0; }
+  .slide-header { margin-bottom: 32px; text-align: center; }
+
+  /* Content blocks */
+  .slide-body { width: 100%; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+
+  /* Text */
+  .sc-text { text-align: center; line-height: 1.5; }
+  .sc-text.sz-sm { font-size: 14px; }
+  .sc-text.sz-md { font-size: 18px; }
+  .sc-text.sz-lg { font-size: 22px; }
+  .sc-text.sz-xl { font-size: 28px; }
+  .sc-text.sz-2xl { font-size: 34px; }
+  .sc-text.dark { color: #cbd5e1; }
+  .sc-text.light { color: #64748b; }
+
+  /* Stats row */
+  .sc-stats { display: grid; gap: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
+  .sc-stats.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .sc-stats.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .sc-stat-card {
+    border-radius: 16px; padding: 24px 16px; text-align: center;
+    position: relative; overflow: hidden; transition: transform 0.2s;
+  }
+  .sc-stat-card:hover { transform: translateY(-2px); }
+  .sc-stat-card.on-dark { background: rgba(255,255,255,0.08); }
+  .sc-stat-card.on-light { background: linear-gradient(135deg, #1e293b, #0f172a); }
+  .sc-stat-card .hover-glow {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(45,212,191,0.15), rgba(16,185,129,0.15));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .sc-stat-card:hover .hover-glow { opacity: 1; }
+  .sc-stat-icon {
+    width: 44px; height: 44px; border-radius: 10px; margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+  }
+  .sc-stat-icon.on-dark { background: rgba(45,212,191,0.25); }
+  .sc-stat-icon.on-light { background: var(--teal); }
+  .sc-stat-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 1.5; }
+  .sc-stat-value { font-size: 36px; font-weight: 900; color: #fff; margin-bottom: 2px; position: relative; z-index: 1; }
+  .sc-stat-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--teal); position: relative; z-index: 1;
+  }
+
+  /* Comparison */
+  .sc-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; max-width: 800px; margin: 0 auto; }
+  .sc-compare-side { border-radius: 16px; padding: 24px; border: 2px solid; }
+  .sc-compare-side.color-red {
+    background: linear-gradient(135deg, rgba(248,113,113,0.08), rgba(239,68,68,0.08));
+    border-color: rgba(248,113,113,0.3);
+  }
+  .sc-compare-side.color-green {
+    background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(45,212,191,0.08));
+    border-color: rgba(52,211,153,0.3);
+  }
+  .sc-compare-title {
+    font-size: 18px; font-weight: 700; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sc-compare-title.color-red { color: var(--red); }
+  .sc-compare-title.color-green { color: var(--emerald); }
+  .sc-compare-title svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .sc-compare-list { list-style: none; padding: 0; margin: 0; }
+  .sc-compare-list li {
+    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    font-size: 14px; color: #cbd5e1;
+  }
+  .sc-compare-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .sc-compare-dot.color-red { background: var(--red); }
+  .sc-compare-dot.color-green { background: var(--emerald); }
+
+  /* Diagram: flow */
+  .sc-flow { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; max-width: 900px; margin: 0 auto; flex-wrap: wrap; }
+  .sc-flow-box {
+    background: linear-gradient(135deg, #334155, #1e293b); border-radius: 10px;
+    padding: 10px 18px; color: #fff; font-weight: 600; font-size: 13px;
+    text-align: center; border: 1px solid #475569; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .sc-flow-arrow { color: var(--teal); flex-shrink: 0; }
+  .sc-flow-arrow svg { width: 28px; height: 28px; }
+
+  /* Diagram: stack */
+  .sc-stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; max-width: 380px; margin: 0 auto; }
+  .sc-stack-box {
+    width: 100%; border-radius: 10px; padding: 14px 20px; text-align: center;
+    font-weight: 700; color: #fff; font-size: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .sc-stack-box.lvl-0 { background: linear-gradient(90deg, var(--teal), var(--emerald)); }
+  .sc-stack-box.lvl-1 { background: linear-gradient(90deg, #475569, #334155); border: 2px solid rgba(45,212,191,0.4); }
+  .sc-stack-box.lvl-2 { background: linear-gradient(90deg, #334155, #1e293b); }
+  .sc-stack-box.lvl-3 { background: linear-gradient(90deg, #1e293b, #0f172a); }
+  .sc-stack-arrow { color: var(--teal); padding: 4px 0; }
+  .sc-stack-arrow svg { width: 22px; height: 22px; }
+
+  /* Diagram: hub */
+  .sc-hub { position: relative; width: 300px; height: 300px; margin: 0 auto; }
+  .sc-hub-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 120px; height: 120px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), #dc2626);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 13px; text-align: center;
+    box-shadow: 0 8px 30px rgba(239,68,68,0.4); border: 3px solid #fca5a5;
+    z-index: 2;
+  }
+  .sc-hub-node {
+    position: absolute; width: 80px; height: 80px; border-radius: 12px;
+    background: linear-gradient(135deg, #334155, #1e293b);
+    border: 1px solid #475569; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 600; text-align: center; padding: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 2;
+    transform: translate(-50%, -50%);
+  }
+  .sc-hub-lines { position: absolute; inset: 0; z-index: 1; }
+
+  /* Diagram: timeline */
+  .sc-timeline { position: relative; width: 100%; max-width: 750px; margin: 0 auto; padding: 32px 0; }
+  .sc-timeline-line {
+    position: absolute; top: 50%; left: 5%; right: 5%; height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--emerald), var(--teal));
+    transform: translateY(-50%); border-radius: 2px;
+  }
+  .sc-timeline-items { display: flex; justify-content: space-between; position: relative; padding: 0 2%; }
+  .sc-timeline-item { display: flex; flex-direction: column; align-items: center; }
+  .sc-timeline-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--emerald));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 18px;
+    box-shadow: 0 4px 15px rgba(45,212,191,0.3); border: 3px solid #0f172a;
+    z-index: 2;
+  }
+  .sc-timeline-label { margin-top: 10px; font-size: 12px; font-weight: 600; color: #fff; text-align: center; max-width: 100px; }
+
+  /* Icon box */
+  .sc-icon-box {
+    width: 100%; max-width: 560px; margin: 0 auto; border-radius: 16px;
+    padding: 20px 24px; border: 2px solid; display: flex; align-items: flex-start; gap: 16px;
+  }
+  .sc-icon-box.color-red {
+    background: linear-gradient(135deg, rgba(248,113,113,0.1), rgba(239,68,68,0.1));
+    border-color: rgba(248,113,113,0.4);
+  }
+  .sc-icon-box.color-teal {
+    background: linear-gradient(135deg, rgba(45,212,191,0.1), rgba(16,185,129,0.1));
+    border-color: rgba(45,212,191,0.4);
+  }
+  .sc-icon-box-icon {
+    width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sc-icon-box-icon.color-red { background: var(--red); }
+  .sc-icon-box-icon.color-teal { background: var(--teal); }
+  .sc-icon-box-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 1.5; }
+  .sc-icon-box-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .sc-icon-box-desc { font-size: 14px; color: #cbd5e1; line-height: 1.5; }
+
+  /* Highlight */
+  .sc-highlight {
+    width: 100%; max-width: 620px; margin: 0 auto; border-radius: 14px;
+    padding: 20px 28px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .sc-highlight.color-teal { background: linear-gradient(90deg, var(--teal), var(--emerald)); }
+  .sc-highlight.color-amber { background: linear-gradient(90deg, #f59e0b, #f97316); }
+  .sc-highlight.color-red { background: linear-gradient(90deg, var(--red), #e11d48); }
+  .sc-highlight.color-green { background: linear-gradient(90deg, #22c55e, var(--emerald)); }
+  .sc-highlight p { font-size: 17px; font-weight: 700; color: #fff; text-align: center; line-height: 1.5; }
+
+  /* Quote */
+  .sc-quote { width: 100%; max-width: 640px; margin: 0 auto; text-align: center; }
+  .sc-quote-marks { color: rgba(45,212,191,0.4); margin-bottom: 12px; }
+  .sc-quote-marks svg { width: 56px; height: 56px; margin: 0 auto; }
+  .sc-quote-text { font-size: 26px; font-weight: 500; font-style: italic; color: #fff; line-height: 1.5; }
+  .sc-quote-author { margin-top: 12px; color: var(--teal); font-weight: 600; }
+
+  /* CTA */
+  .sc-cta { text-align: center; }
+  .sc-cta-main { font-size: 42px; font-weight: 900; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+  .sc-cta-sub { font-size: 22px; color: var(--teal); font-weight: 500; }
+
+  /* Table */
+  .sc-table { width: 100%; max-width: 700px; margin: 0 auto; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .sc-table table { width: 100%; border-collapse: collapse; }
+  .sc-table th {
+    padding: 14px 20px; font-size: 15px; font-weight: 700; color: #fff; text-align: left;
+  }
+  .sc-table th:first-child { background: linear-gradient(90deg, #dc2626, #ef4444); }
+  .sc-table th:last-child { background: linear-gradient(90deg, #059669, #10b981); }
+  .sc-table td { padding: 12px 20px; font-size: 14px; }
+  .sc-table td:first-child { color: #94a3b8; border-right: 1px solid #334155; }
+  .sc-table td:last-child { color: var(--emerald); font-weight: 500; }
+  .sc-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .sc-table tr:nth-child(odd) td { background: #1e293b; }
+
+  /* Spacer */
+  .sc-spacer-sm { height: 16px; }
+  .sc-spacer-md { height: 32px; }
+  .sc-spacer-lg { height: 48px; }
+
+  /* Slide number badge */
+  .slide-number {
+    position: absolute; bottom: 12px; right: 16px; z-index: 5;
+    background: rgba(30,41,59,0.8); border: 1px solid rgba(55,65,81,0.5);
+    border-radius: 16px; padding: 4px 12px; font-size: 12px;
+  }
+  .slide-number-current { font-weight: 800; color: #fff; }
+  .slide-number-total { color: var(--text-dim); }
+
+  /* Progress bar */
+  .slide-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #1e293b; z-index: 5; }
+  .slide-progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--teal), var(--emerald));
+    transition: width 0.3s ease;
+  }
+
+  /* Notes */
+  .pres-notes {
+    background: var(--surface2); border-top: 1px solid var(--border);
+    padding: 12px 20px; flex-shrink: 0; display: none;
+  }
+  .pres-notes.visible { display: block; }
+  .pres-notes-label { color: var(--teal); font-weight: 600; font-size: 12px; margin-right: 8px; }
+  .pres-notes-text { color: #cbd5e1; font-size: 13px; line-height: 1.5; }
+
+  /* Thumbnails */
+  .pres-thumbs {
+    background: #0f172a; border-top: 1px solid rgba(55,65,81,0.5);
+    padding: 10px 14px; overflow-x: auto; flex-shrink: 0;
+    display: flex; gap: 8px;
+  }
+  .pres-thumb {
+    flex-shrink: 0; width: 96px; height: 54px; border-radius: 6px; overflow: hidden;
+    cursor: pointer; transition: all 0.2s; border: 2px solid transparent;
+    background: linear-gradient(135deg, #334155, #1e293b); padding: 6px 8px;
+    opacity: 0.5;
+  }
+  .pres-thumb:hover { opacity: 0.85; }
+  .pres-thumb.active {
+    opacity: 1; border-color: var(--teal);
+    box-shadow: 0 0 12px rgba(45,212,191,0.3);
+  }
+  .pres-thumb-title { font-size: 7px; font-weight: 600; color: #fff; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+
+  /* Fullscreen */
+  .pres-fullscreen .pres-controls { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+  .pres-fullscreen .slide-viewport { position: fixed; top: 44px; left: 0; right: 0; bottom: 68px; max-width: none; }
+  .pres-fullscreen .slide-aspect { max-width: none; border-radius: 0; width: 100%; height: 100%; aspect-ratio: auto; }
+  .pres-fullscreen .pres-notes { position: fixed; bottom: 68px; left: 0; right: 0; z-index: 1000; }
+  .pres-fullscreen .pres-thumbs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; }
+
+  /* ── Print Styles ── */
   @media print {
     :root {
       --bg: #fff; --surface: #fff; --surface2: #f8f9fa; --surface3: #e9ecef;
@@ -285,10 +659,11 @@
       --accent: #0066cc;
     }
     body { background: #fff; color: #212529; }
-    .section-nav, .sidebar, .sidebar-toggle, .topbar-right { display: none !important; }
+    .section-nav, .sidebar-toggle, .topbar-right, .view-tabs { display: none !important; }
     .topbar { position: static; border-bottom: 2px solid #000; }
     .topbar-logo { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    .layout { display: block; }
+    .chapters-layout { display: block; }
+    .sidebar { display: none !important; }
     .content-area { padding: 20px; }
     .content-inner { max-width: 100%; }
     .md-content h1 { color: #000; border-bottom-color: #000; }
@@ -304,26 +679,38 @@
     .md-content blockquote { border-left-color: #003366; }
   }
 
-  /* Responsive */
+  /* ── Responsive ── */
   @media (max-width: 768px) {
     .section-nav { padding: 0 12px; overflow-x: auto; flex-wrap: nowrap; }
     .section-nav a { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
-    .topbar { padding: 12px 16px; }
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
     .topbar h1 { font-size: 15px; }
+    .view-tabs { width: 100%; order: 3; }
+    .view-tab { flex: 1; text-align: center; padding: 7px 8px; font-size: 12px; }
     .sidebar-toggle { display: block; }
-    .layout { flex-direction: column; }
+    .chapters-layout { flex-direction: column; }
     .sidebar {
-      display: none;
-      width: 100%;
-      min-width: 100%;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
+      display: none; width: 100%; min-width: 100%;
+      border-right: none; border-bottom: 1px solid var(--border);
       max-height: 50vh;
     }
-    .sidebar.open {
-      display: block;
-    }
+    .sidebar.open { display: block; }
     .content-area { padding: 24px 16px; }
+    .overview-inner { padding: 32px 16px; }
+    .hero-title { font-size: 28px; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .chapter-cards { grid-template-columns: 1fr; }
+    .template-cards { grid-template-columns: 1fr; }
+    .slide-title { font-size: 24px; }
+    .slide-subtitle { font-size: 16px; }
+    .slide-content { padding: 24px 20px; }
+    .sc-comparison { grid-template-columns: 1fr; }
+    .sc-stats.cols-3, .sc-stats.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    .sc-flow { flex-direction: column; }
+    .sc-flow-arrow svg { transform: rotate(90deg); }
+    .sc-cta-main { font-size: 28px; }
+    .sc-timeline-items { flex-direction: column; gap: 16px; }
+    .sc-timeline-line { display: none; }
   }
 </style>
 </head>
@@ -342,71 +729,495 @@
     <h1><span>ATO</span> Playbook</h1>
   </div>
   <div class="topbar-right">
-    <span style="font-size:13px;color:#94a3b8">ATO in Days, Not Years</span>
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('overview')">Overview</button>
+      <button class="view-tab" onclick="switchView('chapters')">Chapters</button>
+      <button class="view-tab" onclick="switchView('presentation')">Executive Brief</button>
+    </div>
     <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle chapter menu">Chapters</button>
   </div>
 </div>
 
-<div class="layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">ATO Playbook</div>
-    <div class="sidebar-divider"></div>
+<!-- ═══════════════════════════════════════
+     VIEW 1: OVERVIEW
+     ═══════════════════════════════════════ -->
+<div class="view active" id="view-overview">
+  <div class="overview">
+    <div class="overview-inner">
+      <div class="hero-section">
+        <div class="hero-badge">Federal DevSecOps Playbook</div>
+        <h2 class="hero-title">ATO in Days, Not Years</h2>
+        <p class="hero-subtitle">The Kubernetes Playbook for Continuous Federal Compliance. Automate your Authority to Operate with platform-based controls, machine-readable policies, and evidence on autopilot.</p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">5</div>
+            <div class="hero-stat-label">Chapters</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">4</div>
+            <div class="hero-stat-label">Templates</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">14</div>
+            <div class="hero-stat-label">Slide Brief</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">90</div>
+            <div class="hero-stat-label">Day Sprint Plan</div>
+          </div>
+        </div>
+      </div>
 
-    <div class="sidebar-section">
-      <a class="sidebar-item active" data-src="playbook-content/executive-summary.md" onclick="loadContent(this)">
-        Executive Summary
-      </a>
-    </div>
+      <div class="ov-section-title">Chapters <span class="ov-badge">5 chapters</span></div>
+      <div class="chapter-cards">
+        <div class="chapter-card" onclick="goToChapter('executive-summary')">
+          <div class="chapter-card-num">Executive Summary</div>
+          <div class="chapter-card-title">Strategic Overview</div>
+          <div class="chapter-card-desc">The business case for platform-based ATO. Costs, timelines, and the path from fragmented compliance to continuous authorization.</div>
+        </div>
+        <div class="chapter-card" onclick="goToChapter('ch1')">
+          <div class="chapter-card-num">Chapter 1</div>
+          <div class="chapter-card-title">The Compliance Rosetta Stone</div>
+          <div class="chapter-card-desc">Map NIST 800-53 controls to Kubernetes primitives. Understand how platform capabilities directly satisfy security requirements.</div>
+        </div>
+        <div class="chapter-card" onclick="goToChapter('ch2')">
+          <div class="chapter-card-num">Chapter 2</div>
+          <div class="chapter-card-title">Machine-Readable Compliance</div>
+          <div class="chapter-card-desc">OSCAL, policy-as-code, and automated SSP generation. Move compliance from Word documents to version-controlled artifacts.</div>
+        </div>
+        <div class="chapter-card" onclick="goToChapter('ch3')">
+          <div class="chapter-card-num">Chapter 3</div>
+          <div class="chapter-card-title">Evidence on Autopilot</div>
+          <div class="chapter-card-desc">Automated evidence collection scripts, continuous monitoring, and real-time compliance dashboards for assessors.</div>
+        </div>
+        <div class="chapter-card" onclick="goToChapter('ch4')">
+          <div class="chapter-card-num">Chapter 4</div>
+          <div class="chapter-card-title">The 90-Day Sprint</div>
+          <div class="chapter-card-desc">Week-by-week execution plan to achieve ATO. From platform standup through assessment to authorization decision.</div>
+        </div>
+        <div class="chapter-card" onclick="goToChapter('ch5')">
+          <div class="chapter-card-num">Chapter 5</div>
+          <div class="chapter-card-title">The Authorization Briefing</div>
+          <div class="chapter-card-desc">How to brief leadership and AOs. Templates, talking points, and strategies for the authorization decision meeting.</div>
+        </div>
+      </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Chapters</div>
-      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-1-the-compliance-rosetta-stone.md" onclick="loadContent(this)">
-        <span class="chapter-num">1.</span> The Compliance Rosetta Stone
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-2-machine-readable-compliance.md" onclick="loadContent(this)">
-        <span class="chapter-num">2.</span> Machine-Readable Compliance
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-3-evidence-automation-checklist.md" onclick="loadContent(this)">
-        <span class="chapter-num">3.</span> Evidence on Autopilot
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-4-the-90-day-sprint.md" onclick="loadContent(this)">
-        <span class="chapter-num">4.</span> The 90-Day Sprint
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-5-the-authorization-briefing.md" onclick="loadContent(this)">
-        <span class="chapter-num">5.</span> The Authorization Briefing
-      </a>
-    </div>
+      <div class="ov-section-title">Templates &amp; Resources <span class="ov-badge">4 templates</span></div>
+      <div class="template-cards">
+        <div class="template-card" onclick="goToTemplate('mapping')">
+          <div class="template-card-tag">Template</div>
+          <div class="template-card-title">NIST-to-K8s Mapping Matrix</div>
+          <div class="template-card-desc">Complete mapping of NIST 800-53 controls to Kubernetes platform capabilities and evidence sources.</div>
+        </div>
+        <div class="template-card" onclick="goToTemplate('oscal')">
+          <div class="template-card-tag">Template</div>
+          <div class="template-card-title">OSCAL SSP Template</div>
+          <div class="template-card-desc">Machine-readable System Security Plan in OSCAL format, pre-populated with platform control implementations.</div>
+        </div>
+        <div class="template-card" onclick="goToTemplate('evidence')">
+          <div class="template-card-tag">Template</div>
+          <div class="template-card-title">Evidence Automation Scripts</div>
+          <div class="template-card-desc">Ready-to-run scripts for automated evidence collection, scanning, and compliance report generation.</div>
+        </div>
+        <div class="template-card" onclick="goToTemplate('sprint')">
+          <div class="template-card-tag">Template</div>
+          <div class="template-card-title">90-Day Sprint Planner</div>
+          <div class="template-card-desc">Week-by-week project plan with milestones, deliverables, and responsible parties for ATO achievement.</div>
+        </div>
+      </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Templates &amp; Resources</div>
-      <a class="sidebar-item" data-src="playbook-content/templates/mapping-matrix.md" onclick="loadContent(this)">
-        <span class="template-bullet">&bull;</span> NIST-to-K8s Mapping Matrix
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/templates/oscal-ssp.md" onclick="loadContent(this)">
-        <span class="template-bullet">&bull;</span> OSCAL SSP Template
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/templates/evidence-scripts.md" onclick="loadContent(this)">
-        <span class="template-bullet">&bull;</span> Evidence Automation Scripts
-      </a>
-      <a class="sidebar-item" data-src="playbook-content/templates/sprint-planner.md" onclick="loadContent(this)">
-        <span class="template-bullet">&bull;</span> 90-Day Sprint Planner
-      </a>
-    </div>
-  </aside>
-
-  <main class="content-area" id="contentArea">
-    <div class="content-inner" id="contentInner">
-      <div class="loading">
-        <div class="spinner"></div>
-        Loading playbook...
+      <div class="ov-section-title">Executive Presentation</div>
+      <div class="featured-card" onclick="switchView('presentation')">
+        <div class="featured-icon">
+          <svg width="24" height="24" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+          </svg>
+        </div>
+        <div class="featured-title">Modernizing Federal Authorization</div>
+        <div class="featured-desc">14-slide executive briefing covering the case for platform-based continuous ATO. Includes stats, diagrams, comparisons, and a transformation roadmap. Full keyboard navigation and speaker notes.</div>
       </div>
     </div>
-  </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 2: CHAPTERS
+     ═══════════════════════════════════════ -->
+<div class="view" id="view-chapters">
+  <div class="chapters-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">ATO Playbook</div>
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <a class="sidebar-item active" data-src="playbook-content/executive-summary.md" data-id="executive-summary" onclick="loadContent(this)">
+          Executive Summary
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Chapters</div>
+        <a class="sidebar-item" data-src="playbook-content/chapters/chapter-1-the-compliance-rosetta-stone.md" data-id="ch1" onclick="loadContent(this)">
+          <span class="chapter-num">1.</span> The Compliance Rosetta Stone
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/chapters/chapter-2-machine-readable-compliance.md" data-id="ch2" onclick="loadContent(this)">
+          <span class="chapter-num">2.</span> Machine-Readable Compliance
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/chapters/chapter-3-evidence-automation-checklist.md" data-id="ch3" onclick="loadContent(this)">
+          <span class="chapter-num">3.</span> Evidence on Autopilot
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/chapters/chapter-4-the-90-day-sprint.md" data-id="ch4" onclick="loadContent(this)">
+          <span class="chapter-num">4.</span> The 90-Day Sprint
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/chapters/chapter-5-the-authorization-briefing.md" data-id="ch5" onclick="loadContent(this)">
+          <span class="chapter-num">5.</span> The Authorization Briefing
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Templates &amp; Resources</div>
+        <a class="sidebar-item" data-src="playbook-content/templates/mapping-matrix.md" data-id="mapping" onclick="loadContent(this)">
+          <span class="template-bullet">&bull;</span> NIST-to-K8s Mapping Matrix
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/templates/oscal-ssp.md" data-id="oscal" onclick="loadContent(this)">
+          <span class="template-bullet">&bull;</span> OSCAL SSP Template
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/templates/evidence-scripts.md" data-id="evidence" onclick="loadContent(this)">
+          <span class="template-bullet">&bull;</span> Evidence Automation Scripts
+        </a>
+        <a class="sidebar-item" data-src="playbook-content/templates/sprint-planner.md" data-id="sprint" onclick="loadContent(this)">
+          <span class="template-bullet">&bull;</span> 90-Day Sprint Planner
+        </a>
+      </div>
+    </aside>
+
+    <main class="content-area" id="contentArea">
+      <div class="content-inner" id="contentInner">
+        <div class="loading">
+          <div class="spinner"></div>
+          Loading playbook...
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 3: EXECUTIVE PRESENTATION
+     ═══════════════════════════════════════ -->
+<div class="view pres-view" id="view-presentation">
+  <!-- Controls -->
+  <div class="pres-controls" id="presControls">
+    <div class="pres-controls-left">
+      <div class="pres-counter">
+        <span class="pres-counter-current" id="slideNum">1</span>
+        <span class="pres-counter-sep">/</span>
+        <span class="pres-counter-total" id="slideTotal">14</span>
+      </div>
+      <button class="pres-btn" id="btnPrev" onclick="prevSlide()" aria-label="Previous slide">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="pres-btn" id="btnNext" onclick="nextSlide()" aria-label="Next slide">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="pres-controls-right">
+      <button class="pres-btn-text" id="btnNotes" onclick="toggleNotes()">Notes</button>
+      <button class="pres-btn-text" id="btnFullscreen" onclick="toggleFullscreen()">Fullscreen</button>
+    </div>
+  </div>
+
+  <!-- Slide viewport -->
+  <div class="slide-viewport" id="slideViewport">
+    <div class="slide-aspect" id="slideAspect">
+      <div class="slide-decor"><div class="glow1"></div><div class="glow2"></div></div>
+      <div class="slide-content" id="slideContent"></div>
+      <div class="slide-number">
+        <span class="slide-number-current" id="slideNumBadge">1</span>
+        <span class="slide-number-total" id="slideTotalBadge"> / 14</span>
+      </div>
+      <div class="slide-progress"><div class="slide-progress-fill" id="slideProgress"></div></div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="pres-notes" id="presNotes">
+    <span class="pres-notes-label">Notes:</span>
+    <span class="pres-notes-text" id="presNotesText"></span>
+  </div>
+
+  <!-- Thumbnails -->
+  <div class="pres-thumbs" id="presThumbs"></div>
 </div>
 
 <script>
-// ── Markdown Renderer (adapted from doc-viewer.html) ──
+// ═══════════════════════════════════════════════
+// SVG ICON PATHS
+// ═══════════════════════════════════════════════
+var iconPaths = {
+  speed: 'M13 10V3L4 14h7v7l9-11h-7z',
+  money: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  grid: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+  clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  recycle: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+  shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  check: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  apps: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+  warning: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+  doc: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+  sync: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+  robot: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  queue: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+  chart: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  platform: 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
+  inherit: 'M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z',
+  auto: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
+  continuous: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+};
 
+function svgIcon(name) {
+  var p = iconPaths[name] || iconPaths.check;
+  return '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="' + p + '"/></svg>';
+}
+
+// ═══════════════════════════════════════════════
+// SLIDE DATA (14 slides)
+// ═══════════════════════════════════════════════
+var slides = [
+  {
+    id: 1, title: 'Modernizing Federal Authorization',
+    subtitle: 'From Fragmented Compliance to Continuous ATO',
+    layout: 'title', background: 'dark',
+    notes: 'Welcome leadership. This brief covers our current authorization challenges and a path forward.',
+    content: [
+      { type: 'spacer', size: 'lg' },
+      { type: 'text', text: 'Executive Brief for Leadership', size: 'lg', align: 'center' },
+      { type: 'spacer', size: 'md' },
+      { type: 'stats-row', stats: [
+        { value: '80%', label: 'Faster ATO', icon: 'speed' },
+        { value: '$4.2M', label: 'Annual Savings', icon: 'money' },
+        { value: '47', label: 'Programs Unified', icon: 'grid' }
+      ]}
+    ]
+  },
+  {
+    id: 2, title: 'The Current Reality',
+    subtitle: 'Every Program Is an Island',
+    layout: 'stats', background: 'light',
+    notes: 'Emphasize the duplication happening across the organization.',
+    content: [
+      { type: 'diagram', variant: 'hub', data: ['Program A', 'Program B', 'Program C', 'Program D'] },
+      { type: 'spacer', size: 'md' },
+      { type: 'stats-row', stats: [
+        { value: '$2-5M', label: 'Per Program Infrastructure', icon: 'money' },
+        { value: '12-18', label: 'Months to ATO', icon: 'clock' },
+        { value: '0%', label: 'Control Reuse', icon: 'recycle' }
+      ]}
+    ]
+  },
+  {
+    id: 3, title: 'The Hidden Cost',
+    layout: 'comparison', background: 'light',
+    notes: 'Labor costs are the hidden expense leadership often underestimates.',
+    content: [
+      { type: 'comparison',
+        left: { title: 'What We Pay For', items: ['Duplicate hardware purchases', 'Redundant VM infrastructure', 'Separate container runtimes', 'Individual security tools'], color: 'red' },
+        right: { title: 'What We Get', items: ['Incompatible systems', 'No shared controls', 'Manual everything', 'Endless re-work'], color: 'red' }
+      },
+      { type: 'spacer', size: 'md' },
+      { type: 'highlight', text: "The real cost isn't hardware\u2014it's the millions spent on labor that could be automated", color: 'amber' }
+    ]
+  },
+  {
+    id: 4, title: 'Authorization Chaos',
+    subtitle: 'Why Every ATO Takes 18 Months',
+    layout: 'content', background: 'light',
+    notes: 'The lack of standardization is killing efficiency.',
+    content: [
+      { type: 'diagram', variant: 'flow', data: ['New System', 'Custom Docs', 'Manual Evidence', 'Long Review', 'Finally ATO', 'Immediately Stale'] },
+      { type: 'spacer', size: 'md' },
+      { type: 'icon-box', icon: 'warning', title: 'The Vicious Cycle', description: 'Each assessment starts from scratch, even when systems share 80%+ of their architecture', color: 'red' }
+    ]
+  },
+  {
+    id: 5, title: 'There Is a Better Way',
+    layout: 'big-statement', background: 'gradient',
+    notes: 'This is the key transition moment in the presentation.',
+    content: [
+      { type: 'cta', text: 'Platform-Based Continuous Authorization', subtext: 'One platform. Inherited controls. Automated compliance.' }
+    ]
+  },
+  {
+    id: 6, title: 'The DSOP Advantage',
+    subtitle: 'DevSecOps Platform + Secure Container Runtime',
+    layout: 'stats', background: 'light',
+    notes: 'The 60% inheritance is a conservative estimate based on typical NIST 800-53 mappings.',
+    content: [
+      { type: 'diagram', variant: 'stack', data: ['Mission Applications', 'Inherited Controls', 'DSOP Platform', 'Secure Runtime'] },
+      { type: 'spacer', size: 'md' },
+      { type: 'stats-row', stats: [
+        { value: '60%', label: 'Controls Inherited', icon: 'shield' },
+        { value: '1x', label: 'Authorize Once', icon: 'check' },
+        { value: '\u221e', label: 'Apps Benefit', icon: 'apps' }
+      ]}
+    ]
+  },
+  {
+    id: 7, title: 'Flexible Deployment',
+    subtitle: 'One Platform, Your Way',
+    layout: 'comparison', background: 'light',
+    notes: 'Flexibility is key\u2014not one-size-fits-all.',
+    content: [
+      { type: 'comparison',
+        left: { title: 'Managed Service', items: ['Turnkey solution', 'We operate it', 'Fastest deployment', 'Lower overhead'], color: 'green' },
+        right: { title: 'Local Installation', items: ['Your hardware', 'Air-gap ready', 'Data residency', 'Full control'], color: 'green' }
+      },
+      { type: 'spacer', size: 'md' },
+      { type: 'highlight', text: 'Same hardened runtime. Same security controls. Same compliance inheritance.', color: 'teal' }
+    ]
+  },
+  {
+    id: 8, title: 'Automation Changes Everything',
+    layout: 'stats', background: 'accent',
+    notes: 'Automation is the key to sustainability.',
+    content: [
+      { type: 'stats-row', stats: [
+        { value: 'OSCAL', label: 'Machine-Readable Docs', icon: 'doc' },
+        { value: '24/7', label: 'Evidence Collection', icon: 'sync' },
+        { value: '0', label: 'Manual Updates', icon: 'robot' }
+      ]},
+      { type: 'spacer', size: 'lg' },
+      { type: 'diagram', variant: 'flow', data: ['Config Change', 'Auto-Update SSP', 'Collect Evidence', 'Dashboard Ready'] }
+    ]
+  },
+  {
+    id: 9, title: 'Continuous ATO',
+    subtitle: 'Authorization That Stays Current',
+    layout: 'comparison', background: 'light',
+    notes: 'cATO is the future\u2014and it requires a platform approach.',
+    content: [
+      { type: 'comparison',
+        left: { title: 'Traditional ATO', items: ['Point-in-time snapshot', 'Immediately decays', 'Periodic re-assessment', '18-month cycles'], color: 'red' },
+        right: { title: 'Continuous ATO', items: ['Real-time visibility', 'Always current', 'Continuous assurance', 'Deploy anytime'], color: 'green' }
+      }
+    ]
+  },
+  {
+    id: 10, title: 'The Transformation',
+    layout: 'table', background: 'light',
+    notes: 'This comparison table is effective for leadership decision-making.',
+    content: [
+      { type: 'table', headers: ['Today', 'Tomorrow'], rows: [
+        ['Each program buys hardware', 'Shared infrastructure'],
+        ['Custom solutions everywhere', 'One hardened platform'],
+        ['Unique requirements each time', 'Inheritable controls'],
+        ['Manual evidence collection', 'Automated compliance'],
+        ['12-18 month ATOs', 'Days to weeks'],
+        ['Duplicated labor costs', 'Mission-focused teams']
+      ]}
+    ]
+  },
+  {
+    id: 11, title: 'Five Steps to Get There',
+    layout: 'content', background: 'light',
+    notes: 'These are concrete next steps leadership can approve.',
+    content: [
+      { type: 'diagram', variant: 'timeline', data: ['Establish DSOP', 'Platform ATO', 'Automate Compliance', 'Migrate Workloads', 'Measure ROI'] }
+    ]
+  },
+  {
+    id: 12, title: 'Expected Impact',
+    layout: 'stats', background: 'accent',
+    notes: 'Be prepared to discuss how these outcomes will be measured.',
+    content: [
+      { type: 'stats-row', stats: [
+        { value: '80%', label: 'Faster Time-to-ATO', icon: 'speed' },
+        { value: '$4.2M', label: 'Annual Savings', icon: 'money' },
+        { value: '35+', label: 'Apps Waiting', icon: 'queue' }
+      ]},
+      { type: 'spacer', size: 'lg' },
+      { type: 'stats-row', stats: [
+        { value: '24/7', label: 'Security Monitoring', icon: 'shield' },
+        { value: '100%', label: 'Evidence Automation', icon: 'check' },
+        { value: '1st Year', label: 'ROI Timeline', icon: 'chart' }
+      ]}
+    ]
+  },
+  {
+    id: 13, title: "The Question Isn't If",
+    layout: 'big-statement', background: 'dark',
+    notes: 'This is the call to action. Pause here for impact.',
+    content: [
+      { type: 'quote', text: "The question is not whether we can afford to modernize our authorization approach\u2014it's whether we can afford not to." },
+      { type: 'spacer', size: 'lg' },
+      { type: 'text', text: 'Every month of delay means more duplicated spending, more manual labor, and more mission capability sitting in authorization queues.', size: 'lg', align: 'center' }
+    ]
+  },
+  {
+    id: 14, title: 'The Path Forward',
+    layout: 'conclusion', background: 'gradient',
+    notes: 'End with confidence. Be ready for questions.',
+    content: [
+      { type: 'stats-row', stats: [
+        { value: '01', label: 'Shared Platforms', icon: 'platform' },
+        { value: '02', label: 'Inherited Controls', icon: 'inherit' },
+        { value: '03', label: 'Automated Compliance', icon: 'auto' },
+        { value: '04', label: 'Continuous Auth', icon: 'continuous' }
+      ]},
+      { type: 'spacer', size: 'lg' },
+      { type: 'cta', text: 'Ready to proceed when you are.', subtext: 'Questions?' }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════
+var currentView = 'overview';
+var chaptersLoaded = false;
+
+function switchView(view) {
+  currentView = view;
+  // Update tabs
+  var tabs = document.querySelectorAll('.view-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  if (view === 'overview') tabs[0].classList.add('active');
+  else if (view === 'chapters') tabs[1].classList.add('active');
+  else tabs[2].classList.add('active');
+
+  // Update views
+  document.getElementById('view-overview').classList.toggle('active', view === 'overview');
+  document.getElementById('view-chapters').classList.toggle('active', view === 'chapters');
+  document.getElementById('view-presentation').classList.toggle('active', view === 'presentation');
+
+  // Init chapters on first visit
+  if (view === 'chapters' && !chaptersLoaded) {
+    chaptersLoaded = true;
+    var defaultItem = document.querySelector('.sidebar-item.active');
+    if (defaultItem) loadContent(defaultItem);
+  }
+
+  // Init presentation on first visit
+  if (view === 'presentation' && !presInitialized) {
+    initPresentation();
+  }
+}
+
+function goToChapter(id) {
+  switchView('chapters');
+  var item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+  if (item) loadContent(item);
+}
+
+function goToTemplate(id) {
+  switchView('chapters');
+  var item = document.querySelector('.sidebar-item[data-id="' + id + '"]');
+  if (item) loadContent(item);
+}
+
+// ═══════════════════════════════════════════════
+// MARKDOWN RENDERER
+// ═══════════════════════════════════════════════
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -415,20 +1226,63 @@ function stripFrontmatter(md) {
   var trimmed = md.trim();
   if (trimmed.indexOf('---') === 0) {
     var end = trimmed.indexOf('---', 3);
-    if (end !== -1) {
-      return trimmed.substring(end + 3).trim();
-    }
+    if (end !== -1) return trimmed.substring(end + 3).trim();
   }
   return md;
+}
+
+function highlightSyntax(code, lang) {
+  if (!lang) return escapeHtml(code);
+  var escaped = escapeHtml(code);
+
+  if (lang === 'yaml' || lang === 'yml') {
+    escaped = escaped.replace(/^(\s*)([\w-]+)(\s*:)/gm, '$1<span class="key">$2</span>$3');
+    escaped = escaped.replace(/(:\s+)(true|false|null|yes|no)(\s*$)/gm, '$1<span class="bool">$2</span>$3');
+    escaped = escaped.replace(/(:\s+)(\d+\.?\d*)(\s*$)/gm, '$1<span class="num">$2</span>$3');
+    escaped = escaped.replace(/(#[^\n]*)/g, '<span class="cmt">$1</span>');
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
+  } else if (lang === 'json') {
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")(\s*:)/g, '<span class="key">$1</span>$2');
+    escaped = escaped.replace(/(:\s*)("(?:[^"\\]|\\.)*")/g, '$1<span class="str">$2</span>');
+    escaped = escaped.replace(/(:\s*)(true|false|null)/g, '$1<span class="bool">$2</span>');
+    escaped = escaped.replace(/(:\s*)(\d+\.?\d*)/g, '$1<span class="num">$2</span>');
+  } else if (lang === 'bash' || lang === 'sh' || lang === 'shell') {
+    escaped = escaped.replace(/(#[^\n]*)/g, '<span class="cmt">$1</span>');
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/\b(if|then|else|elif|fi|for|do|done|while|until|case|esac|function|return|export|local|readonly|declare|echo|exit|set|unset|source)\b/g, '<span class="kw">$1</span>');
+    escaped = escaped.replace(/(\$\{?\w+\}?)/g, '<span class="fn">$1</span>');
+  } else if (lang === 'python' || lang === 'py') {
+    escaped = escaped.replace(/(#[^\n]*)/g, '<span class="cmt">$1</span>');
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|finally|with|as|pass|break|continue|and|or|not|in|is|True|False|None)\b/g, '<span class="kw">$1</span>');
+  } else if (lang === 'javascript' || lang === 'js' || lang === 'typescript' || lang === 'ts') {
+    escaped = escaped.replace(/(\/\/[^\n]*)/g, '<span class="cmt">$1</span>');
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/('(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/(`(?:[^`\\]|\\.)*`)/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/\b(const|let|var|function|return|if|else|for|while|class|import|export|from|async|await|try|catch|finally|new|this|typeof|instanceof)\b/g, '<span class="kw">$1</span>');
+    escaped = escaped.replace(/\b(true|false|null|undefined)\b/g, '<span class="bool">$1</span>');
+  } else if (lang === 'xml' || lang === 'html') {
+    escaped = escaped.replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="kw">$2</span>');
+    escaped = escaped.replace(/([\w-]+)(=)/g, '<span class="fn">$1</span>$2');
+    escaped = escaped.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+    escaped = escaped.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="cmt">$1</span>');
+  }
+  return escaped;
 }
 
 function renderMarkdown(md) {
   var html = md;
 
-  // Protect code blocks first
+  // Protect code blocks
   var codeBlocks = [];
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(m, lang, code) {
-    codeBlocks.push('<pre><code>' + escapeHtml(code.trim()) + '</code></pre>');
+    var highlighted = highlightSyntax(code.trim(), lang);
+    var label = lang ? '<span class="lang-label">' + escapeHtml(lang) + '</span>' : '';
+    codeBlocks.push('<pre>' + label + '<code>' + highlighted + '</code></pre>');
     return '\x00CODE' + (codeBlocks.length - 1) + '\x00';
   });
 
@@ -463,8 +1317,11 @@ function renderMarkdown(md) {
   // Horizontal rules
   html = html.replace(/^---+$/gm, '<hr>');
 
-  // Blockquotes
-  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+  // Blockquotes (multi-line)
+  html = html.replace(/(^>\s+.+\n?)+/gm, function(block) {
+    var text = block.replace(/^>\s+/gm, '').trim();
+    return '<blockquote><p>' + text + '</p></blockquote>';
+  });
 
   // Bold and italic
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
@@ -473,15 +1330,12 @@ function renderMarkdown(md) {
   html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
   html = html.replace(/_(.+?)_/g, '<em>$1</em>');
 
-  // Images (before links to avoid conflicts)
+  // Images
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
-  // Links (sanitize href)
+  // Links
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(m, text, url) {
-    var scheme = url.trim().toLowerCase();
-    if (/^(javascript|data|vbscript)\s*:/i.test(scheme)) {
-      return '<a href="#">' + text + '</a>';
-    }
+    if (/^(javascript|data|vbscript)\s*:/i.test(url.trim())) return '<a href="#">' + text + '</a>';
     return '<a href="' + url + '" target="_blank" rel="noopener">' + text + '</a>';
   });
 
@@ -490,25 +1344,21 @@ function renderMarkdown(md) {
   html = html.replace(/^(\s*)- \[ \]\s+(.+)$/gm, '<cli>$2</cli>');
 
   // Unordered lists
-  html = html.replace(/^(\s*)-\s+(.+)$/gm, function(m, indent, content) {
-    return '<li>' + content + '</li>';
-  });
+  html = html.replace(/^(\s*)-\s+(.+)$/gm, '<li>$2</li>');
 
   // Ordered lists
-  html = html.replace(/^(\s*)\d+\.\s+(.+)$/gm, function(m, indent, content) {
-    return '<oli>' + content + '</oli>';
-  });
+  html = html.replace(/^(\s*)\d+\.\s+(.+)$/gm, '<oli>$2</oli>');
 
-  // Wrap consecutive checkbox items
+  // Wrap checkbox items
   html = html.replace(/((?:<cli[^>]*>.+<\/cli>\n?)+)/g, function(m) {
     var items = m.replace(/<cli class="checked">/g, '<li class="checked">').replace(/<cli>/g, '<li>').replace(/<\/cli>/g, '</li>');
     return '<ul class="checklist">' + items + '</ul>';
   });
 
-  // Wrap consecutive <li> in <ul>
+  // Wrap <li> in <ul>
   html = html.replace(/((?:<li>.+<\/li>\n?)+)/g, '<ul>$1</ul>');
 
-  // Wrap consecutive <oli> in <ol>
+  // Wrap <oli> in <ol>
   html = html.replace(/((?:<oli>.+<\/oli>\n?)+)/g, function(m) {
     return '<ol>' + m.replace(/<\/?oli>/g, function(tag) { return tag.replace('oli', 'li'); }) + '</ol>';
   });
@@ -541,48 +1391,34 @@ function renderMarkdown(md) {
   return html;
 }
 
-// ── Navigation & Content Loading ──
-
-var currentItem = null;
-
+// ═══════════════════════════════════════════════
+// CHAPTERS: Navigation & Content Loading
+// ═══════════════════════════════════════════════
 function loadContent(el) {
   var src = el.getAttribute('data-src');
   if (!src) return;
 
-  // Update active state
   var items = document.querySelectorAll('.sidebar-item');
-  for (var i = 0; i < items.length; i++) {
-    items[i].classList.remove('active');
-  }
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
   el.classList.add('active');
-  currentItem = el;
 
-  // Close sidebar on mobile
-  if (window.innerWidth <= 768) {
-    document.getElementById('sidebar').classList.remove('open');
-  }
+  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
 
-  // Show loading
   var contentEl = document.getElementById('contentInner');
   contentEl.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
 
-  // Fetch and render
   fetch(src).then(function(res) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     return res.text();
   }).then(function(md) {
     var cleaned = stripFrontmatter(md);
-    var rendered = renderMarkdown(cleaned);
-    contentEl.innerHTML = '<div class="md-content">' + rendered + '</div>';
-    // Scroll content area to top
+    contentEl.innerHTML = '<div class="md-content">' + renderMarkdown(cleaned) + '</div>';
     document.getElementById('contentArea').scrollTop = 0;
   }).catch(function(err) {
     contentEl.innerHTML =
-      '<div class="error-msg">' +
-      '<h2>Content not available</h2>' +
+      '<div class="error-msg"><h2>Content not available</h2>' +
       '<p>Could not load: ' + escapeHtml(src) + '</p>' +
-      '<p style="margin-top:8px;font-size:13px;">Error: ' + escapeHtml(err.message) + '</p>' +
-      '</div>';
+      '<p style="margin-top:8px;font-size:13px;">Error: ' + escapeHtml(err.message) + '</p></div>';
   });
 }
 
@@ -590,13 +1426,339 @@ function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
 }
 
-// Load executive summary on page open
-(function() {
-  var defaultItem = document.querySelector('.sidebar-item.active');
-  if (defaultItem) {
-    loadContent(defaultItem);
+// ═══════════════════════════════════════════════
+// PRESENTATION ENGINE
+// ═══════════════════════════════════════════════
+var currentSlide = 0;
+var isFullscreen = false;
+var showNotes = false;
+var isTransitioning = false;
+var presInitialized = false;
+
+function initPresentation() {
+  presInitialized = true;
+  buildThumbnails();
+  renderSlide(0);
+  updateControls();
+}
+
+function buildThumbnails() {
+  var container = document.getElementById('presThumbs');
+  var html = '';
+  for (var i = 0; i < slides.length; i++) {
+    html += '<button class="pres-thumb' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '" onclick="goToSlide(' + i + ')">' +
+      '<div class="pres-thumb-title">' + escapeHtml(slides[i].title) + '</div></button>';
   }
-})();
+  container.innerHTML = html;
+}
+
+function goToSlide(idx) {
+  if (idx < 0 || idx >= slides.length || idx === currentSlide || isTransitioning) return;
+  isTransitioning = true;
+  var content = document.getElementById('slideContent');
+  content.classList.add('transitioning');
+  setTimeout(function() {
+    currentSlide = idx;
+    renderSlide(idx);
+    updateControls();
+    content.classList.remove('transitioning');
+    isTransitioning = false;
+  }, 200);
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide() { goToSlide(currentSlide - 1); }
+
+function updateControls() {
+  document.getElementById('slideNum').textContent = currentSlide + 1;
+  document.getElementById('slideTotal').textContent = slides.length;
+  document.getElementById('slideNumBadge').textContent = currentSlide + 1;
+  document.getElementById('slideTotalBadge').textContent = ' / ' + slides.length;
+  document.getElementById('slideProgress').style.width = (((currentSlide + 1) / slides.length) * 100) + '%';
+  document.getElementById('btnPrev').disabled = currentSlide === 0;
+  document.getElementById('btnNext').disabled = currentSlide === slides.length - 1;
+
+  // Notes
+  var slide = slides[currentSlide];
+  var notesEl = document.getElementById('presNotes');
+  if (showNotes && slide.notes) {
+    notesEl.classList.add('visible');
+    document.getElementById('presNotesText').textContent = slide.notes;
+  } else {
+    notesEl.classList.remove('visible');
+  }
+
+  // Thumbnails
+  var thumbs = document.querySelectorAll('.pres-thumb');
+  for (var i = 0; i < thumbs.length; i++) {
+    thumbs[i].classList.toggle('active', i === currentSlide);
+  }
+  // Scroll active thumbnail into view
+  if (thumbs[currentSlide]) {
+    thumbs[currentSlide].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+}
+
+function toggleNotes() {
+  showNotes = !showNotes;
+  document.getElementById('btnNotes').classList.toggle('active', showNotes);
+  updateControls();
+}
+
+function toggleFullscreen() {
+  isFullscreen = !isFullscreen;
+  document.getElementById('view-presentation').classList.toggle('pres-fullscreen', isFullscreen);
+  document.getElementById('btnFullscreen').textContent = isFullscreen ? 'Exit' : 'Fullscreen';
+}
+
+// ═══════════════════════════════════════════════
+// SLIDE RENDERER
+// ═══════════════════════════════════════════════
+function renderSlide(idx) {
+  var slide = slides[idx];
+  var aspect = document.getElementById('slideAspect');
+  var isDark = slide.background === 'dark' || slide.background === 'gradient';
+
+  // Set background
+  aspect.className = 'slide-aspect slide-bg-' + (slide.background || 'dark');
+
+  // Build content HTML
+  var html = '<div class="slide-decor"><div class="glow1"></div><div class="glow2"></div></div>';
+  html += '<div class="slide-content" id="slideContent">';
+
+  // Title
+  if (slide.title) {
+    html += '<div class="slide-header">';
+    html += '<div class="slide-title">' + escapeHtml(slide.title) + '</div>';
+    if (slide.subtitle) html += '<div class="slide-subtitle">' + escapeHtml(slide.subtitle) + '</div>';
+    html += '</div>';
+  }
+
+  // Body
+  html += '<div class="slide-body">';
+  for (var i = 0; i < slide.content.length; i++) {
+    html += renderContentBlock(slide.content[i], isDark);
+  }
+  html += '</div>';
+  html += '</div>';
+
+  // Slide number + progress
+  html += '<div class="slide-number"><span class="slide-number-current">' + (idx + 1) + '</span>';
+  html += '<span class="slide-number-total"> / ' + slides.length + '</span></div>';
+  html += '<div class="slide-progress"><div class="slide-progress-fill" id="slideProgress" style="width:' + (((idx + 1) / slides.length) * 100) + '%"></div></div>';
+
+  aspect.innerHTML = html;
+}
+
+function renderContentBlock(block, isDark) {
+  switch (block.type) {
+    case 'text':
+      var sizeClass = 'sz-' + (block.size || 'md');
+      var alignStyle = block.align ? 'text-align:' + block.align + ';' : '';
+      var boldStyle = block.bold ? 'font-weight:700;' : '';
+      var italicStyle = block.italic ? 'font-style:italic;' : '';
+      var colorClass = isDark ? 'dark' : 'light';
+      return '<p class="sc-text ' + sizeClass + ' ' + colorClass + '" style="' + alignStyle + boldStyle + italicStyle + '">' + escapeHtml(block.text) + '</p>';
+
+    case 'stats-row':
+      var cols = block.stats.length <= 3 ? 'cols-3' : 'cols-4';
+      var cardClass = isDark ? 'on-dark' : 'on-light';
+      var iconClass = isDark ? 'on-dark' : 'on-light';
+      var h = '<div class="sc-stats ' + cols + '">';
+      for (var s = 0; s < block.stats.length; s++) {
+        var st = block.stats[s];
+        h += '<div class="sc-stat-card ' + cardClass + '">';
+        h += '<div class="hover-glow"></div>';
+        if (st.icon) h += '<div class="sc-stat-icon ' + iconClass + '">' + svgIcon(st.icon) + '</div>';
+        h += '<div class="sc-stat-value">' + escapeHtml(st.value) + '</div>';
+        h += '<div class="sc-stat-label">' + escapeHtml(st.label) + '</div>';
+        h += '</div>';
+      }
+      h += '</div>';
+      return h;
+
+    case 'comparison':
+      var h = '<div class="sc-comparison">';
+      var sides = [block.left, block.right];
+      for (var si = 0; si < 2; si++) {
+        var side = sides[si];
+        var xIcon = side.color === 'red'
+          ? '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
+          : '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+        h += '<div class="sc-compare-side color-' + side.color + '">';
+        h += '<div class="sc-compare-title color-' + side.color + '">' + xIcon + escapeHtml(side.title) + '</div>';
+        h += '<ul class="sc-compare-list">';
+        for (var li = 0; li < side.items.length; li++) {
+          h += '<li><span class="sc-compare-dot color-' + side.color + '"></span>' + escapeHtml(side.items[li]) + '</li>';
+        }
+        h += '</ul></div>';
+      }
+      h += '</div>';
+      return h;
+
+    case 'diagram':
+      return renderDiagram(block, isDark);
+
+    case 'icon-box':
+      var boxColor = block.color || 'teal';
+      var h = '<div class="sc-icon-box color-' + boxColor + '">';
+      h += '<div class="sc-icon-box-icon color-' + boxColor + '">' + svgIcon(block.icon) + '</div>';
+      h += '<div><div class="sc-icon-box-title">' + escapeHtml(block.title) + '</div>';
+      h += '<div class="sc-icon-box-desc">' + escapeHtml(block.description) + '</div></div>';
+      h += '</div>';
+      return h;
+
+    case 'highlight':
+      var hlColor = block.color || 'teal';
+      return '<div class="sc-highlight color-' + hlColor + '"><p>' + escapeHtml(block.text) + '</p></div>';
+
+    case 'quote':
+      var h = '<div class="sc-quote">';
+      h += '<div class="sc-quote-marks"><svg width="56" height="56" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg></div>';
+      h += '<div class="sc-quote-text">' + escapeHtml(block.text) + '</div>';
+      if (block.author) h += '<div class="sc-quote-author">-- ' + escapeHtml(block.author) + '</div>';
+      h += '</div>';
+      return h;
+
+    case 'cta':
+      var h = '<div class="sc-cta">';
+      h += '<div class="sc-cta-main">' + escapeHtml(block.text) + '</div>';
+      if (block.subtext) h += '<div class="sc-cta-sub">' + escapeHtml(block.subtext) + '</div>';
+      h += '</div>';
+      return h;
+
+    case 'table':
+      var h = '<div class="sc-table"><table>';
+      h += '<thead><tr>';
+      for (var ti = 0; ti < block.headers.length; ti++) {
+        h += '<th>' + escapeHtml(block.headers[ti]) + '</th>';
+      }
+      h += '</tr></thead><tbody>';
+      for (var ri = 0; ri < block.rows.length; ri++) {
+        h += '<tr>';
+        for (var ci = 0; ci < block.rows[ri].length; ci++) {
+          h += '<td>' + escapeHtml(block.rows[ri][ci]) + '</td>';
+        }
+        h += '</tr>';
+      }
+      h += '</tbody></table></div>';
+      return h;
+
+    case 'spacer':
+      return '<div class="sc-spacer-' + (block.size || 'md') + '"></div>';
+
+    default:
+      return '';
+  }
+}
+
+function renderDiagram(block, isDark) {
+  if (block.variant === 'flow') {
+    var h = '<div class="sc-flow">';
+    for (var i = 0; i < block.data.length; i++) {
+      h += '<div class="sc-flow-box">' + escapeHtml(block.data[i]) + '</div>';
+      if (i < block.data.length - 1) {
+        h += '<div class="sc-flow-arrow"><svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></div>';
+      }
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if (block.variant === 'stack') {
+    var h = '<div class="sc-stack">';
+    for (var i = 0; i < block.data.length; i++) {
+      h += '<div class="sc-stack-box lvl-' + i + '">' + escapeHtml(block.data[i]) + '</div>';
+      if (i < block.data.length - 1) {
+        h += '<div class="sc-stack-arrow"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>';
+      }
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if (block.variant === 'hub') {
+    var h = '<div class="sc-hub">';
+    h += '<div class="sc-hub-center"><span>Siloed<br>Approach</span></div>';
+    // SVG lines
+    h += '<svg class="sc-hub-lines" viewBox="0 0 300 300">';
+    for (var i = 0; i < block.data.length; i++) {
+      var angle = (i * 360 / block.data.length - 90) * Math.PI / 180;
+      var ex = 150 + 75 * Math.cos(angle);
+      var ey = 150 + 75 * Math.sin(angle);
+      h += '<line x1="150" y1="150" x2="' + ex + '" y2="' + ey + '" stroke="#ef4444" stroke-width="2" stroke-dasharray="4" opacity="0.5"/>';
+    }
+    h += '</svg>';
+    // Nodes
+    for (var i = 0; i < block.data.length; i++) {
+      var angle = (i * 360 / block.data.length - 90) * Math.PI / 180;
+      var x = 50 + 38 * Math.cos(angle);
+      var y = 50 + 38 * Math.sin(angle);
+      h += '<div class="sc-hub-node" style="left:' + x + '%;top:' + y + '%">' + escapeHtml(block.data[i]) + '</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if (block.variant === 'timeline') {
+    var h = '<div class="sc-timeline">';
+    h += '<div class="sc-timeline-line"></div>';
+    h += '<div class="sc-timeline-items">';
+    for (var i = 0; i < block.data.length; i++) {
+      h += '<div class="sc-timeline-item">';
+      h += '<div class="sc-timeline-circle">' + (i + 1) + '</div>';
+      h += '<div class="sc-timeline-label">' + escapeHtml(block.data[i]) + '</div>';
+      h += '</div>';
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  return '';
+}
+
+// ═══════════════════════════════════════════════
+// KEYBOARD NAVIGATION
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (currentView !== 'presentation') return;
+
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    nextSlide();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    prevSlide();
+  } else if (e.key === 'Escape') {
+    if (isFullscreen) toggleFullscreen();
+  } else if (e.key === 'f' || e.key === 'F') {
+    // Only toggle if not typing in an input
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      toggleFullscreen();
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════
+// URL HASH ROUTING
+// ═══════════════════════════════════════════════
+function handleHash() {
+  var hash = window.location.hash.replace('#', '');
+  if (hash === 'chapters') switchView('chapters');
+  else if (hash === 'presentation' || hash === 'brief') switchView('presentation');
+  else if (hash.startsWith('ch') || hash === 'executive-summary' || ['mapping','oscal','evidence','sprint'].indexOf(hash) !== -1) {
+    switchView('chapters');
+    setTimeout(function() {
+      var item = document.querySelector('.sidebar-item[data-id="' + hash + '"]');
+      if (item) loadContent(item);
+    }, 50);
+  }
+}
+
+window.addEventListener('hashchange', handleHash);
+if (window.location.hash) {
+  handleHash();
+}
 </script>
 
 </body>

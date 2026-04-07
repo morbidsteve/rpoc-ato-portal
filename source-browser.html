@@ -475,17 +475,27 @@
 
   // ── Bootstrap ──
   fetch('source-tree.json')
-    .then(r => r.json())
-    .then(data => {
-      treeData = data;
-      allFiles = collectFiles(data, '');
-      renderSummary();
-      renderTree(data, document.getElementById('treeContainer'), '', 0);
-      renderEmptyStats();
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
     })
-    .catch(() => {
+    .then(function(data) {
+      treeData = data;
+      try {
+        allFiles = collectFiles(data, '');
+        renderSummary();
+        renderTree(data, document.getElementById('treeContainer'), '', 0);
+        renderEmptyStats();
+      } catch(e) {
+        console.error('Render error:', e);
+        document.getElementById('treeContainer').innerHTML =
+          '<div class="error-state">Error rendering tree: ' + e.message + '</div>';
+      }
+    })
+    .catch(function(err) {
+      console.error('Fetch error:', err);
       document.getElementById('treeContainer').innerHTML =
-        '<div class="error-state">Failed to load source tree.</div>';
+        '<div class="error-state">Failed to load source tree: ' + err.message + '<br><br>If you just deployed, GitHub Pages may still be updating. Try refreshing in a minute.</div>';
     });
 
   // ── Collect all files ──
