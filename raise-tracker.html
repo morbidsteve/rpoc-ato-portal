@@ -375,9 +375,14 @@
       --border: #d1d5db; --text: #111; --text-dim: #4b5563;
     }
   }
+  .section-nav{background:#050810;border-bottom:1px solid #1e293b;display:flex;padding:0 24px}
+  .section-nav a{color:#94a3b8;text-decoration:none;padding:10px 20px;border-bottom:2px solid transparent;font-size:13px;font-weight:600;letter-spacing:.5px;transition:all .2s}
+  .section-nav a:hover{color:#e2e8f0;background:rgba(255,255,255,.03)}
+  .section-nav a.active{color:#38bdf8;border-bottom-color:#38bdf8}
 </style>
 </head>
 <body>
+<nav class="section-nav"><a href="raise-portal.html" class="active">ATO Package</a><a href="evidence.html">Platform Evidence</a><a href="playbook.html">ATO Playbook</a><a href="source-browser.html">Source Code</a></nav>
 
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:12px;">

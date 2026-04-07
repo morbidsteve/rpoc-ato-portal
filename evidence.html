@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — Platform Evidence</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1e293b;
+    --surface3: #334155;
+    --border: #374151;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.1);
+    --yellow: #fbbf24;
+    --yellow-bg: rgba(251,191,36,0.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.1);
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Section Nav */
+  .section-nav { background:#050810; border-bottom:1px solid #1e293b; display:flex; padding:0 24px; }
+  .section-nav a { color:#94a3b8; text-decoration:none; padding:10px 20px; border-bottom:2px solid transparent; font-size:13px; font-weight:600; letter-spacing:0.5px; transition:all 0.2s; }
+  .section-nav a:hover { color:#e2e8f0; background:rgba(255,255,255,0.03); }
+  .section-nav a.active { color:#38bdf8; border-bottom-color:#38bdf8; }
+
+  /* Topbar */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-left { display:flex; align-items:center; gap:14px; }
+  .topbar-logo {
+    width:40px; height:40px; border-radius:10px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; color:#fff; letter-spacing:-0.5px;
+  }
+  .topbar h1 { font-size:18px; font-weight:700; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right { display:flex; gap:12px; align-items:center; }
+  .topbar-date { font-size:13px; color:var(--text-dim); }
+
+  /* Layout */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 97px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+    height: calc(100vh - 97px);
+    position: sticky;
+    top: 57px;
+  }
+  .sidebar-stats {
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .sidebar-stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+  .sidebar-stat {
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-stat-num {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+  .sidebar-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar-item:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .sidebar-item.active {
+    background: rgba(56,189,248,0.06);
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .sidebar-item-count {
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 24px;
+    text-align: center;
+  }
+  .sidebar-item.active .sidebar-item-count {
+    background: rgba(56,189,248,0.15);
+    color: var(--accent);
+  }
+
+  /* Main content */
+  .content {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .content-header {
+    margin-bottom: 24px;
+  }
+  .content-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .content-header .controls-list {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .content-header .controls-list .ctrl-tag {
+    display: inline-block;
+    background: rgba(56,189,248,0.1);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+
+  /* Evidence card */
+  .evidence-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .evidence-card:hover {
+    border-color: var(--surface3);
+  }
+  .evidence-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .evidence-card-header:hover {
+    background: var(--surface2);
+  }
+  .evidence-expand-icon {
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+  }
+  .evidence-card.expanded .evidence-expand-icon {
+    transform: rotate(90deg);
+  }
+  .evidence-file-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    font-weight: 700;
+    background: rgba(56,189,248,0.1);
+    color: var(--accent);
+  }
+  .evidence-file-icon.yaml { background: rgba(96,165,250,0.1); color: var(--blue); }
+  .evidence-file-icon.json { background: rgba(52,211,153,0.1); color: var(--green); }
+  .evidence-file-icon.sh { background: rgba(251,191,36,0.1); color: var(--yellow); }
+  .evidence-file-icon.md { background: rgba(167,139,250,0.1); color: var(--purple); }
+  .evidence-file-icon.yml { background: rgba(96,165,250,0.1); color: var(--blue); }
+  .evidence-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .evidence-filename {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .evidence-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .evidence-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .evidence-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(56,189,248,0.08);
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* Code display */
+  .evidence-code-wrap {
+    display: none;
+    border-top: 1px solid var(--border);
+    background: #080c16;
+    position: relative;
+  }
+  .evidence-card.expanded .evidence-code-wrap {
+    display: block;
+  }
+  .evidence-code-loading {
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  .evidence-code {
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    counter-reset: line;
+    tab-size: 2;
+  }
+  .evidence-code .line {
+    display: block;
+    counter-increment: line;
+    white-space: pre;
+  }
+  .evidence-code .line::before {
+    content: counter(line);
+    display: inline-block;
+    width: 3.5em;
+    text-align: right;
+    margin-right: 1.5em;
+    color: var(--surface3);
+    font-size: 11px;
+    user-select: none;
+    border-right: 1px solid var(--surface2);
+    padding-right: 0.8em;
+  }
+  .evidence-code-path {
+    padding: 8px 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .evidence-code-path .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .evidence-code-path .copy-btn:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  /* Syntax highlighting */
+  .hl-key { color: var(--cyan); }
+  .hl-str { color: var(--green); }
+  .hl-num { color: var(--yellow); }
+  .hl-bool { color: var(--purple); }
+  .hl-comment { color: var(--text-muted); font-style: italic; }
+  .hl-kw { color: var(--cyan); font-weight: 600; }
+  .hl-header { color: var(--cyan); font-weight: 700; }
+  .hl-bold { color: #fff; font-weight: 700; }
+
+  /* Mobile responsive */
+  .mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 200;
+    box-shadow: 0 4px 15px rgba(56,189,248,0.3);
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: -280px;
+      top: 0;
+      height: 100vh;
+      z-index: 150;
+      transition: left 0.3s;
+      padding-top: 100px;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .mobile-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .content {
+      padding: 16px;
+    }
+    .evidence-tags {
+      display: none;
+    }
+    .layout {
+      min-height: calc(100vh - 90px);
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 140;
+    }
+    .sidebar-overlay.open {
+      display: block;
+    }
+  }
+</style>
+</head>
+<body>
+
+<nav class="section-nav">
+  <a href="raise-portal.html">ATO Package</a>
+  <a href="evidence.html" class="active">Platform Evidence</a>
+  <a href="playbook.html">ATO Playbook</a>
+  <a href="source-browser.html">Source Code</a>
+</nav>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">R2</div>
+    <h1><span>Platform</span> Evidence</h1>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-date" id="dateDisplay"></span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-stats">
+      <div class="sidebar-stats-row">
+        <div class="sidebar-stat">
+          <span class="sidebar-stat-num" id="totalFiles">0</span>
+          <span class="sidebar-stat-label">Evidence Files</span>
+        </div>
+        <div class="sidebar-stat">
+          <span class="sidebar-stat-num" id="totalControls">0</span>
+          <span class="sidebar-stat-label">Controls Covered</span>
+        </div>
+      </div>
+    </div>
+    <div id="sidebarList"></div>
+  </aside>
+  <main class="content" id="content"></main>
+</div>
+
+<button class="mobile-toggle" id="mobileToggle" aria-label="Toggle sidebar">&#9776;</button>
+
+<script>
+(function() {
+
+  // ── Category definitions ────────────────────────────────────────
+  const categories = [
+    {
+      id: 'policies',
+      name: 'Security Policies (Kyverno)',
+      controls: ['CM-7','AC-6','SA-10','SI-7','SC-7'],
+      files: [
+        { path: 'source-files/policies/custom/disallow-default-namespace.yaml', desc: 'Prevents workloads in default namespace' },
+        { path: 'source-files/policies/custom/disallow-latest-tag.yaml', desc: 'Blocks use of :latest image tag' },
+        { path: 'source-files/policies/custom/generate-sso-resources.yaml', desc: 'Auto-generates SSO integration resources' },
+        { path: 'source-files/policies/custom/kustomization.yaml', desc: 'Kustomize manifest for custom policies' },
+        { path: 'source-files/policies/custom/policy-exception-template.yaml', desc: 'Template for policy exception requests' },
+        { path: 'source-files/policies/custom/require-istio-sidecar.yaml', desc: 'Enforces Istio sidecar injection' },
+        { path: 'source-files/policies/custom/require-labels.yaml', desc: 'Requires standard metadata labels' },
+        { path: 'source-files/policies/custom/require-network-policies.yaml', desc: 'Mandates network policy per namespace' },
+        { path: 'source-files/policies/custom/require-probes.yaml', desc: 'Requires health/readiness probes' },
+        { path: 'source-files/policies/custom/require-resource-limits.yaml', desc: 'Enforces CPU/memory resource limits' },
+        { path: 'source-files/policies/custom/require-security-categorization.yaml', desc: 'Requires FIPS 199 categorization label' },
+        { path: 'source-files/policies/custom/require-security-context.yaml', desc: 'Enforces pod security context settings' },
+        { path: 'source-files/policies/custom/restrict-image-registries.yaml', desc: 'Restricts pulls to approved registries only' },
+        { path: 'source-files/policies/custom/verify-image-signatures.yaml', desc: 'Validates Cosign image signatures' },
+        { path: 'source-files/policies/baseline/disallow-host-namespaces.yaml', desc: 'Blocks host PID/IPC/network namespace access' },
+        { path: 'source-files/policies/baseline/disallow-host-ports.yaml', desc: 'Prevents containers binding host ports' },
+        { path: 'source-files/policies/baseline/disallow-privileged.yaml', desc: 'Prohibits privileged container mode' },
+        { path: 'source-files/policies/baseline/kustomization.yaml', desc: 'Kustomize manifest for baseline policies' },
+        { path: 'source-files/policies/baseline/restrict-sysctls.yaml', desc: 'Restricts unsafe sysctl parameters' },
+        { path: 'source-files/policies/restricted/disallow-privilege-escalation.yaml', desc: 'Blocks privilege escalation via setuid' },
+        { path: 'source-files/policies/restricted/kustomization.yaml', desc: 'Kustomize manifest for restricted policies' },
+        { path: 'source-files/policies/restricted/require-drop-all-capabilities.yaml', desc: 'Requires dropping all Linux capabilities' },
+        { path: 'source-files/policies/restricted/require-run-as-nonroot.yaml', desc: 'Enforces non-root container execution' },
+        { path: 'source-files/policies/restricted/restrict-volume-types.yaml', desc: 'Limits allowed volume mount types' }
+      ]
+    },
+    {
+      id: 'compliance',
+      name: 'Compliance Artifacts',
+      controls: ['CA-2','CA-5','CA-7','RA-5'],
+      files: [
+        { path: 'source-files/compliance/nist/control-mapping.json', desc: 'NIST 800-53 control-to-implementation mapping' },
+        { path: 'source-files/compliance/oscal/ssp.json', desc: 'OSCAL-formatted System Security Plan' },
+        { path: 'source-files/compliance/cmmc/level2-assessment.json', desc: 'CMMC Level 2 self-assessment results' },
+        { path: 'source-files/compliance/stig/rke2-stig.json', desc: 'RKE2 Kubernetes STIG compliance data' },
+        { path: 'source-files/compliance/stig/rocky-linux-9.yaml', desc: 'Rocky Linux 9 STIG hardening checklist' },
+        { path: 'source-files/compliance/poam/findings.yaml', desc: 'Active POA&M findings and remediation status' }
+      ]
+    },
+    {
+      id: 'hardening',
+      name: 'OS & Infrastructure Hardening',
+      controls: ['AC-17','IA-2','IA-5','AU-2','SC-7','SI-7'],
+      files: [
+        { path: 'source-files/infrastructure/ansible/hardening/sshd.yml', desc: 'SSH daemon hardening configuration' },
+        { path: 'source-files/infrastructure/ansible/hardening/auditd.yml', desc: 'Linux audit daemon rules and config' },
+        { path: 'source-files/infrastructure/ansible/hardening/kernel.yml', desc: 'Kernel sysctl security parameters' },
+        { path: 'source-files/infrastructure/ansible/hardening/filesystem.yml', desc: 'Filesystem permissions and mount hardening' },
+        { path: 'source-files/infrastructure/ansible/hardening/pam.yml', desc: 'PAM authentication and password policy' },
+        { path: 'source-files/infrastructure/ansible/hardening/crypto-policy.yml', desc: 'System-wide cryptographic policy (FIPS)' },
+        { path: 'source-files/infrastructure/ansible/hardening/firewall.yml', desc: 'Host-based firewall (firewalld) rules' },
+        { path: 'source-files/infrastructure/ansible/hardening/aide.yml', desc: 'AIDE file integrity monitoring setup' },
+        { path: 'source-files/infrastructure/ansible/hardening/defaults.yml', desc: 'Default hardening variable definitions' },
+        { path: 'source-files/infrastructure/ansible/hardening/harden-os-playbook.yml', desc: 'Master OS hardening playbook' },
+        { path: 'source-files/infrastructure/ansible/hardening/main-tasks.yml', desc: 'Main task list for hardening roles' }
+      ]
+    },
+    {
+      id: 'network',
+      name: 'Network & Zero Trust',
+      controls: ['SC-7','SC-8','SC-13','AC-4'],
+      files: [
+        { path: 'source-files/platform/istio/peer-authentication.yaml', desc: 'Strict mTLS peer authentication policy' },
+        { path: 'source-files/platform/istio/authorization-policy-default.yaml', desc: 'Default deny authorization policy' },
+        { path: 'source-files/platform/istio/gateway.yaml', desc: 'Istio ingress gateway configuration' },
+        { path: 'source-files/platform/istio/authorization-policies/default-deny.yaml', desc: 'Default deny-all authorization rule' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-alertmanager-ingress.yaml', desc: 'Alertmanager ingress access policy' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-grafana-ingress.yaml', desc: 'Grafana dashboard ingress access' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-harbor-ingress.yaml', desc: 'Harbor registry ingress access' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-harbor-internal.yaml', desc: 'Harbor internal service communication' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-keycloak-ingress.yaml', desc: 'Keycloak SSO ingress access' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-keycloak-internal.yaml', desc: 'Keycloak internal service communication' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-loki-ingestion.yaml', desc: 'Loki log ingestion access policy' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-monitoring-scrape.yaml', desc: 'Prometheus metrics scraping access' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-neuvector-ingress.yaml', desc: 'NeuVector security console ingress' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-openbao-access.yaml', desc: 'OpenBao secrets engine access policy' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-prometheus-ingress.yaml', desc: 'Prometheus UI ingress access' },
+        { path: 'source-files/platform/istio/authorization-policies/allow-tempo-traces.yaml', desc: 'Tempo distributed tracing access' }
+      ]
+    },
+    {
+      id: 'monitoring',
+      name: 'Monitoring & Continuous Assessment',
+      controls: ['CA-7','IR-4','SI-4','SI-5','RA-5'],
+      files: [
+        { path: 'source-files/platform/monitoring/sre-alerting-rules.yaml', desc: 'SRE alerting rules for platform health' },
+        { path: 'source-files/platform/monitoring/compliance-scan-cronjob.yaml', desc: 'Scheduled compliance scan automation' },
+        { path: 'source-files/platform/monitoring/stig-scan-cronjob.yaml', desc: 'Periodic STIG compliance scanning' },
+        { path: 'source-files/platform/monitoring/cve-scan-cronjob.yaml', desc: 'Continuous CVE vulnerability scanning' },
+        { path: 'source-files/platform/monitoring/compliance-drift-cronjob.yaml', desc: 'Configuration drift detection automation' }
+      ]
+    },
+    {
+      id: 'cicd',
+      name: 'CI/CD Security Pipeline',
+      controls: ['SA-10','SA-11','SI-7','CM-3'],
+      files: [
+        { path: 'source-files/cicd/build-scan-deploy.yaml', desc: 'Full DSOP build-scan-deploy pipeline (K8s)' },
+        { path: 'source-files/cicd/build-scan-deploy.gitlab-ci.yml', desc: 'GitLab CI/CD pipeline configuration' }
+      ]
+    },
+    {
+      id: 'secrets',
+      name: 'Secrets & Certificate Management',
+      controls: ['IA-5','SC-12','SC-17'],
+      files: [
+        { path: 'source-files/platform/secrets/secret-rotation-policy.yaml', desc: 'Automated secret rotation policy' },
+        { path: 'source-files/platform/secrets/clustersecretstore.yaml', desc: 'External Secrets cluster secret store' },
+        { path: 'source-files/platform/cert-manager/certificate-gateway.yaml', desc: 'TLS certificate for ingress gateway' },
+        { path: 'source-files/platform/cert-manager/clusterissuer-letsencrypt.yaml', desc: 'Let\'s Encrypt ACME certificate issuer' },
+        { path: 'source-files/platform/cert-manager/clusterissuer-selfsigned.yaml', desc: 'Self-signed CA certificate issuer' }
+      ]
+    },
+    {
+      id: 'runtime',
+      name: 'Runtime Security & Backup',
+      controls: ['SI-3','SI-4','CP-9','CP-10'],
+      files: [
+        { path: 'source-files/platform/runtime-security/neuvector-protect-mode.yaml', desc: 'NeuVector runtime protection mode config' },
+        { path: 'source-files/platform/backup/helmrelease.yaml', desc: 'Velero backup Helm release definition' },
+        { path: 'source-files/platform/backup/kustomization.yaml', desc: 'Backup stack kustomization manifest' },
+        { path: 'source-files/platform/backup/namespace.yaml', desc: 'Backup namespace definition' },
+        { path: 'source-files/platform/backup/dr-test-cronjob.yaml', desc: 'Disaster recovery test automation' },
+        { path: 'source-files/platform/logging/loki-alerting-rules.yaml', desc: 'Loki log-based alerting rules' }
+      ]
+    },
+    {
+      id: 'scripts',
+      name: 'Compliance Automation Scripts',
+      controls: ['CA-2','CA-7','RA-5'],
+      files: [
+        { path: 'source-files/scripts/compliance-report.sh', desc: 'Generate compliance posture report' },
+        { path: 'source-files/scripts/control-validation-tests.sh', desc: 'Automated control validation test suite' },
+        { path: 'source-files/scripts/dr-test.sh', desc: 'Disaster recovery test execution' },
+        { path: 'source-files/scripts/export-compliance-snapshot.sh', desc: 'Export point-in-time compliance snapshot' },
+        { path: 'source-files/scripts/generate-ato-package.sh', desc: 'Assemble full ATO package artifacts' },
+        { path: 'source-files/scripts/generate-ssp-narrative.sh', desc: 'Generate SSP control narratives' },
+        { path: 'source-files/scripts/generate-ssp.sh', desc: 'Generate System Security Plan document' },
+        { path: 'source-files/scripts/morning-health-check.sh', desc: 'Daily platform health verification' },
+        { path: 'source-files/scripts/oscal-to-emass.sh', desc: 'Convert OSCAL artifacts to eMASS format' },
+        { path: 'source-files/scripts/poam-check.sh', desc: 'POA&M status check and validation' },
+        { path: 'source-files/scripts/quarterly-stig-scan.sh', desc: 'Quarterly STIG compliance scan' },
+        { path: 'source-files/scripts/rbac-audit.sh', desc: 'RBAC role and binding audit' },
+        { path: 'source-files/scripts/security-pentest.sh', desc: 'Automated security penetration testing' }
+      ]
+    },
+    {
+      id: 'interconnection',
+      name: 'Interconnection Agreements',
+      controls: ['CA-3'],
+      files: [
+        { path: 'source-files/compliance/raise/interconnection-agreements/ISA-001-github.md', desc: 'ISA: GitHub source code repository' },
+        { path: 'source-files/compliance/raise/interconnection-agreements/ISA-002-container-registries.md', desc: 'ISA: Container image registries' },
+        { path: 'source-files/compliance/raise/interconnection-agreements/ISA-003-letsencrypt.md', desc: 'ISA: Let\'s Encrypt certificate authority' },
+        { path: 'source-files/compliance/raise/interconnection-agreements/ISA-004-ntp.md', desc: 'ISA: Network Time Protocol services' },
+        { path: 'source-files/compliance/raise/interconnection-agreements/ISA-005-dns.md', desc: 'ISA: Domain Name System services' }
+      ]
+    }
+  ];
+
+  // ── Collect unique controls ─────────────────────────────────────
+  const allControls = new Set();
+  let totalFileCount = 0;
+  categories.forEach(function(c) {
+    c.controls.forEach(function(ctrl) { allControls.add(ctrl); });
+    totalFileCount += c.files.length;
+  });
+
+  // ── Sidebar rendering ──────────────────────────────────────────
+  document.getElementById('totalFiles').textContent = totalFileCount;
+  document.getElementById('totalControls').textContent = allControls.size;
+
+  var sidebarEl = document.getElementById('sidebarList');
+  var html = '';
+  html += '<div class="sidebar-item active" data-cat="all"><span>All Evidence</span><span class="sidebar-item-count">' + totalFileCount + '</span></div>';
+  categories.forEach(function(cat) {
+    html += '<div class="sidebar-item" data-cat="' + cat.id + '"><span>' + cat.name + '</span><span class="sidebar-item-count">' + cat.files.length + '</span></div>';
+  });
+  sidebarEl.innerHTML = html;
+
+  // ── File extension helper ──────────────────────────────────────
+  function getExt(path) {
+    var parts = path.split('.');
+    var ext = parts[parts.length - 1].toLowerCase();
+    if (ext === 'yml') return 'yaml';
+    return ext;
+  }
+
+  function getExtLabel(path) {
+    var parts = path.split('.');
+    return parts[parts.length - 1].toUpperCase();
+  }
+
+  function getFilename(path) {
+    return path.split('/').pop();
+  }
+
+  // ── Syntax highlighting ─────────────────────────────────────────
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function highlightYaml(line) {
+    var escaped = escapeHtml(line);
+    // Full-line comments
+    if (/^\s*#/.test(line)) {
+      return '<span class="hl-comment">' + escaped + '</span>';
+    }
+    // Lines with key: value
+    var m = escaped.match(/^(\s*)([\w\-\.\/]+)(\s*:\s*)(.*)/);
+    if (m) {
+      var indent = m[1];
+      var key = m[2];
+      var sep = m[3];
+      var val = m[4];
+      val = highlightYamlValue(val);
+      return indent + '<span class="hl-key">' + key + '</span>' + sep + val;
+    }
+    // List items with values
+    var lm = escaped.match(/^(\s*-\s+)(.*)/);
+    if (lm) {
+      return lm[1] + highlightYamlValue(lm[2]);
+    }
+    return escaped;
+  }
+
+  function highlightYamlValue(val) {
+    // Inline comment
+    var commentPart = '';
+    var ci = val.indexOf(' #');
+    if (ci > -1) {
+      commentPart = '<span class="hl-comment">' + val.substring(ci) + '</span>';
+      val = val.substring(0, ci);
+    }
+    val = val.trim();
+    if (/^(true|false|yes|no|null|~)$/i.test(val)) return '<span class="hl-bool">' + val + '</span>' + commentPart;
+    if (/^-?\d+\.?\d*$/.test(val)) return '<span class="hl-num">' + val + '</span>' + commentPart;
+    if (/^["'].*["']$/.test(val)) return '<span class="hl-str">' + val + '</span>' + commentPart;
+    if (val.length > 0 && !/^\{/.test(val) && !/^\[/.test(val)) return '<span class="hl-str">' + val + '</span>' + commentPart;
+    return val + commentPart;
+  }
+
+  function highlightJson(line) {
+    var escaped = escapeHtml(line);
+    // Keys
+    escaped = escaped.replace(/(&quot;|")([\w\-@\.\/:_ ]+)(&quot;|")\s*:/g, '<span class="hl-key">"$2"</span>:');
+    // String values
+    escaped = escaped.replace(/:\s*(&quot;|")((?:[^"\\]|\\.)*)(&quot;|")/g, ': <span class="hl-str">"$2"</span>');
+    // Standalone strings in arrays
+    escaped = escaped.replace(/^\s*(&quot;|")((?:[^"\\]|\\.)*)(&quot;|")/g, '<span class="hl-str">"$2"</span>');
+    // Numbers
+    escaped = escaped.replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="hl-num">$1</span>');
+    // Booleans
+    escaped = escaped.replace(/:\s*(true|false|null)/g, ': <span class="hl-bool">$1</span>');
+    return escaped;
+  }
+
+  function highlightBash(line) {
+    var escaped = escapeHtml(line);
+    // Comments
+    if (/^\s*#/.test(line)) {
+      return '<span class="hl-comment">' + escaped + '</span>';
+    }
+    // Keywords
+    var keywords = ['if','then','else','elif','fi','for','do','done','while','until','case','esac','function','in','echo','export','local','return','exit','source','set','unset','readonly','declare','eval','exec','shift','trap','wait','read','printf'];
+    keywords.forEach(function(kw) {
+      var re = new RegExp('\\b(' + kw + ')\\b', 'g');
+      escaped = escaped.replace(re, '<span class="hl-kw">$1</span>');
+    });
+    // Strings
+    escaped = escaped.replace(/"([^"]*?)"/g, '<span class="hl-str">"$1"</span>');
+    escaped = escaped.replace(/'([^']*?)'/g, '<span class="hl-str">\'$1\'</span>');
+    return escaped;
+  }
+
+  function highlightMarkdown(line) {
+    var escaped = escapeHtml(line);
+    // Headers
+    if (/^#{1,6}\s/.test(line)) {
+      return '<span class="hl-header">' + escaped + '</span>';
+    }
+    // Bold
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<span class="hl-bold">**$1**</span>');
+    // Inline code
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px;">$1</code>');
+    return escaped;
+  }
+
+  function highlightLine(line, ext) {
+    switch(ext) {
+      case 'yaml': return highlightYaml(line);
+      case 'json': return highlightJson(line);
+      case 'sh': return highlightBash(line);
+      case 'md': return highlightMarkdown(line);
+      default: return escapeHtml(line);
+    }
+  }
+
+  function highlightCode(text, ext) {
+    var lines = text.split('\n');
+    // Remove trailing empty line
+    if (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+      lines.pop();
+    }
+    return lines.map(function(line) {
+      return '<span class="line">' + highlightLine(line, ext) + '</span>';
+    }).join('');
+  }
+
+  // ── Content rendering ──────────────────────────────────────────
+  var contentEl = document.getElementById('content');
+  var fileCache = {};
+
+  function renderCategory(catId) {
+    var catsToShow = catId === 'all' ? categories : categories.filter(function(c) { return c.id === catId; });
+    var out = '';
+
+    catsToShow.forEach(function(cat) {
+      out += '<div class="content-header">';
+      out += '<h2>' + cat.name + '</h2>';
+      out += '<div class="controls-list">NIST 800-53: ';
+      cat.controls.forEach(function(ctrl) {
+        out += '<span class="ctrl-tag">' + ctrl + '</span>';
+      });
+      out += '</div></div>';
+
+      cat.files.forEach(function(file, idx) {
+        var ext = getExt(file.path);
+        var extLabel = getExtLabel(file.path);
+        var fname = getFilename(file.path);
+        var cardId = cat.id + '-' + idx;
+        out += '<div class="evidence-card" id="card-' + cardId + '">';
+        out += '<div class="evidence-card-header" data-card="' + cardId + '" data-path="' + file.path + '">';
+        out += '<span class="evidence-expand-icon">&#9654;</span>';
+        out += '<div class="evidence-file-icon ' + ext + '">' + extLabel.substring(0, 3) + '</div>';
+        out += '<div class="evidence-info">';
+        out += '<div class="evidence-filename">' + fname + '</div>';
+        out += '<div class="evidence-desc">' + file.desc + '</div>';
+        out += '</div>';
+        out += '<div class="evidence-tags">';
+        cat.controls.forEach(function(ctrl) {
+          out += '<span class="evidence-tag">' + ctrl + '</span>';
+        });
+        out += '</div>';
+        out += '</div>';
+        out += '<div class="evidence-code-wrap" id="code-' + cardId + '">';
+        out += '<div class="evidence-code-loading">Loading...</div>';
+        out += '</div>';
+        out += '</div>';
+      });
+    });
+
+    contentEl.innerHTML = out;
+    wireCardHandlers();
+  }
+
+  function wireCardHandlers() {
+    var headers = contentEl.querySelectorAll('.evidence-card-header');
+    headers.forEach(function(header) {
+      header.addEventListener('click', function() {
+        var cardId = this.getAttribute('data-card');
+        var path = this.getAttribute('data-path');
+        var card = document.getElementById('card-' + cardId);
+        var codeWrap = document.getElementById('code-' + cardId);
+
+        if (card.classList.contains('expanded')) {
+          card.classList.remove('expanded');
+          return;
+        }
+
+        card.classList.add('expanded');
+
+        if (fileCache[path]) {
+          renderCode(codeWrap, path, fileCache[path]);
+          return;
+        }
+
+        codeWrap.innerHTML = '<div class="evidence-code-loading">Loading file...</div>';
+
+        fetch(path).then(function(resp) {
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          return resp.text();
+        }).then(function(text) {
+          fileCache[path] = text;
+          renderCode(codeWrap, path, text);
+        }).catch(function(err) {
+          codeWrap.innerHTML = '<div class="evidence-code-loading" style="color:var(--red);">Failed to load: ' + escapeHtml(path) + ' (' + escapeHtml(err.message) + ')</div>';
+        });
+      });
+    });
+  }
+
+  function renderCode(codeWrap, path, text) {
+    var ext = getExt(path);
+    var highlighted = highlightCode(text, ext);
+    var out = '';
+    out += '<div class="evidence-code-path"><span>' + escapeHtml(path) + '</span><button class="copy-btn" data-path="' + escapeHtml(path) + '">Copy</button></div>';
+    out += '<pre class="evidence-code">' + highlighted + '</pre>';
+    codeWrap.innerHTML = out;
+
+    var copyBtn = codeWrap.querySelector('.copy-btn');
+    copyBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      navigator.clipboard.writeText(text).then(function() {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function() { copyBtn.textContent = 'Copy'; }, 1500);
+      });
+    });
+  }
+
+  // ── Sidebar click handling ──────────────────────────────────────
+  var sidebarItems = sidebarEl.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      sidebarItems.forEach(function(s) { s.classList.remove('active'); });
+      this.classList.add('active');
+      renderCategory(this.getAttribute('data-cat'));
+      // Close mobile sidebar
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    });
+  });
+
+  // ── Mobile sidebar toggle ──────────────────────────────────────
+  document.getElementById('mobileToggle').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  });
+  document.getElementById('sidebarOverlay').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.remove('open');
+    this.classList.remove('open');
+  });
+
+  // ── Date display ───────────────────────────────────────────────
+  var now = new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateDisplay').textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+  // ── Initial render ─────────────────────────────────────────────
+  renderCategory('all');
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,990 @@
+{
+  "cicd": {
+    "type": "dir",
+    "children": {
+      "build-scan-deploy.gitlab-ci.yml": {
+        "type": "file",
+        "path": "cicd/build-scan-deploy.gitlab-ci.yml",
+        "size": 7722,
+        "lang": "yaml"
+      },
+      "build-scan-deploy.yaml": {
+        "type": "file",
+        "path": "cicd/build-scan-deploy.yaml",
+        "size": 17487,
+        "lang": "yaml"
+      }
+    }
+  },
+  "compliance": {
+    "type": "dir",
+    "children": {
+      "README.md": {
+        "type": "file",
+        "path": "compliance/README.md",
+        "size": 1564,
+        "lang": "markdown"
+      },
+      "cmmc": {
+        "type": "dir",
+        "children": {
+          "level2-assessment.json": {
+            "type": "file",
+            "path": "compliance/cmmc/level2-assessment.json",
+            "size": 64871,
+            "lang": "json"
+          },
+          "self-assessment.yaml": {
+            "type": "file",
+            "path": "compliance/cmmc/self-assessment.yaml",
+            "size": 10443,
+            "lang": "yaml"
+          }
+        }
+      },
+      "nist": {
+        "type": "dir",
+        "children": {
+          "control-mapping.json": {
+            "type": "file",
+            "path": "compliance/nist/control-mapping.json",
+            "size": 48282,
+            "lang": "json"
+          },
+          "ssp-narratives.md": {
+            "type": "file",
+            "path": "compliance/nist/ssp-narratives.md",
+            "size": 50956,
+            "lang": "markdown"
+          }
+        }
+      },
+      "oscal": {
+        "type": "dir",
+        "children": {
+          "README.md": {
+            "type": "file",
+            "path": "compliance/oscal/README.md",
+            "size": 3127,
+            "lang": "markdown"
+          },
+          "ssp.json": {
+            "type": "file",
+            "path": "compliance/oscal/ssp.json",
+            "size": 99037,
+            "lang": "json"
+          }
+        }
+      },
+      "poam": {
+        "type": "dir",
+        "children": {
+          "findings.yaml": {
+            "type": "file",
+            "path": "compliance/poam/findings.yaml",
+            "size": 5380,
+            "lang": "yaml"
+          }
+        }
+      },
+      "raise": {
+        "type": "dir",
+        "children": {
+          "exercises": {
+            "type": "dir",
+            "children": {
+              "2026-Q1-tabletop.yaml": {
+                "type": "file",
+                "path": "compliance/raise/exercises/2026-Q1-tabletop.yaml",
+                "size": 8882,
+                "lang": "yaml"
+              },
+              "exercise-template.yaml": {
+                "type": "file",
+                "path": "compliance/raise/exercises/exercise-template.yaml",
+                "size": 4256,
+                "lang": "yaml"
+              }
+            }
+          },
+          "interconnection-agreements": {
+            "type": "dir",
+            "children": {
+              "ISA-001-github.md": {
+                "type": "file",
+                "path": "compliance/raise/interconnection-agreements/ISA-001-github.md",
+                "size": 4695,
+                "lang": "markdown"
+              },
+              "ISA-002-container-registries.md": {
+                "type": "file",
+                "path": "compliance/raise/interconnection-agreements/ISA-002-container-registries.md",
+                "size": 5052,
+                "lang": "markdown"
+              },
+              "ISA-003-letsencrypt.md": {
+                "type": "file",
+                "path": "compliance/raise/interconnection-agreements/ISA-003-letsencrypt.md",
+                "size": 4384,
+                "lang": "markdown"
+              },
+              "ISA-004-ntp.md": {
+                "type": "file",
+                "path": "compliance/raise/interconnection-agreements/ISA-004-ntp.md",
+                "size": 4467,
+                "lang": "markdown"
+              },
+              "ISA-005-dns.md": {
+                "type": "file",
+                "path": "compliance/raise/interconnection-agreements/ISA-005-dns.md",
+                "size": 4979,
+                "lang": "markdown"
+              }
+            }
+          }
+        }
+      },
+      "stig": {
+        "type": "dir",
+        "children": {
+          "kubernetes-rke2.yaml": {
+            "type": "file",
+            "path": "compliance/stig/kubernetes-rke2.yaml",
+            "size": 5553,
+            "lang": "yaml"
+          },
+          "rke2-stig.json": {
+            "type": "file",
+            "path": "compliance/stig/rke2-stig.json",
+            "size": 57873,
+            "lang": "json"
+          },
+          "rocky-linux-9.yaml": {
+            "type": "file",
+            "path": "compliance/stig/rocky-linux-9.yaml",
+            "size": 6162,
+            "lang": "yaml"
+          }
+        }
+      }
+    }
+  },
+  "docs": {
+    "type": "dir",
+    "children": {
+      "airgap-guide.md": {
+        "type": "file",
+        "path": "docs/airgap-guide.md",
+        "size": 2279,
+        "lang": "markdown"
+      },
+      "architecture.md": {
+        "type": "file",
+        "path": "docs/architecture.md",
+        "size": 17874,
+        "lang": "markdown"
+      },
+      "ato-compliance-plan.md": {
+        "type": "file",
+        "path": "docs/ato-compliance-plan.md",
+        "size": 106636,
+        "lang": "markdown"
+      },
+      "control-inheritance.md": {
+        "type": "file",
+        "path": "docs/control-inheritance.md",
+        "size": 11010,
+        "lang": "markdown"
+      },
+      "production-deployment-guide.md": {
+        "type": "file",
+        "path": "docs/production-deployment-guide.md",
+        "size": 31903,
+        "lang": "markdown"
+      },
+      "runbooks": {
+        "type": "dir",
+        "children": {
+          "README.md": {
+            "type": "file",
+            "path": "docs/runbooks/README.md",
+            "size": 3943,
+            "lang": "markdown"
+          },
+          "backup-restore.md": {
+            "type": "file",
+            "path": "docs/runbooks/backup-restore.md",
+            "size": 7563,
+            "lang": "markdown"
+          },
+          "certificate-expiry.md": {
+            "type": "file",
+            "path": "docs/runbooks/certificate-expiry.md",
+            "size": 4827,
+            "lang": "markdown"
+          },
+          "dns-resolution-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/dns-resolution-failure.md",
+            "size": 6580,
+            "lang": "markdown"
+          },
+          "etcd-health.md": {
+            "type": "file",
+            "path": "docs/runbooks/etcd-health.md",
+            "size": 8295,
+            "lang": "markdown"
+          },
+          "external-secrets-sync-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/external-secrets-sync-failure.md",
+            "size": 7245,
+            "lang": "markdown"
+          },
+          "flux-reconciliation-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/flux-reconciliation-failure.md",
+            "size": 4994,
+            "lang": "markdown"
+          },
+          "harbor-scan-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/harbor-scan-failure.md",
+            "size": 5326,
+            "lang": "markdown"
+          },
+          "high-memory-usage.md": {
+            "type": "file",
+            "path": "docs/runbooks/high-memory-usage.md",
+            "size": 6005,
+            "lang": "markdown"
+          },
+          "image-pull-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/image-pull-failure.md",
+            "size": 6482,
+            "lang": "markdown"
+          },
+          "istio-mtls-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/istio-mtls-failure.md",
+            "size": 6401,
+            "lang": "markdown"
+          },
+          "keycloak-sso-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/keycloak-sso-failure.md",
+            "size": 6891,
+            "lang": "markdown"
+          },
+          "loki-ingestion-failure.md": {
+            "type": "file",
+            "path": "docs/runbooks/loki-ingestion-failure.md",
+            "size": 7074,
+            "lang": "markdown"
+          },
+          "node-not-ready.md": {
+            "type": "file",
+            "path": "docs/runbooks/node-not-ready.md",
+            "size": 5801,
+            "lang": "markdown"
+          },
+          "openbao-sealed.md": {
+            "type": "file",
+            "path": "docs/runbooks/openbao-sealed.md",
+            "size": 5287,
+            "lang": "markdown"
+          },
+          "pod-oomkilled.md": {
+            "type": "file",
+            "path": "docs/runbooks/pod-oomkilled.md",
+            "size": 6387,
+            "lang": "markdown"
+          },
+          "pod-security-violation.md": {
+            "type": "file",
+            "path": "docs/runbooks/pod-security-violation.md",
+            "size": 5508,
+            "lang": "markdown"
+          }
+        }
+      },
+      "security-guide.md": {
+        "type": "file",
+        "path": "docs/security-guide.md",
+        "size": 53154,
+        "lang": "markdown"
+      }
+    }
+  },
+  "infrastructure": {
+    "type": "dir",
+    "children": {
+      "ansible": {
+        "type": "dir",
+        "children": {
+          "hardening": {
+            "type": "dir",
+            "children": {
+              "aide.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/aide.yml",
+                "size": 945,
+                "lang": "yaml"
+              },
+              "auditd.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/auditd.yml",
+                "size": 859,
+                "lang": "yaml"
+              },
+              "crypto-policy.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/crypto-policy.yml",
+                "size": 856,
+                "lang": "yaml"
+              },
+              "defaults.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/defaults.yml",
+                "size": 3297,
+                "lang": "yaml"
+              },
+              "filesystem.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/filesystem.yml",
+                "size": 1694,
+                "lang": "yaml"
+              },
+              "firewall.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/firewall.yml",
+                "size": 1947,
+                "lang": "yaml"
+              },
+              "harden-os-playbook.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/harden-os-playbook.yml",
+                "size": 388,
+                "lang": "yaml"
+              },
+              "kernel.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/kernel.yml",
+                "size": 1352,
+                "lang": "yaml"
+              },
+              "main-tasks.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/main-tasks.yml",
+                "size": 949,
+                "lang": "yaml"
+              },
+              "pam.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/pam.yml",
+                "size": 1252,
+                "lang": "yaml"
+              },
+              "sshd.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/hardening/sshd.yml",
+                "size": 1398,
+                "lang": "yaml"
+              }
+            }
+          },
+          "rke2": {
+            "type": "dir",
+            "children": {
+              "install-rke2-playbook.yml": {
+                "type": "file",
+                "path": "infrastructure/ansible/rke2/install-rke2-playbook.yml",
+                "size": 1982,
+                "lang": "yaml"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "platform": {
+    "type": "dir",
+    "children": {
+      "backup": {
+        "type": "dir",
+        "children": {
+          "dr-test-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/backup/dr-test-cronjob.yaml",
+            "size": 10674,
+            "lang": "yaml"
+          },
+          "helmrelease.yaml": {
+            "type": "file",
+            "path": "platform/backup/helmrelease.yaml",
+            "size": 4329,
+            "lang": "yaml"
+          },
+          "kustomization.yaml": {
+            "type": "file",
+            "path": "platform/backup/kustomization.yaml",
+            "size": 222,
+            "lang": "yaml"
+          },
+          "namespace.yaml": {
+            "type": "file",
+            "path": "platform/backup/namespace.yaml",
+            "size": 245,
+            "lang": "yaml"
+          }
+        }
+      },
+      "cert-manager": {
+        "type": "dir",
+        "children": {
+          "certificate-gateway.yaml": {
+            "type": "file",
+            "path": "platform/cert-manager/certificate-gateway.yaml",
+            "size": 617,
+            "lang": "yaml"
+          },
+          "clusterissuer-letsencrypt.yaml": {
+            "type": "file",
+            "path": "platform/cert-manager/clusterissuer-letsencrypt.yaml",
+            "size": 1033,
+            "lang": "yaml"
+          },
+          "clusterissuer-selfsigned.yaml": {
+            "type": "file",
+            "path": "platform/cert-manager/clusterissuer-selfsigned.yaml",
+            "size": 1030,
+            "lang": "yaml"
+          }
+        }
+      },
+      "flux": {
+        "type": "dir",
+        "children": {
+          "gotk-sync.yaml": {
+            "type": "file",
+            "path": "platform/flux/gotk-sync.yaml",
+            "size": 476,
+            "lang": "yaml"
+          }
+        }
+      },
+      "istio": {
+        "type": "dir",
+        "children": {
+          "authorization-policies": {
+            "type": "dir",
+            "children": {
+              "allow-alertmanager-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-alertmanager-ingress.yaml",
+                "size": 1456,
+                "lang": "yaml"
+              },
+              "allow-grafana-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-grafana-ingress.yaml",
+                "size": 737,
+                "lang": "yaml"
+              },
+              "allow-harbor-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-harbor-ingress.yaml",
+                "size": 777,
+                "lang": "yaml"
+              },
+              "allow-harbor-internal.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-harbor-internal.yaml",
+                "size": 1850,
+                "lang": "yaml"
+              },
+              "allow-keycloak-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-keycloak-ingress.yaml",
+                "size": 1590,
+                "lang": "yaml"
+              },
+              "allow-keycloak-internal.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-keycloak-internal.yaml",
+                "size": 1796,
+                "lang": "yaml"
+              },
+              "allow-loki-ingestion.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-loki-ingestion.yaml",
+                "size": 1256,
+                "lang": "yaml"
+              },
+              "allow-monitoring-scrape.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-monitoring-scrape.yaml",
+                "size": 4027,
+                "lang": "yaml"
+              },
+              "allow-neuvector-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-neuvector-ingress.yaml",
+                "size": 726,
+                "lang": "yaml"
+              },
+              "allow-openbao-access.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-openbao-access.yaml",
+                "size": 2008,
+                "lang": "yaml"
+              },
+              "allow-prometheus-ingress.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-prometheus-ingress.yaml",
+                "size": 749,
+                "lang": "yaml"
+              },
+              "allow-tempo-traces.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/allow-tempo-traces.yaml",
+                "size": 1508,
+                "lang": "yaml"
+              },
+              "default-deny.yaml": {
+                "type": "file",
+                "path": "platform/istio/authorization-policies/default-deny.yaml",
+                "size": 2697,
+                "lang": "yaml"
+              }
+            }
+          },
+          "authorization-policy-default.yaml": {
+            "type": "file",
+            "path": "platform/istio/authorization-policy-default.yaml",
+            "size": 1318,
+            "lang": "yaml"
+          },
+          "gateway.yaml": {
+            "type": "file",
+            "path": "platform/istio/gateway.yaml",
+            "size": 662,
+            "lang": "yaml"
+          },
+          "peer-authentication.yaml": {
+            "type": "file",
+            "path": "platform/istio/peer-authentication.yaml",
+            "size": 303,
+            "lang": "yaml"
+          }
+        }
+      },
+      "logging": {
+        "type": "dir",
+        "children": {
+          "loki-alerting-rules.yaml": {
+            "type": "file",
+            "path": "platform/logging/loki-alerting-rules.yaml",
+            "size": 3717,
+            "lang": "yaml"
+          }
+        }
+      },
+      "monitoring": {
+        "type": "dir",
+        "children": {
+          "compliance-drift-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/compliance-drift-cronjob.yaml",
+            "size": 11773,
+            "lang": "yaml"
+          },
+          "compliance-evidence-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/compliance-evidence-cronjob.yaml",
+            "size": 15323,
+            "lang": "yaml"
+          },
+          "compliance-scan-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/compliance-scan-cronjob.yaml",
+            "size": 9374,
+            "lang": "yaml"
+          },
+          "cve-scan-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/cve-scan-cronjob.yaml",
+            "size": 12780,
+            "lang": "yaml"
+          },
+          "dashboards": {
+            "type": "dir",
+            "children": {
+              "cert-manager-dashboard.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/cert-manager-dashboard.json",
+                "size": 16918,
+                "lang": "json"
+              },
+              "cluster-overview.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/cluster-overview.json",
+                "size": 16382,
+                "lang": "json"
+              },
+              "compliance-trend.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/compliance-trend.json",
+                "size": 14197,
+                "lang": "json"
+              },
+              "cost-allocation.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/cost-allocation.json",
+                "size": 31709,
+                "lang": "json"
+              },
+              "flux-gitops.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/flux-gitops.json",
+                "size": 19731,
+                "lang": "json"
+              },
+              "harbor-dashboard.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/harbor-dashboard.json",
+                "size": 21968,
+                "lang": "json"
+              },
+              "istio-mesh.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/istio-mesh.json",
+                "size": 16728,
+                "lang": "json"
+              },
+              "keycloak-dashboard.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/keycloak-dashboard.json",
+                "size": 15418,
+                "lang": "json"
+              },
+              "kyverno-compliance.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/kyverno-compliance.json",
+                "size": 15098,
+                "lang": "json"
+              },
+              "namespace-resources.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/namespace-resources.json",
+                "size": 16612,
+                "lang": "json"
+              },
+              "neuvector-dashboard.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/neuvector-dashboard.json",
+                "size": 18534,
+                "lang": "json"
+              },
+              "openbao-dashboard.json": {
+                "type": "file",
+                "path": "platform/monitoring/dashboards/openbao-dashboard.json",
+                "size": 18175,
+                "lang": "json"
+              }
+            }
+          },
+          "sre-alerting-rules.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/sre-alerting-rules.yaml",
+            "size": 16911,
+            "lang": "yaml"
+          },
+          "stig-scan-cronjob.yaml": {
+            "type": "file",
+            "path": "platform/monitoring/stig-scan-cronjob.yaml",
+            "size": 13011,
+            "lang": "yaml"
+          }
+        }
+      },
+      "runtime-security": {
+        "type": "dir",
+        "children": {
+          "neuvector-protect-mode.yaml": {
+            "type": "file",
+            "path": "platform/runtime-security/neuvector-protect-mode.yaml",
+            "size": 2932,
+            "lang": "yaml"
+          }
+        }
+      },
+      "secrets": {
+        "type": "dir",
+        "children": {
+          "clustersecretstore.yaml": {
+            "type": "file",
+            "path": "platform/secrets/clustersecretstore.yaml",
+            "size": 616,
+            "lang": "yaml"
+          },
+          "secret-rotation-policy.yaml": {
+            "type": "file",
+            "path": "platform/secrets/secret-rotation-policy.yaml",
+            "size": 3133,
+            "lang": "yaml"
+          }
+        }
+      }
+    }
+  },
+  "policies": {
+    "type": "dir",
+    "children": {
+      "baseline": {
+        "type": "dir",
+        "children": {
+          "disallow-host-namespaces.yaml": {
+            "type": "file",
+            "path": "policies/baseline/disallow-host-namespaces.yaml",
+            "size": 2338,
+            "lang": "yaml"
+          },
+          "disallow-host-ports.yaml": {
+            "type": "file",
+            "path": "policies/baseline/disallow-host-ports.yaml",
+            "size": 4769,
+            "lang": "yaml"
+          },
+          "disallow-privileged.yaml": {
+            "type": "file",
+            "path": "policies/baseline/disallow-privileged.yaml",
+            "size": 4030,
+            "lang": "yaml"
+          },
+          "kustomization.yaml": {
+            "type": "file",
+            "path": "policies/baseline/kustomization.yaml",
+            "size": 197,
+            "lang": "yaml"
+          },
+          "restrict-sysctls.yaml": {
+            "type": "file",
+            "path": "policies/baseline/restrict-sysctls.yaml",
+            "size": 2924,
+            "lang": "yaml"
+          }
+        }
+      },
+      "custom": {
+        "type": "dir",
+        "children": {
+          "disallow-default-namespace.yaml": {
+            "type": "file",
+            "path": "policies/custom/disallow-default-namespace.yaml",
+            "size": 1212,
+            "lang": "yaml"
+          },
+          "disallow-latest-tag.yaml": {
+            "type": "file",
+            "path": "policies/custom/disallow-latest-tag.yaml",
+            "size": 3681,
+            "lang": "yaml"
+          },
+          "generate-sso-resources.yaml": {
+            "type": "file",
+            "path": "policies/custom/generate-sso-resources.yaml",
+            "size": 5785,
+            "lang": "yaml"
+          },
+          "kustomization.yaml": {
+            "type": "file",
+            "path": "policies/custom/kustomization.yaml",
+            "size": 465,
+            "lang": "yaml"
+          },
+          "policy-exception-template.yaml": {
+            "type": "file",
+            "path": "policies/custom/policy-exception-template.yaml",
+            "size": 907,
+            "lang": "yaml"
+          },
+          "require-istio-sidecar.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-istio-sidecar.yaml",
+            "size": 2411,
+            "lang": "yaml"
+          },
+          "require-labels.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-labels.yaml",
+            "size": 2332,
+            "lang": "yaml"
+          },
+          "require-network-policies.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-network-policies.yaml",
+            "size": 2549,
+            "lang": "yaml"
+          },
+          "require-probes.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-probes.yaml",
+            "size": 2682,
+            "lang": "yaml"
+          },
+          "require-resource-limits.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-resource-limits.yaml",
+            "size": 4182,
+            "lang": "yaml"
+          },
+          "require-security-categorization.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-security-categorization.yaml",
+            "size": 2451,
+            "lang": "yaml"
+          },
+          "require-security-context.yaml": {
+            "type": "file",
+            "path": "policies/custom/require-security-context.yaml",
+            "size": 4098,
+            "lang": "yaml"
+          },
+          "restrict-image-registries.yaml": {
+            "type": "file",
+            "path": "policies/custom/restrict-image-registries.yaml",
+            "size": 5270,
+            "lang": "yaml"
+          },
+          "verify-image-signatures.yaml": {
+            "type": "file",
+            "path": "policies/custom/verify-image-signatures.yaml",
+            "size": 2327,
+            "lang": "yaml"
+          }
+        }
+      },
+      "restricted": {
+        "type": "dir",
+        "children": {
+          "disallow-privilege-escalation.yaml": {
+            "type": "file",
+            "path": "policies/restricted/disallow-privilege-escalation.yaml",
+            "size": 4243,
+            "lang": "yaml"
+          },
+          "kustomization.yaml": {
+            "type": "file",
+            "path": "policies/restricted/kustomization.yaml",
+            "size": 220,
+            "lang": "yaml"
+          },
+          "require-drop-all-capabilities.yaml": {
+            "type": "file",
+            "path": "policies/restricted/require-drop-all-capabilities.yaml",
+            "size": 2716,
+            "lang": "yaml"
+          },
+          "require-run-as-nonroot.yaml": {
+            "type": "file",
+            "path": "policies/restricted/require-run-as-nonroot.yaml",
+            "size": 3818,
+            "lang": "yaml"
+          },
+          "restrict-volume-types.yaml": {
+            "type": "file",
+            "path": "policies/restricted/restrict-volume-types.yaml",
+            "size": 3834,
+            "lang": "yaml"
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "type": "dir",
+    "children": {
+      "compliance-report.sh": {
+        "type": "file",
+        "path": "scripts/compliance-report.sh",
+        "size": 30108,
+        "lang": "bash"
+      },
+      "control-validation-tests.sh": {
+        "type": "file",
+        "path": "scripts/control-validation-tests.sh",
+        "size": 26829,
+        "lang": "bash"
+      },
+      "dr-test.sh": {
+        "type": "file",
+        "path": "scripts/dr-test.sh",
+        "size": 23443,
+        "lang": "bash"
+      },
+      "export-compliance-snapshot.sh": {
+        "type": "file",
+        "path": "scripts/export-compliance-snapshot.sh",
+        "size": 6954,
+        "lang": "bash"
+      },
+      "generate-ato-package.sh": {
+        "type": "file",
+        "path": "scripts/generate-ato-package.sh",
+        "size": 22316,
+        "lang": "bash"
+      },
+      "generate-ssp-narrative.sh": {
+        "type": "file",
+        "path": "scripts/generate-ssp-narrative.sh",
+        "size": 9128,
+        "lang": "bash"
+      },
+      "generate-ssp.sh": {
+        "type": "file",
+        "path": "scripts/generate-ssp.sh",
+        "size": 21860,
+        "lang": "bash"
+      },
+      "morning-health-check.sh": {
+        "type": "file",
+        "path": "scripts/morning-health-check.sh",
+        "size": 17553,
+        "lang": "bash"
+      },
+      "oscal-to-emass.sh": {
+        "type": "file",
+        "path": "scripts/oscal-to-emass.sh",
+        "size": 10764,
+        "lang": "bash"
+      },
+      "poam-check.sh": {
+        "type": "file",
+        "path": "scripts/poam-check.sh",
+        "size": 9804,
+        "lang": "bash"
+      },
+      "quarterly-stig-scan.sh": {
+        "type": "file",
+        "path": "scripts/quarterly-stig-scan.sh",
+        "size": 20798,
+        "lang": "bash"
+      },
+      "rbac-audit.sh": {
+        "type": "file",
+        "path": "scripts/rbac-audit.sh",
+        "size": 4746,
+        "lang": "bash"
+      },
+      "security-pentest.sh": {
+        "type": "file",
+        "path": "scripts/security-pentest.sh",
+        "size": 33459,
+        "lang": "bash"
+      }
+    }
+  }
+}

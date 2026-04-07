@@ -1,0 +1,81 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-drop-all-capabilities
+  labels:
+    app.kubernetes.io/part-of: sre-platform
+    sre.io/policy-category: restricted
+  annotations:
+    policies.kyverno.io/title: Require Drop All Capabilities
+    policies.kyverno.io/description: >-
+      Requires all containers to explicitly drop ALL Linux capabilities.
+      Linux capabilities grant fine-grained root privileges to processes.
+      Dropping all capabilities and only adding back specific ones that are
+      needed follows the principle of least privilege and reduces the attack
+      surface. This policy enforces the Pod Security Standards restricted
+      profile requirement for capability restrictions. System namespaces
+      are excluded.
+    policies.kyverno.io/category: Pod Security Standards Restricted
+    policies.kyverno.io/severity: high
+    sre.io/nist-controls: "AC-6, CM-7"
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-drop-all
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+                - flux-system
+                - istio-system
+                - cert-manager
+                - monitoring
+                - logging
+                - tempo
+                - openbao
+                - external-secrets
+                - runtime-security
+                - backup
+                - kyverno
+                - neuvector
+                - harbor
+                - velero
+                - keycloak
+                - sre-portal
+                - sre-dashboard
+                - oauth2-proxy
+                - local-path-storage
+                - metallb-system
+                - sre-builds
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+      validate:
+        message: >-
+          All containers in Pod {{request.object.metadata.name}} must drop ALL
+          Linux capabilities. Add the following to each container's
+          securityContext:
+          containers:
+            - name: my-container
+              securityContext:
+                capabilities:
+                  drop:
+                    - "ALL"
+        foreach:
+          - list: "request.object.spec.containers[]"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.securityContext.capabilities.drop || [''] | contains(@, 'ALL') }}"
+                    operator: Equals
+                    value: false

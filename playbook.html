@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAISE 2.0 — ATO Playbook</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1e293b;
+    --surface3: #334155;
+    --border: #374151;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --cyan: #22d3ee;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Section Nav */
+  .section-nav { background:#050810; border-bottom:1px solid #1e293b; display:flex; padding:0 24px; }
+  .section-nav a { color:#94a3b8; text-decoration:none; padding:10px 20px; border-bottom:2px solid transparent; font-size:13px; font-weight:600; letter-spacing:0.5px; transition:all 0.2s; }
+  .section-nav a:hover { color:#e2e8f0; background:rgba(255,255,255,0.03); }
+  .section-nav a.active { color:#38bdf8; border-bottom-color:#38bdf8; }
+
+  /* Topbar */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .topbar-logo {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; color: #fff; letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 18px; font-weight: 700; }
+  .topbar h1 span { color: var(--accent); }
+  .topbar-right { display: flex; gap: 12px; align-items: center; }
+
+  /* Layout */
+  .layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    min-width: 250px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 0 20px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 20px 16px;
+  }
+  .sidebar-section {
+    margin-bottom: 20px;
+  }
+  .sidebar-section-title {
+    padding: 0 20px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+  .sidebar-item {
+    display: block;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+    line-height: 1.4;
+  }
+  .sidebar-item:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+  .sidebar-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(56,189,248,0.06);
+    font-weight: 600;
+  }
+  .sidebar-item .chapter-num {
+    display: inline-block;
+    width: 20px;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .sidebar-item.active .chapter-num {
+    color: var(--accent);
+  }
+  .sidebar-item .template-bullet {
+    display: inline-block;
+    width: 16px;
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+  .sidebar-item.active .template-bullet {
+    color: var(--accent);
+  }
+
+  /* Mobile sidebar toggle */
+  .sidebar-toggle {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sidebar-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Content */
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 48px;
+    min-width: 0;
+  }
+  .content-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-dim);
+    font-size: 16px;
+  }
+  .loading .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error */
+  .error-msg {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--red);
+  }
+  .error-msg h2 { margin-bottom: 8px; font-size: 18px; }
+  .error-msg p { color: var(--text-dim); font-size: 14px; }
+
+  /* Markdown rendered content */
+  .md-content h1 { font-size: 28px; font-weight: 800; color: #fff; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+  .md-content h1:first-child { margin-top: 0; }
+  .md-content h2 { font-size: 22px; font-weight: 700; color: var(--accent); margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .md-content h3 { font-size: 18px; font-weight: 600; color: #fff; margin: 24px 0 8px; }
+  .md-content h4 { font-size: 15px; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
+  .md-content h5, .md-content h6 { font-size: 14px; font-weight: 600; color: var(--text-dim); margin: 16px 0 6px; }
+  .md-content p { margin: 10px 0; line-height: 1.75; color: var(--text); font-size: 15px; }
+  .md-content ul, .md-content ol { margin: 10px 0 10px 24px; line-height: 1.75; }
+  .md-content li { margin: 4px 0; font-size: 15px; }
+  .md-content li::marker { color: var(--text-muted); }
+  .md-content strong { color: #fff; }
+  .md-content em { color: var(--yellow); font-style: italic; }
+  .md-content code {
+    background: var(--surface2); padding: 2px 6px; border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 0.88em; color: var(--cyan);
+  }
+  .md-content pre {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; margin: 16px 0;
+    overflow-x: auto; line-height: 1.5;
+  }
+  .md-content pre code { background: none; padding: 0; color: var(--text); font-size: 13px; }
+  .md-content blockquote {
+    border-left: 3px solid var(--accent); margin: 16px 0;
+    padding: 12px 16px; background: var(--surface);
+    border-radius: 0 8px 8px 0; color: var(--text-dim);
+    font-style: italic;
+  }
+  .md-content blockquote p { color: var(--text-dim); }
+  .md-content a { color: var(--accent); text-decoration: none; }
+  .md-content a:hover { text-decoration: underline; }
+  .md-content hr { border: none; height: 1px; background: var(--border); margin: 24px 0; }
+  .md-content img { max-width: 100%; border-radius: 8px; margin: 16px 0; }
+
+  /* Tables */
+  .md-content table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    background: var(--surface); border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .md-content th {
+    background: var(--surface2); color: #fff; font-weight: 600;
+    text-align: left; padding: 10px 14px; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+  }
+  .md-content td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    font-size: 14px; vertical-align: top;
+  }
+  .md-content tr:last-child td { border-bottom: none; }
+  .md-content tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .md-content tr:hover td { background: rgba(56,189,248,0.04); }
+
+  /* Checkbox lists */
+  .md-content .checklist {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .md-content .checklist li {
+    padding-left: 24px;
+    position: relative;
+  }
+  .md-content .checklist li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+  }
+  .md-content .checklist li.checked::before {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Print Styles */
+  @media print {
+    :root {
+      --bg: #fff; --surface: #fff; --surface2: #f8f9fa; --surface3: #e9ecef;
+      --border: #dee2e6; --text: #212529; --text-dim: #495057; --text-muted: #6c757d;
+      --accent: #0066cc;
+    }
+    body { background: #fff; color: #212529; }
+    .section-nav, .sidebar, .sidebar-toggle, .topbar-right { display: none !important; }
+    .topbar { position: static; border-bottom: 2px solid #000; }
+    .topbar-logo { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .layout { display: block; }
+    .content-area { padding: 20px; }
+    .content-inner { max-width: 100%; }
+    .md-content h1 { color: #000; border-bottom-color: #000; }
+    .md-content h2 { color: #003366; }
+    .md-content h3 { color: #333; }
+    .md-content strong { color: #000; }
+    .md-content em { color: #664; }
+    .md-content code { background: #f0f0f0; color: #333; }
+    .md-content pre { background: #f8f9fa; border: 1px solid #ddd; }
+    .md-content table { border: 1px solid #ccc; }
+    .md-content th { background: #eee !important; color: #000; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .md-content td { border-color: #ddd; }
+    .md-content blockquote { border-left-color: #003366; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .section-nav { padding: 0 12px; overflow-x: auto; flex-wrap: nowrap; }
+    .section-nav a { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+    .topbar { padding: 12px 16px; }
+    .topbar h1 { font-size: 15px; }
+    .sidebar-toggle { display: block; }
+    .layout { flex-direction: column; }
+    .sidebar {
+      display: none;
+      width: 100%;
+      min-width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: 50vh;
+    }
+    .sidebar.open {
+      display: block;
+    }
+    .content-area { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="section-nav">
+  <a href="raise-portal.html">ATO Package</a>
+  <a href="evidence.html">Platform Evidence</a>
+  <a href="playbook.html" class="active">ATO Playbook</a>
+  <a href="source-browser.html">Source Code</a>
+</nav>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">R2</div>
+    <h1><span>ATO</span> Playbook</h1>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:13px;color:#94a3b8">ATO in Days, Not Years</span>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle chapter menu">Chapters</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">ATO Playbook</div>
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <a class="sidebar-item active" data-src="playbook-content/executive-summary.md" onclick="loadContent(this)">
+        Executive Summary
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Chapters</div>
+      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-1-the-compliance-rosetta-stone.md" onclick="loadContent(this)">
+        <span class="chapter-num">1.</span> The Compliance Rosetta Stone
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-2-machine-readable-compliance.md" onclick="loadContent(this)">
+        <span class="chapter-num">2.</span> Machine-Readable Compliance
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-3-evidence-automation-checklist.md" onclick="loadContent(this)">
+        <span class="chapter-num">3.</span> Evidence on Autopilot
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-4-the-90-day-sprint.md" onclick="loadContent(this)">
+        <span class="chapter-num">4.</span> The 90-Day Sprint
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/chapters/chapter-5-the-authorization-briefing.md" onclick="loadContent(this)">
+        <span class="chapter-num">5.</span> The Authorization Briefing
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Templates &amp; Resources</div>
+      <a class="sidebar-item" data-src="playbook-content/templates/mapping-matrix.md" onclick="loadContent(this)">
+        <span class="template-bullet">&bull;</span> NIST-to-K8s Mapping Matrix
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/templates/oscal-ssp.md" onclick="loadContent(this)">
+        <span class="template-bullet">&bull;</span> OSCAL SSP Template
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/templates/evidence-scripts.md" onclick="loadContent(this)">
+        <span class="template-bullet">&bull;</span> Evidence Automation Scripts
+      </a>
+      <a class="sidebar-item" data-src="playbook-content/templates/sprint-planner.md" onclick="loadContent(this)">
+        <span class="template-bullet">&bull;</span> 90-Day Sprint Planner
+      </a>
+    </div>
+  </aside>
+
+  <main class="content-area" id="contentArea">
+    <div class="content-inner" id="contentInner">
+      <div class="loading">
+        <div class="spinner"></div>
+        Loading playbook...
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Markdown Renderer (adapted from doc-viewer.html) ──
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function stripFrontmatter(md) {
+  var trimmed = md.trim();
+  if (trimmed.indexOf('---') === 0) {
+    var end = trimmed.indexOf('---', 3);
+    if (end !== -1) {
+      return trimmed.substring(end + 3).trim();
+    }
+  }
+  return md;
+}
+
+function renderMarkdown(md) {
+  var html = md;
+
+  // Protect code blocks first
+  var codeBlocks = [];
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(m, lang, code) {
+    codeBlocks.push('<pre><code>' + escapeHtml(code.trim()) + '</code></pre>');
+    return '\x00CODE' + (codeBlocks.length - 1) + '\x00';
+  });
+
+  var inlineCodes = [];
+  html = html.replace(/`([^`\n]+)`/g, function(m, code) {
+    inlineCodes.push('<code>' + escapeHtml(code) + '</code>');
+    return '\x00INLINE' + (inlineCodes.length - 1) + '\x00';
+  });
+
+  // Tables
+  html = html.replace(/^(\|.+\|)\n(\|[\s:|-]+\|)\n((?:\|.+\|\n?)+)/gm, function(m, header, sep, body) {
+    var ths = header.split('|').filter(function(c){ return c.trim(); }).map(function(c){
+      return '<th>' + c.trim() + '</th>';
+    }).join('');
+    var rows = body.trim().split('\n').map(function(row) {
+      var tds = row.split('|').filter(function(c){ return c.trim() !== ''; }).map(function(c){
+        return '<td>' + c.trim() + '</td>';
+      }).join('');
+      return '<tr>' + tds + '</tr>';
+    }).join('\n');
+    return '<table><thead><tr>' + ths + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  });
+
+  // Headings
+  html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+
+  // Horizontal rules
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Bold and italic
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+  // Images (before links to avoid conflicts)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // Links (sanitize href)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(m, text, url) {
+    var scheme = url.trim().toLowerCase();
+    if (/^(javascript|data|vbscript)\s*:/i.test(scheme)) {
+      return '<a href="#">' + text + '</a>';
+    }
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + text + '</a>';
+  });
+
+  // Checkbox list items
+  html = html.replace(/^(\s*)- \[x\]\s+(.+)$/gm, '<cli class="checked">$2</cli>');
+  html = html.replace(/^(\s*)- \[ \]\s+(.+)$/gm, '<cli>$2</cli>');
+
+  // Unordered lists
+  html = html.replace(/^(\s*)-\s+(.+)$/gm, function(m, indent, content) {
+    return '<li>' + content + '</li>';
+  });
+
+  // Ordered lists
+  html = html.replace(/^(\s*)\d+\.\s+(.+)$/gm, function(m, indent, content) {
+    return '<oli>' + content + '</oli>';
+  });
+
+  // Wrap consecutive checkbox items
+  html = html.replace(/((?:<cli[^>]*>.+<\/cli>\n?)+)/g, function(m) {
+    var items = m.replace(/<cli class="checked">/g, '<li class="checked">').replace(/<cli>/g, '<li>').replace(/<\/cli>/g, '</li>');
+    return '<ul class="checklist">' + items + '</ul>';
+  });
+
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/((?:<li>.+<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  // Wrap consecutive <oli> in <ol>
+  html = html.replace(/((?:<oli>.+<\/oli>\n?)+)/g, function(m) {
+    return '<ol>' + m.replace(/<\/?oli>/g, function(tag) { return tag.replace('oli', 'li'); }) + '</ol>';
+  });
+
+  // Paragraphs
+  var lines = html.split('\n');
+  var result = [];
+  var inPara = false;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) {
+      if (inPara) { result.push('</p>'); inPara = false; }
+      continue;
+    }
+    if (/^<(h[1-6]|ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|hr|div|img)/.test(line)) {
+      if (inPara) { result.push('</p>'); inPara = false; }
+      result.push(line);
+    } else {
+      if (!inPara) { result.push('<p>'); inPara = true; }
+      result.push(line);
+    }
+  }
+  if (inPara) result.push('</p>');
+  html = result.join('\n');
+
+  // Restore code blocks
+  html = html.replace(/\x00CODE(\d+)\x00/g, function(m, idx) { return codeBlocks[parseInt(idx)]; });
+  html = html.replace(/\x00INLINE(\d+)\x00/g, function(m, idx) { return inlineCodes[parseInt(idx)]; });
+
+  return html;
+}
+
+// ── Navigation & Content Loading ──
+
+var currentItem = null;
+
+function loadContent(el) {
+  var src = el.getAttribute('data-src');
+  if (!src) return;
+
+  // Update active state
+  var items = document.querySelectorAll('.sidebar-item');
+  for (var i = 0; i < items.length; i++) {
+    items[i].classList.remove('active');
+  }
+  el.classList.add('active');
+  currentItem = el;
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  // Show loading
+  var contentEl = document.getElementById('contentInner');
+  contentEl.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+
+  // Fetch and render
+  fetch(src).then(function(res) {
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.text();
+  }).then(function(md) {
+    var cleaned = stripFrontmatter(md);
+    var rendered = renderMarkdown(cleaned);
+    contentEl.innerHTML = '<div class="md-content">' + rendered + '</div>';
+    // Scroll content area to top
+    document.getElementById('contentArea').scrollTop = 0;
+  }).catch(function(err) {
+    contentEl.innerHTML =
+      '<div class="error-msg">' +
+      '<h2>Content not available</h2>' +
+      '<p>Could not load: ' + escapeHtml(src) + '</p>' +
+      '<p style="margin-top:8px;font-size:13px;">Error: ' + escapeHtml(err.message) + '</p>' +
+      '</div>';
+  });
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Load executive summary on page open
+(function() {
+  var defaultItem = document.querySelector('.sidebar-item.active');
+  if (defaultItem) {
+    loadContent(defaultItem);
+  }
+})();
+</script>
+
+</body>
+</html>

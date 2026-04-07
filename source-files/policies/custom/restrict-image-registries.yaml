@@ -1,0 +1,168 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+  labels:
+    app.kubernetes.io/part-of: sre-platform
+    sre.io/policy-category: custom
+  annotations:
+    policies.kyverno.io/title: Restrict Image Registries
+    policies.kyverno.io/description: >-
+      Restricts container images to approved registries: the internal Harbor
+      registry (harbor.sre.internal/) and trusted public registries (Docker Hub,
+      GitHub Container Registry, Quay, Chainguard). For production/ATO deployments,
+      remove the public registries and require all images to be mirrored through Harbor.
+    policies.kyverno.io/category: Supply Chain
+    policies.kyverno.io/severity: critical
+    sre.io/nist-controls: "CM-11, SI-7"
+    pod-policies.kyverno.io/autogen-controllers: none
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: validate-image-registry
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+                - flux-system
+                - istio-system
+                - cert-manager
+                - monitoring
+                - logging
+                - tempo
+                - openbao
+                - external-secrets
+                - runtime-security
+                - backup
+                - kyverno
+                - neuvector
+                - harbor
+                - velero
+                - keycloak
+                - sre-portal
+                - sre-dashboard
+                - sre-dsop
+                - oauth2-proxy
+                - local-path-storage
+                - metallb-system
+                - sre-builds
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+      validate:
+        message: >-
+          All container images in Pod {{request.object.metadata.name}} must be
+          from an approved registry. Allowed: harbor.sre.internal, harbor.apps.sre.example.com,
+          harbor.harbor.svc.cluster.local, docker.io, ghcr.io, quay.io, cgr.dev,
+          registry.k8s.io, or short Docker Hub names.
+        anyPattern:
+          - spec:
+              containers:
+                - image: "harbor.sre.internal/*"
+          - spec:
+              containers:
+                - image: "harbor.apps.sre.example.com/*"
+          - spec:
+              containers:
+                - image: "harbor.harbor.svc.cluster.local/*"
+          - spec:
+              containers:
+                - image: "docker.io/*"
+          - spec:
+              containers:
+                - image: "ghcr.io/*"
+          - spec:
+              containers:
+                - image: "quay.io/*"
+          - spec:
+              containers:
+                - image: "cgr.dev/*"
+          - spec:
+              containers:
+                - image: "registry.k8s.io/*"
+          - spec:
+              containers:
+                - image: "*/*"
+    - name: validate-init-container-image-registry
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+                - flux-system
+                - istio-system
+                - cert-manager
+                - monitoring
+                - logging
+                - tempo
+                - openbao
+                - external-secrets
+                - runtime-security
+                - backup
+                - kyverno
+                - neuvector
+                - harbor
+                - velero
+                - keycloak
+                - sre-portal
+                - sre-dashboard
+                - sre-dsop
+                - oauth2-proxy
+                - local-path-storage
+                - metallb-system
+                - sre-builds
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.initContainers[] || `[]` | length(@) }}"
+            operator: GreaterThanOrEquals
+            value: 1
+      validate:
+        message: >-
+          All init container images in Pod {{request.object.metadata.name}} must
+          be from an approved registry.
+        anyPattern:
+          - spec:
+              initContainers:
+                - image: "harbor.sre.internal/*"
+          - spec:
+              initContainers:
+                - image: "harbor.apps.sre.example.com/*"
+          - spec:
+              initContainers:
+                - image: "harbor.harbor.svc.cluster.local/*"
+          - spec:
+              initContainers:
+                - image: "docker.io/*"
+          - spec:
+              initContainers:
+                - image: "ghcr.io/*"
+          - spec:
+              initContainers:
+                - image: "quay.io/*"
+          - spec:
+              initContainers:
+                - image: "cgr.dev/*"
+          - spec:
+              initContainers:
+                - image: "registry.k8s.io/*"
+          - spec:
+              initContainers:
+                - image: "*/*"

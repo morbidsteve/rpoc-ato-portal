@@ -1,0 +1,72 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+  labels:
+    app.kubernetes.io/part-of: sre-platform
+    sre.io/policy-category: custom
+  annotations:
+    policies.kyverno.io/title: Require Standard Labels
+    policies.kyverno.io/description: >-
+      Requires all Pods to include the standard labels: app.kubernetes.io/name,
+      app.kubernetes.io/part-of, and sre.io/team. These labels are essential for
+      inventory management, cost tracking, and incident response. System namespaces
+      are excluded from this policy.
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    sre.io/nist-controls: "CM-8"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-required-labels
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+                - flux-system
+                - istio-system
+                - cert-manager
+                - monitoring
+                - logging
+                - tempo
+                - openbao
+                - external-secrets
+                - runtime-security
+                - backup
+                - kyverno
+                - neuvector
+                - harbor
+                - velero
+                - keycloak
+                - sre-portal
+                - sre-dashboard
+                - sre-dsop
+                - oauth2-proxy
+                - local-path-storage
+                - metallb-system
+                - sre-builds
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+      validate:
+        message: >-
+          Pod {{request.object.metadata.name}} in namespace
+          {{request.object.metadata.namespace}} is missing required labels.
+          All Pods must have the following labels:
+          `app.kubernetes.io/name`, `app.kubernetes.io/part-of`, and `sre.io/team`.
+          Add them to your Deployment or Pod spec under metadata.labels.
+        pattern:
+          metadata:
+            labels:
+              app.kubernetes.io/name: "?*"
+              app.kubernetes.io/part-of: "?*"
+              sre.io/team: "?*"

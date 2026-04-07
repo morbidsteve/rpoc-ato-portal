@@ -1,0 +1,73 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-image-signatures
+  labels:
+    app.kubernetes.io/part-of: sre-platform
+    sre.io/policy-category: custom
+  annotations:
+    policies.kyverno.io/title: Verify Image Signatures
+    policies.kyverno.io/description: >-
+      Verifies that all container images from harbor.sre.internal are signed
+      using Cosign. This ensures only trusted, verified images are deployed to
+      the cluster as part of the supply chain security controls. System
+      namespaces are excluded from this policy.
+    policies.kyverno.io/category: Supply Chain
+    policies.kyverno.io/severity: critical
+    sre.io/nist-controls: "SA-10, SI-7"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-cosign-signature
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+                - flux-system
+                - istio-system
+                - cert-manager
+                - monitoring
+                - logging
+                - tempo
+                - openbao
+                - external-secrets
+                - runtime-security
+                - backup
+                - kyverno
+                - neuvector
+                - harbor
+                - velero
+                - keycloak
+                - sre-portal
+                - sre-dashboard
+                - sre-dsop
+                - oauth2-proxy
+                - local-path-storage
+                - metallb-system
+                - sre-builds
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+      verifyImages:
+        - imageReferences:
+            - "harbor.sre.internal/*"
+          mutateDigest: false
+          verifyDigest: false
+          attestors:
+            - entries:
+                - keys:
+                    publicKeys: |-
+                      -----BEGIN PUBLIC KEY-----
+                      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbeYmaQeGqS1AE5/puceepf0i3Avs
+                      ds4Z64EQt29IPdyQRFniSbAwG/ffyY4Qap7KWYE6RpHMeuLkKy91RVDy0A==
+                      -----END PUBLIC KEY-----
